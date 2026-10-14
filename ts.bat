@@ -22,8 +22,9 @@ echo.
 echo    3  Build the C#
 echo    4  Re-import assets
 echo.
-echo    5  Watch the bot play level 0
-echo    6  Simulate level 0 at every difficulty  (fast, no window)
+echo    5  Watch the bot play a level
+echo    6  Simulate a level at every difficulty  (fast, no window)
+echo    7  Simulate every level at every difficulty
 echo.
 echo    0  Quit
 echo.
@@ -40,11 +41,33 @@ if "%PICK%"=="1" dotnet build && "%GODOT%" --path .
 if "%PICK%"=="2" dotnet build && "%GODOT%" --path . --editor
 if "%PICK%"=="3" dotnet build
 if "%PICK%"=="4" "%GODOT%" --headless --path . --import
-if "%PICK%"=="5" dotnet build && "%GODOT%" --path . -- --autotype
-if "%PICK%"=="6" (
-  dotnet build && for %%W in (25 40 65 75 90) do (
-    echo   wpm %%W:
-    "%GODOT%" --headless --fixed-fps 24 --path . -- --autotype --quit-on-end --wpm=%%W --seed=1 2>nul | findstr /b "Level"
-  )
+if "%PICK%"=="5" goto watch
+if "%PICK%"=="6" goto simone
+if "%PICK%"=="7" goto simall
+exit /b
+
+:watch
+call :asklevel
+dotnet build && "%GODOT%" --path . -- --autotype --level=%LVL%
+exit /b
+
+:simone
+call :asklevel
+dotnet build && call :sim %LVL%
+exit /b
+
+:simall
+dotnet build && for /l %%L in (0,1,11) do call :sim %%L
+exit /b
+
+:asklevel
+set "LVL=0"
+set /p "LVL=  Level (0-11, Enter for 0): "
+exit /b
+
+:sim
+for %%W in (25 40 65 75 90) do (
+  echo   level %1, wpm %%W:
+  "%GODOT%" --headless --fixed-fps 24 --path . -- --autotype --quit-on-end --level=%1 --wpm=%%W --seed=1 2>nul | findstr /b "Level"
 )
 exit /b

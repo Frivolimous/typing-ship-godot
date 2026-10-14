@@ -21,6 +21,9 @@ public partial class Charge : Node2D, ITicker
 
     public Charge() { }
 
+    /// <summary>Ticks until it fires, or -1 when it isn't charging.</summary>
+    public int Remaining => active ? maxCount - count : -1;
+
     public void Add(GameSprite origin, GameSprite target)
     {
         this.origin = origin;

@@ -43,7 +43,7 @@ public partial class Missile : GameSprite
             return true;
         }
         TurnRate += A / 300;
-        target.Turret?.TestTarget(this);
+        if (!target.Removed) target.Turret?.TestTarget(this); // a turret leaves with its ship
         if (Removed) return false; // shot down by the turret
 
         var t = target.P;

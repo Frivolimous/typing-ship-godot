@@ -33,6 +33,69 @@ public static class Sprites
     public static readonly Texture2D[] Nebula = { T("Nebula0"), T("Nebula1"), T("Nebula2") };
     public static readonly Texture2D[] Dash = { T("Dash0"), T("Dash1"), T("Dash2"), T("Dash3"), T("Dash4"), T("Dash5") };
     public static readonly Texture2D[] Back = { T("StarBack0"), T("StarBack1"), T("StarBack2") };
+    public static readonly Texture2D[] Boss = { T("Boss0"), T("Boss1a"), T("Boss2") };
+
+    // SpriteSheets.bRes: boss 0's hangar doors (closed, open, open with ships), boss 1's glow,
+    // boss 2's charge-up frames and its beam (plain, then the three frames of the beam hitting the player's shield).
+    public static readonly Texture2D[] Door = { T("Door0"), T("Door1"), T("Door2") };
+    public static readonly Texture2D Boss1Glow = T("Boss1b");
+    public static readonly Texture2D[] Boss2Charge = { T("Boss2a"), T("Boss2b"), T("Boss2c") };
+    public static readonly Texture2D[] Boss2Beam = { T("Boss2L0"), T("Boss2L1a"), T("Boss2L1c"), T("Boss2L1b") };
+
+    static readonly Dictionary<Texture2D, Image> images = new();
+
+    /// <summary>BitmapData.getPixel32(x, y) >= 0x01000000: is this pixel of the texture not fully transparent?</summary>
+    public static bool Opaque(Texture2D t, float x, float y)
+    {
+        if (!images.TryGetValue(t, out var img)) images[t] = img = t.GetImage();
+        int px = (int)x, py = (int)y;
+        if (px < 0 || py < 0 || px >= img.GetWidth() || py >= img.GetHeight()) return false;
+        return img.GetPixel(px, py).A8 > 0;
+    }
+
+    /// <summary>A random non-transparent pixel of the texture, in texture pixels.</summary>
+    public static Vector2 RandomOpaquePixel(Texture2D t)
+    {
+        Vector2 p;
+        do p = new Vector2(G.Rand() * t.GetWidth(), G.Rand() * t.GetHeight());
+        while (!Opaque(t, p.X, p.Y));
+        return p;
+    }
+
+    // The chameleon cheat (SpriteSheets.recolour): a random hue shift with boosted saturation on the player's ship.
+    // Flash's AdjustColor filter is approximated with the same luminance-weighted hue rotation matrix.
+    static ShaderMaterial? playerMaterial;
+
+    public static void Recolour(GameSprite player)
+    {
+        playerMaterial ??= new ShaderMaterial
+        {
+            Shader = new Shader
+            {
+                Code = """
+                    shader_type canvas_item;
+                    uniform float hue = 0.0;
+                    uniform float saturation = 1.0;
+                    void fragment() {
+                        vec3 c = COLOR.rgb;
+                        float l = dot(c, vec3(0.3086, 0.6094, 0.0820));
+                        c = mix(vec3(l), c, saturation);
+                        float cs = cos(hue), sn = sin(hue);
+                        const vec3 lum = vec3(0.213, 0.715, 0.072);
+                        mat3 m = mat3(
+                            vec3(lum.r + cs * (1.0 - lum.r) - sn * lum.r, lum.r - cs * lum.r + sn * 0.143, lum.r - cs * lum.r - sn * (1.0 - lum.r)),
+                            vec3(lum.g - cs * lum.g - sn * lum.g, lum.g + cs * (1.0 - lum.g) + sn * 0.140, lum.g - cs * lum.g + sn * lum.g),
+                            vec3(lum.b - cs * lum.b + sn * (1.0 - lum.b), lum.b - cs * lum.b - sn * 0.283, lum.b + cs * (1.0 - lum.b) + sn * lum.b));
+                        COLOR.rgb = clamp(m * c, 0.0, 1.0);
+                    }
+                    """,
+            },
+        };
+        playerMaterial.SetShaderParameter("hue", Mathf.DegToRad(G.Rand() * 360 - 180));
+        playerMaterial.SetShaderParameter("saturation", 2.0f);
+        player.View.Material = playerMaterial;
+    }
+
     public static readonly Texture2D Superman = T("Superman");
     public static readonly Texture2D HealthFull = T("HealthFull");
     public static readonly Texture2D HealthBase = T("HealthBase");

@@ -21,7 +21,7 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path . -- --leve
 
 | Option | Effect |
 |---|---|
-| `--level=N` | Start at level N (only 0 is ported so far) |
+| `--level=N` | Start at level N (0–11; bosses on 3, 7 and 11) |
 | `--wpm=N` | Difficulty as target words per minute: 25 Easy, 40 Normal (default), 65 Hard, 75 Extreme, 90 Insane |
 | `--seed=N` | Fix the random seed, for repeatable runs |
 | `--autotype` | A bot types for you, at the difficulty's WPM |
@@ -44,3 +44,11 @@ Level 0 cleared: score 292, ships 56, missed 0, health 5, ticks 3034
 ```
 
 A tick is 1/24 s of game time, so 3034 ticks is about 2 minutes of play.
+
+Add `--level=N` for another level. `ts 6` asks for a level and simulates it at all five difficulties; `ts 7` does
+every level (60 runs, a few minutes). `ts 5` asks for a level and opens a window where the bot plays it.
+
+The bot (`--autotype`) types at exactly the difficulty's WPM and never mistypes. It plays earliest-deadline-first:
+whatever will hurt soonest (an incoming missile, a suicide ship, a laser about to fire, boss 2's beam) as long as it
+can still finish the word in time, then hull repairs when there's slack, then the nearest ship (turret first), then
+the boss scanner. It's a yardstick for "can a typist at this speed survive this", not a model of a human.

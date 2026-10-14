@@ -7,7 +7,7 @@ public partial class GameControl : Node
 {
     public int Delay;
     public bool LevelEnded { get; private set; }
-    bool finalDelay;
+    bool finalDelay, bossDying;
     Action? toRun;
     int spriteCount;
     readonly List<ITicker> tickers = new();
@@ -22,6 +22,7 @@ public partial class GameControl : Node
     public void NewGame(int level = 0)
     {
         while (M.GObjects.Count > 0) M.GObjects[0].Remove();
+        M.Boss?.Remove();
         G.Action.MRate = Math.Clamp(M.Wpm / 150f, 0.3f, 1f);
         M.TutReset();
         M.Score = 0;
@@ -54,6 +55,7 @@ public partial class GameControl : Node
         ship.ResetPhysicsInterpolation();
         Delay = 0;
         finalDelay = false;
+        bossDying = false;
         toRun = null;
         G.Sound.Play(1 + M.Level % 4);
     }
@@ -75,6 +77,7 @@ public partial class GameControl : Node
         {
             Delay--;
             if (Delay == 1) toRun?.Invoke();
+            else if (bossDying) BossExplosions();
         }
         else if (M.PShip.Health <= 0)
         {
@@ -95,7 +98,11 @@ public partial class GameControl : Node
                 e.Run();
             }
         }
-        else if (M.GObjects.Count == 0)
+        else if (M.BossMode)
+        {
+            M.LevelData = LevelData.bossLoop();
+        }
+        else if (M.Boss == null && M.GObjects.Count == 0)
         {
             if (Delay == 0 && finalDelay) EndLevel();
             else
@@ -112,6 +119,8 @@ public partial class GameControl : Node
         for (int i = 0; i < M.GOverflow.Count;)
             if (M.GOverflow[i].Update()) i++;
 
+        M.Boss?.Update();
+
         G.UI.PopWarning.Update();
     }
 
@@ -127,9 +136,34 @@ public partial class GameControl : Node
     public void EndLevel()
     {
         while (M.GObjects.Count > 0) M.GObjects[0].Remove();
+        M.Boss?.Remove();
         M.Running = false;
         LevelEnded = true;
         LevelOver?.Invoke(true);
+    }
+
+    public void KillBoss()
+    {
+        M.BossMode = false;
+        M.Boss!.Commands = null;
+        M.LevelData = new List<ILevelEvent>();
+        Delay = 200;
+        toRun = EndLevel; // finalBoss
+        bossDying = true;
+        // Conqueror achievement tiers (the pop-ups come with the achievements screen).
+        if ((M.Achieve[1], M.Level) is (0, 3) or (1, 7) or (2, 11)) M.Achieve[1]++;
+    }
+
+    /// <summary>The dying boss fades out over 200 ticks, bursting into explosions all over.</summary>
+    void BossExplosions()
+    {
+        var boss = M.Boss!;
+        boss.SetAlpha(Math.Min(Delay / 100f, 1));
+        if (G.Rand() > 0.6f)
+        {
+            var p = boss.RandomPoint();
+            G.Starfield.Explosion(p.X, p.Y);
+        }
     }
 
     public void PlayerDeath()
@@ -164,5 +198,6 @@ public partial class GameControl : Node
             o.Turret?.ShowWord(b);
         }
         M.Hull.ShowWord(b);
+        M.Boss?.Scanner?.ShowWord(b);
     }
 }

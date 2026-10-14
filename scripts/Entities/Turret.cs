@@ -18,6 +18,9 @@ public partial class Turret : GameSprite
 
     EnemyShip Ship => (EnemyShip)GetParent();
 
+    /// <summary>Where the turret is in game-view space.</summary>
+    public Vector2 ViewPosition => Ship.Position + Position.Rotated(Ship.Rotation);
+
     public override bool Update()
     {
         if (TextObject != null) TextObject.Rotation = -Rotation - Ship.Rotation;

@@ -9,6 +9,7 @@ public class GameModel
     public List<ILevelEvent> LevelData = new();
     public readonly List<GameSprite> GObjects = new();
     public readonly List<Overflow> GOverflow = new();
+    public BossShip? Boss;
     public PlayerShip PShip = null!;
     public ShipSystem Hull = null!;
     public readonly bool[] TutFlags = new bool[11];

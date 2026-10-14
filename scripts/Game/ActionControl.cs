@@ -94,6 +94,19 @@ public class ActionControl
         }
     }
 
+    /// <summary>Typing one of boss 2's counter-words: shields the player against one hit of its beam.</summary>
+    public void ShootInstant(PlayerShip o, GameSprite t)
+    {
+        M.Boss!.Count++;
+        if (o.ShieldOn) o.ShieldV.Alpha += 0.2f;
+        else
+        {
+            o.AddShield();
+            o.ShieldV.Alpha = 0.2f;
+        }
+        HitTarget(t, Instant);
+    }
+
     public void ShootEmp(GameSprite o, GameSprite t, bool fire = false)
     {
         if (fire)
@@ -154,10 +167,11 @@ public class ActionControl
         }
         if (t.ShieldOn && s == Emp)
         {
-            ((EnemyShip)t).RemoveShield();
+            if (!t.Removed) ((EnemyShip)t).RemoveShield(); // it may have left during the 5-tick EMP charge
             return;
         }
-        var p = t.P;
+        // The original exploded a turret at its position inside the ship, i.e. near the game view's corner.
+        var p = t is Turret turret ? turret.ViewPosition : t.P;
         if (s == Missile && t.Health > 1)
         {
             t.Health--;

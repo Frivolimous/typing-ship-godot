@@ -3,8 +3,8 @@
 A typing shoot-'em-up: enemy ships fly in carrying words, and typing a word fires at its ship. Originally a
 2011 Flash game (AS3, project name "Typing Ship"), now being rebuilt in Godot 4 / C# for a Steam release.
 
-**Status:** early port. Level 0 plays start to finish: typing, missiles, laser charges, damage, hull repair,
-scoring, death and level completion. Levels 1–11, bosses, menus and save data are still to come. See
+**Status:** all the gameplay is ported: levels 0–11 with their three bosses, every enemy type, hull repair,
+scoring, death and the cheat words. Menus, score screens and save data are still to come. See
 [docs/porting.md](docs/porting.md).
 
 ## Requirements

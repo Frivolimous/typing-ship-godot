@@ -31,6 +31,9 @@ public class WordList
         return word;
     }
 
+    /// <summary>The words currently available at this length (WordList.list[size]).</summary>
+    public IReadOnlyList<string> Words(int size) => list[size];
+
     public void Push(string s) => Push(s, s.Length);
 
     void Push(string s, int length) => list[Math.Min(length, 10)].Add(s);

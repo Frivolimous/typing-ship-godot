@@ -25,6 +25,12 @@ public partial class ShieldView : Node2D, ITicker
         QueueRedraw();
     }
 
+    public float Alpha
+    {
+        get => Modulate.A;
+        set => Modulate = new Color(1, 1, 1, Math.Clamp(value, 0, 1)); // Flash clamped alpha too
+    }
+
     public void Remove()
     {
         breaking = true;
@@ -38,7 +44,7 @@ public partial class ShieldView : Node2D, ITicker
 
     public bool Tick()
     {
-        if (!fading) return false;
+        if (!fading || !IsInstanceValid(this)) return false; // freed along with its ship
         var m = Modulate;
         m.A -= 0.1f;
         Modulate = m;

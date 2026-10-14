@@ -58,6 +58,7 @@ public partial class KeyboardControl : Node
                         {
                             case ActionControl.Missile: G.Action.ShootMissile(M.PShip, o); break;
                             case ActionControl.Laser: G.Action.ShootLaser(M.PShip, o); break;
+                            case ActionControl.Instant: G.Action.ShootInstant(M.PShip, o); break;
                             default: throw new InvalidOperationException($"Invalid kill type: {o.KillBy}");
                         }
                     return;
@@ -83,16 +84,42 @@ public partial class KeyboardControl : Node
                 G.Action.Heal();
                 return;
             }
+
+            if (M.Boss?.Scanner is { } scanner && TestWord(scanner))
+            {
+                scanner.Scan();
+                return;
+            }
         }
 
         if (TestWord(UnmuteWord)) G.Sound.Mute = false;
         else if (TestWord(MuteWord)) G.Sound.Mute = true;
-        else if (TestWord(PauseWord)) G.Ctrl.PauseGame(true);
+        else if (TestWord(SupermanWord))
+        {
+            MakeSuperman();
+            if (M.Achieve[2] == 0) M.Achieve[2] = 1; // Riddler tiers: superman, kamikaze, chameleon in turn
+        }
         else if (TestWord(KamikazeWord))
         {
+            if (M.Achieve[2] == 1) M.Achieve[2] = 2;
             while (M.GObjects.Count > 0) G.Action.HitTarget(M.GObjects[0], ActionControl.Instant);
             G.Ctrl.PlayerDeath();
         }
+        else if (TestWord(ChameleonWord))
+        {
+            if (M.Achieve[2] == 2) M.Achieve[2] = 3;
+            Sprites.Recolour(M.PShip);
+        }
+        else if (TestWord(PauseWord)) G.Ctrl.PauseGame(true);
+    }
+
+    static void MakeSuperman()
+    {
+        G.Sound.Sound(SoundControl.Superman);
+        var s = new Superman();
+        s.Init(G.Rand() * 400 + 50, 550, -Mathf.Pi / 2, 1.3f, 1);
+        G.UI.GameView.MoveChild(s, 0);
+        G.Model.GObjects.Add(s);
     }
 
     bool TestWord(GameObject v)
