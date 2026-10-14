@@ -9,8 +9,10 @@ ported, what's left, where the port deliberately differs from the original, and 
 2. ~~**Full gameplay:** levels 1–11, bosses (3, 7, 11) with `bossLoop`, scanner, scramble objects, superman and
    chameleon cheats; shields, turrets, stealth ships, suicide ships and mines verified.~~ Done: every level clears
    with the bot at all five difficulties (seeds 1–5). Difficulty and feel still need Jeremy to play them.
-3. **Game shell:** title menu, level map, difficulty select, typing test, pause/mute, score screen, game over,
-   victory, credits, transitions, tutorial pop-ups, achievements, save data (best score per level, unlocks).
+3. ~~**Game shell:** title menu, level map, difficulty select, typing test, pause/mute, score screen, game over,
+   victory, credits, transitions, tutorial pop-ups, achievements, save data (best score per level, unlocks).~~ Done:
+   every screen checked in windowed screenshot runs (`--keys` walks the menus), and the bot sims are unchanged.
+   The menus can be driven by typing as well as the mouse (see Deviations).
 4. **Refactor and level editor:** rules move into a plain C# core with unit tests. Level scripts and tuning
    numbers move into data files that Jeremy can edit without touching code. Add tools to make editing quick:
    reload a level without restarting, start from any point in a level, and show the 12x12 spawn grid and ship
@@ -33,13 +35,13 @@ ported, what's left, where the port deliberately differs from the original, and 
 | AS3 | C# | Status |
 |---|---|---|
 | Facade | Core/G.cs | Done (globals, RNG, constants) |
-| GameModel | Game/GameModel.cs | Run state done; save data not yet |
-| GameControl | Game/GameControl.cs | Done (boss flow: `bossMode` escorts, `killBoss`, fade-out with explosions); score/game-over screens not yet |
-| ActionControl | Game/ActionControl.cs | Done (incl. `shootInstant`); achievement pop-ups not yet (counters and tiers only) |
-| KeyboardControl, KeyCon | Game/KeyboardControl.cs | In-game typing and cheat words done; menu/typing-test input not yet |
+| GameModel | Game/GameModel.cs, Core/SaveData.cs | Done. The SharedObject is JSON in `user://save.json` (version 10, wiped if different, as before) |
+| GameControl | Game/GameControl.cs | Done (boss flow: `bossMode` escorts, `killBoss`, fade-out with explosions, `pauseGame`) |
+| ActionControl | Game/ActionControl.cs | Done (incl. `shootInstant`, achievements, tutorial pop-ups 7 and 8) |
+| KeyboardControl, KeyCon | Game/KeyboardControl.cs (in game), UI/Shell.cs (menus) | Done. Mouse handling is in each widget |
 | LevelData | Level/LevelData.cs | Done: levels 0–11, `bossLoop`, `boss0Suicides` |
 | LevelEvent, SpawnEvent, ObjectCommand | Level/ | Done |
-| BossEvent, BossShip, Scanner | Level/BossEvent.cs, Entities/BossShip.cs, Entities/Scanner.cs | Done; boss tutorial pop-ups (tutFlags 9, 10) come with the pop-ups |
+| BossEvent, BossShip, Scanner | Level/BossEvent.cs, Entities/BossShip.cs, Entities/Scanner.cs | Done, incl. boss tutorial pop-ups (tutFlags 9, 10) |
 | GameObject, GameSprite, TextObject | Entities/ | Done |
 | EnemyShip, PlayerShip, Missile | Entities/ | Done |
 | Turret, ShieldView, Charge, StealthEffect | Entities/, Fx/Effects.cs | Done, verified in levels 1–11 |
@@ -47,13 +49,17 @@ ported, what's left, where the port deliberately differs from the original, and 
 | Starfield, Star, Particle, Nebula | Fx/Starfield.cs | Done |
 | LaserEffect, EMPEffect | Fx/Effects.cs (BeamEffect) | Done |
 | PopScore, Overflow | Fx/Effects.cs | Done |
-| GameUI, ShipSystem, PopWarning | UI/GameUI.cs | Done (no on-screen pause/mute buttons) |
+| GameUI, ShipSystem, PopWarning | UI/GameUI.cs | Done |
 | SoundControl | Audio/SoundControl.cs | Done |
-| SpriteSheets | Core/Sprites.cs | Gameplay and boss sprites done; `recolour` (chameleon) is a shader; menu art not yet |
+| SpriteSheets | Core/Sprites.cs | Done; `recolour` (chameleon) is a shader |
 | WordList | Core/WordList.cs + data/words.txt | Done |
-| StringData, GameStrings | | Inlined where used so far; menus will need them |
-| MenuUI, MapUI, LevelButton, DiffSelect, BoxButton, UIButton, BitButton, MenuBt, MenuBox, ConfirmMenu | | Not yet |
-| TypingTest, ScoreUI, GameOverUI, VictoryUI, AchieveUI, Award, PopAchieve, PopBox, PauseUI, PauseB, MuteB, Transition | | Not yet |
+| StringData | Core/Strings.cs | Done. GameStrings (old pre-menu texts) dropped: nothing used it |
+| MenuUI, MapUI, LevelButton, DiffSelect (+BoxButton) | UI/MenuUI.cs | Done |
+| UIButton, BitButton, MenuBox | UI/Widgets.cs (TextButton, BitButton, MenuBox), plus TypeNav for typed navigation | Done |
+| TypingTest, ScoreUI, GameOverUI, VictoryUI, AchieveUI (+Award), PauseUI | UI/Screens.cs | Done |
+| PopAchieve, PopBox | UI/Popups.cs | Done |
+| Transition, PauseB, MuteB | UI/Shell.cs (screen manager, fades, input outside the game) | Done. Pause and mute buttons are drawn placeholders: the originals were vector clips that weren't extracted |
+| MenuBt, ConfirmMenu | | Dropped: never put on stage in the original (ConfirmMenu was an older difficulty/WPM picker) |
 | FlashPreloadProfiler | | Dropped |
 
 ## Deviations from the original
@@ -66,7 +72,26 @@ ported, what's left, where the port deliberately differs from the original, and 
 - **Letters come from the typed character**, not the physical key code, so non-QWERTY layouts work.
 - **Widescreen:** the 550x550 playfield is centred, with side panels filling the rest of the window.
 - **Smooth motion:** logic still runs at 24 Hz, but the display is interpolated at the monitor's refresh rate.
-- Level end and death show a placeholder message and Space restarts, until the score and game-over screens are ported.
+- **Type to navigate the menus** (the original's TODO). Typing a button's first word works like clicking it:
+  `start`, `high`, `achievements`, `more`, `credits`, `test`, `menu`, `submit`, `yes`, `no`, `done`, `skip`, a
+  difficulty name in the difficulty box, an achievement's name to show its goals. On the map a level's label
+  selects it: `1`–`9`, and `b1`–`b3` for the bosses, which are labelled B1–B3 instead of all "B". The letters typed
+  so far show at the top of the screen. The mouse works as before.
+- **More keys and clicks:** Escape closes the difficulty box and leaves the achievements screen; any key leaves the
+  credits; Space or Enter continues from the game over screen (as MENU); Enter or a click also continues from the
+  score screen; Space, Enter or Escape skip the victory credits. Any key also closes a stub message box.
+- **The typing test is reachable**, from a TYPING TEST button on the title (top right on the map), with a MENU button
+  for the mouse. The original had the screen but no way to open it. Its result is saved and the difficulty box marks
+  the hardest difficulty at or below it. In the original the result only set a WPM that the difficulty box then
+  overwrote.
+- **The typing test no longer gives an achievement.** The original set the bronze Perfection medal but announced
+  it as "Explorer", a bug.
+- **Escape counts as pausing "without clicking"** for the silver Explorer medal, as typing "pause" does.
+- **The difficulty box stays on the stage.** Next to level 5 it hung off the right edge.
+- **Flash-portal stubs** (submit and display high score, the sponsor link, More games) show the original's
+  placeholder messages until phase 8. The sponsor link still gives the bronze Explorer medal.
+- The score screen's count-up runs at 60 steps a second (the original's 10 ms timer, which Flash capped at about
+  that). Its number column is right-aligned at x = 520; the original's autosized fields can't be reproduced exactly.
 - **"superman" ends.** The cheat's hero is removed once it has flown off the top. The original kept it in the object
   list forever, so a level could never end after typing "superman" (unless you then typed "kamikaze").
 - **Turret explosions** happen at the turret. The original used the turret's position inside its ship, so the
@@ -100,7 +125,17 @@ ported, what's left, where the port deliberately differs from the original, and 
 - **Some waves can't be cleared at exactly the set WPM.** Speeds and typing both scale with WPM, so this holds at
   every difficulty: level 10's finale (suicide waves of 2, 4, 6 and 8 ships, 5.4 s apart at 40 WPM) and boss 2's beam
   (four long counter-words in 9 s at 40 WPM) need more typing than a typist at exactly the set speed can do. The bot
-  survives them by healing beforehand and still ends level 10 at 3–4 health. The original sets the WPM from your
-  typing test, so this is how it played.
+  survives them by healing beforehand and still ends level 10 at 3–4 health. This is how the original played: its
+  difficulty box sets one of the five fixed WPMs (the typing test result was never used).
 - The player's EMP is a single charge: typing a second shield word within 5 ticks of the first re-aims it, and the
   first ship stays shielded with no word. Only reachable above ~140 WPM; kept as in the original.
+- **Tutorial pop-ups** show once per run of the game below 50 WPM (Easy and Normal), and switch off for the rest of the
+  session after dying or pressing Escape on one. Only four have triggers: enemy missiles (7), first damage (8), a boss arriving
+  (9) and the first hit on a boss (10). The triggers for 0–6 were commented out in the original; their texts are in
+  Strings.Tutorial.
+- **Achievements** advance one tier at a time and in order: Conqueror needs boss 1, then 2, then 3; Riddler needs
+  superman, then kamikaze, then chameleon; Explorer needs the sponsor link, then pausing by keyboard, then killing
+  superman. Defender and Perfection count gold medals across levels (1, then 5, then all 12).
+- **Losing a level still records its score** as the level's best if it's higher, but not as cleared.
+- The level map is reached by START on the title and stays up for the rest of the session: there's no way back to
+  the title screen.

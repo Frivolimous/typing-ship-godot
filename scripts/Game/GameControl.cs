@@ -42,7 +42,6 @@ public partial class GameControl : Node
         M.ScoreC = M.Score;
         G.Starfield.SetBack(M.Level);
         G.UI.ResetLetter();
-        G.UI.ShowMessage("");
         G.Action.Heal(100);
         M.Running = true;
         LevelEnded = false;
@@ -150,8 +149,9 @@ public partial class GameControl : Node
         Delay = 200;
         toRun = EndLevel; // finalBoss
         bossDying = true;
-        // Conqueror achievement tiers (the pop-ups come with the achievements screen).
-        if ((M.Achieve[1], M.Level) is (0, 3) or (1, 7) or (2, 11)) M.Achieve[1]++;
+        // Conqueror: one tier per boss, in order.
+        if ((M.Achieve[Strings.Conqueror], M.Level) is (0, 3) or (1, 7) or (2, 11))
+            Achievements.Award(Strings.Conqueror, M.Achieve[Strings.Conqueror] + 1);
     }
 
     /// <summary>The dying boss fades out over 200 ticks, bursting into explosions all over.</summary>
@@ -176,18 +176,28 @@ public partial class GameControl : Node
         M.TutOff();
     }
 
-    void FinalDeath()
+    public void FinalDeath()
     {
         M.Running = false;
         LevelEnded = true;
         LevelOver?.Invoke(false);
     }
 
+    /// <summary>Pause or resume. A tutorial pop-up pauses without the pause screen; resuming closes it.</summary>
     public void PauseGame(bool paused)
     {
         M.Running = !paused;
         ShowAll(!paused);
-        G.UI.ShowMessage(paused ? "-PAUSED-" : "");
+        G.Shell.PauseB.SetPaused(paused);
+        if (paused)
+        {
+            if (G.UI.TutBox == null) G.Shell.Pause.Show(true);
+        }
+        else
+        {
+            G.UI.TutBox?.Remove();
+            G.Shell.Pause.Show(false);
+        }
     }
 
     void ShowAll(bool b)

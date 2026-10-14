@@ -3,7 +3,7 @@ using Godot;
 namespace TypingShip;
 
 // Builds the game: the 550x550 playfield centred in the window, with side panels filling the rest.
-// Command-line (after "--"): --level=N, --wpm=N, --seed=N, --autotype, --screenshot=path, --frames=N.
+// Starts on the title menu. Dev options (after "--", see docs/commands.md) can go straight into a level instead.
 public partial class Main : Node2D
 {
     readonly Dictionary<string, string> args = new();
@@ -16,6 +16,10 @@ public partial class Main : Node2D
             args[parts[0]] = parts.Length > 1 ? parts[1] : "";
         }
         if (args.TryGetValue("seed", out var seed)) G.Seed(ulong.Parse(seed));
+        bool bot = args.ContainsKey("autotype");
+        // Bot runs don't touch the player's save unless given a profile of their own.
+        if (args.TryGetValue("profile", out var profile)) SaveData.Path = $"user://{profile}.json";
+        else if (bot) SaveData.Path = null;
 
         G.Words = new WordList();
         G.Model = new GameModel();
@@ -48,6 +52,7 @@ public partial class Main : Node2D
         G.Model.Hull = new ShipSystem { Name = "Hull" };
         G.UI = new GameUI { Name = "GameUI" };
         G.Starfield.Back.Size = new Vector2(G.StageSize, G.StageSize);
+        G.Starfield.SetBack(0); // behind the typing test before any level has been played
         playfield.AddChild(G.Starfield.Back);
         playfield.AddChild(G.Starfield.NebulaLayer);
         playfield.AddChild(G.Starfield);
@@ -61,25 +66,26 @@ public partial class Main : Node2D
         G.Ctrl.LevelOver += cleared => GD.Print(
             $"Level {G.Model.Level} {(cleared ? "cleared" : "lost")}: score {G.Model.Score}, ships {G.Model.TotalShips}, " +
             $"missed {G.Model.MissedShips}, health {G.Model.PShip.Health}, ticks {Engine.GetPhysicsFrames()}");
-        G.Ctrl.LevelOver += cleared =>
-            G.UI.ShowMessage(cleared ? $"LEVEL COMPLETE\nScore {G.Model.Score}  ·  Space to replay"
-                                     : "SHIP DESTROYED\nSpace to retry");
-
         if (args.ContainsKey("quit-on-end")) G.Ctrl.LevelOver += _ => GetTree().Quit();
-        if (args.ContainsKey("autotype"))
+        if (bot)
+        {
             AddChild(new DevAutoTyper { BotWpm = args.TryGetValue("botwpm", out var b) ? int.Parse(b) : 0 });
-        G.Ctrl.NewGame(args.TryGetValue("level", out var level) ? int.Parse(level) : 0);
+            G.Model.TutOff(); // tutorial pop-ups would wait for Space
+        }
+
+        var shell = new Shell { Name = "Shell" };
+        playfield.AddChild(shell);
+        shell.Init();
+        if (args.TryGetValue("level", out var level) || (bot && !args.ContainsKey("menu")))
+            shell.StartDirect(level != null ? int.Parse(level) : 0);
+        else shell.ShowTitle(args.ContainsKey("map"));
+        DevKeys.AddIfRequested(this);
         Screenshot.CaptureIfRequested(this);
     }
 
-    public override void _UnhandledInput(InputEvent e)
+    public override void _Notification(int what)
     {
-        if (e is InputEventKey { Pressed: true, Echo: false, Keycode: Key.Space } && G.Ctrl.LevelEnded)
-        {
-            G.Starfield.ClearParticles();
-            G.Ctrl.NewGame(Math.Max(G.Model.Level, 0));
-            GetViewport().SetInputAsHandled();
-        }
+        if (what == NotificationWMCloseRequest) G.Model.Save.Save(); // the soldier kill count isn't saved on every kill
     }
 }
 

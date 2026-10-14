@@ -27,7 +27,11 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
 ## Architecture (current)
 
 - `G` (scripts/Core/G.cs) is the global access point, in place of the old `Facade`: `G.Model`, `G.Ctrl`,
-  `G.Action`, `G.UI`, `G.Sound`, `G.Words`, `G.Starfield`, and `G.Rand()`.
+  `G.Action`, `G.UI`, `G.Sound`, `G.Words`, `G.Starfield`, `G.Shell`, and `G.Rand()`.
+- **Shell** (scripts/UI/Shell.cs): the menus and other screens are `Screen`s; the shell shows one at a time with
+  the original's colour fades, or none while a level is on (GameUI). Keys go to `KeyboardControl` in a level and to
+  the shell otherwise. Each screen's `TypeNav` maps typed words to its buttons. Save data is `G.Model.Save`
+  (scripts/Core/SaveData.cs, JSON in user://).
 - **Timing:** all gameplay runs in `GameControl._PhysicsProcess` at a fixed **24 Hz** (the original frame rate;
   `physics_ticks_per_second=24`). Per-tick values are in the original's units (px/tick and so on). Godot's physics
   interpolation smooths the display. Call `ResetPhysicsInterpolation()` after placing a new node. Hand-drawn layers

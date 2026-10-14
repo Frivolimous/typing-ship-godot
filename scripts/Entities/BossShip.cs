@@ -297,7 +297,11 @@ public partial class BossShip : GameSprite
 
     public void Injure()
     {
-        // The "two more shots" tutorial pop-up (tutFlags[10]) comes with the tutorial pop-ups.
+        if (!G.Model.TutFlags[10])
+        {
+            new PopBox(10, P);
+            G.Model.TutFlags[10] = true;
+        }
         Health--;
         if (Health > 0)
         {

@@ -14,7 +14,12 @@ public class BossEvent : ILevelEvent
 
     public void Run()
     {
-        // The "a boss is approaching" tutorial pop-up (tutFlags[9]) comes with the tutorial pop-ups.
-        if (G.Model.Boss == null) G.Model.Boss = new BossShip(Type);
+        if (G.Model.Boss != null) return;
+        if (!G.Model.TutFlags[9])
+        {
+            new PopBox(9);
+            G.Model.TutFlags[9] = true;
+        }
+        G.Model.Boss = new BossShip(Type);
     }
 }

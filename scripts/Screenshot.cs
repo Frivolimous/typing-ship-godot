@@ -2,7 +2,7 @@ using Godot;
 
 namespace TypingShip;
 
-// Dev aid: "-- --screenshot=out.png [--frames=N]" saves the viewport after N frames and quits;
+// Dev aid: "-- --screenshot=out.png [--frames=N]" saves the viewport after N ticks (1/24 s of game time) and quits;
 // "--at=100,400,900" saves out_100.png, out_400.png, ... instead. "--speed=N" runs the game N times faster.
 public static class Screenshot
 {
@@ -26,7 +26,7 @@ public static class Screenshot
         {
             while (frame < target)
             {
-                await owner.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+                await owner.ToSignal(tree, SceneTree.SignalName.PhysicsFrame);
                 frame++;
             }
             await owner.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);

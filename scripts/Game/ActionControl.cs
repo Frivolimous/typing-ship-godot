@@ -59,6 +59,11 @@ public class ActionControl
             var m = new Missile();
             m.Setup(o, t);
             M.GObjects.Add(m);
+            if (!M.TutFlags[7])
+            {
+                new PopBox(7, m.P);
+                M.TutFlags[7] = true;
+            }
         }
     }
 
@@ -163,6 +168,12 @@ public class ActionControl
         if (t == M.PShip)
         {
             DamagePlayer();
+            if (!M.TutFlags[8])
+            {
+                new PopBox(8, new Vector2(420, 530), PopBox.Dir.Right);
+                M.TutFlags[8] = true;
+                M.Hull.ShowWord(true);
+            }
             return;
         }
         if (t.ShieldOn && s == Emp)
@@ -186,16 +197,25 @@ public class ActionControl
         }
         else if (t.WordSize > 3)
         {
-            if (s == Missile) M.AchieveC[0]++; // Soldier: kills by missile
+            if (s == Missile) CountKill();
             G.Starfield.Explosion(p.X, p.Y);
         }
         else if (t.ViewSource?[0] == Sprites.Superman)
         {
             G.Starfield.Explosion(p.X, p.Y, 300);
             new PopScore(p, 99);
+            if (M.Achieve[Strings.Explorer] == 2) Achievements.Award(Strings.Explorer, 3);
         }
 
         if (t.Removed) M.MissedShips--; // it escaped, but the missile was already on its way
         else t.Remove();
+    }
+
+    /// <summary>Soldier: ships destroyed by missile; one tier at a time at 10, 1,000 and 20,000.</summary>
+    void CountKill()
+    {
+        int kills = ++M.AchieveC[Strings.Soldier];
+        int tier = M.Achieve[Strings.Soldier];
+        if (tier < 3 && kills >= new[] { 10, 1000, 20000 }[tier]) Achievements.Award(Strings.Soldier, tier + 1);
     }
 }

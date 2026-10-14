@@ -129,6 +129,25 @@ public partial class SoundControl : Node
         musicPlayer.Play();
     }
 
+    /// <summary>The mute button's music half: stops the music, or brings back the last track.</summary>
+    public bool MuteMusic
+    {
+        get => muteM;
+        set
+        {
+            if (value == muteM) return;
+            muteM = value;
+            if (value) Stop();
+            else Play();
+        }
+    }
+
+    public bool MuteSound
+    {
+        get => muteS;
+        set => muteS = value;
+    }
+
     public bool Mute
     {
         get => muteS && muteM;

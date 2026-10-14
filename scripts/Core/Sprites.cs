@@ -99,4 +99,19 @@ public static class Sprites
     public static readonly Texture2D Superman = T("Superman");
     public static readonly Texture2D HealthFull = T("HealthFull");
     public static readonly Texture2D HealthBase = T("HealthBase");
+
+    // Menu art. Each full-stage bitmap is 550x550 and drawn at the stage origin.
+    public static readonly Texture2D MenuBack = T("MenuB"), MapBack = T("MapB"), ScoreBack = T("ScoreB"), LoseBack = T("LoseB"),
+        WinBack = T("WinB"), FinalBack = T("FinalB"), AchieveBack = T("AchieveB"), Credits = T("CreditsB");
+    public static readonly Texture2D[] Twinkle = { T("MenuB1"), T("MenuB2"), T("MenuB3") };
+    public static readonly Texture2D Title0 = T("Title0"), Title1 = T("Title1");
+    public static readonly Texture2D StartBt = T("StartBt"), HighBt = T("HighBt"), AchieveBt = T("AchieveBt"), MoreBt = T("MoreBt"),
+        CreditsBt = T("CreditsBt");
+    public static readonly Texture2D LockC = T("LockC"), NextC = T("NextC"), CompleteC = T("CompleteC");
+    // Medals under the map's level buttons, by tier; tier 0 has none.
+    public static readonly Texture2D?[] Health = { null, T("Health1"), T("Health2"), T("Health3") };
+    public static readonly Texture2D?[] Target = { null, T("Target1"), T("Target2"), T("Target3") };
+    // Trophies by tier (0 = not earned), and the achievements screen's bronze/silver/gold stars, off and on.
+    public static readonly Texture2D[] Achieve = { T("Achieve0"), T("Achieve1"), T("Achieve2"), T("Achieve3") };
+    public static readonly Texture2D[] Star = { T("Star00"), T("Star01"), T("Star10"), T("Star11"), T("Star20"), T("Star21") };
 }

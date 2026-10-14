@@ -20,6 +20,7 @@ public static class G
     public static GameUI UI = null!;
     public static WordList Words = null!;
     public static Starfield Starfield = null!;
+    public static Shell Shell = null!;
 
     static readonly RandomNumberGenerator rng = new();
 

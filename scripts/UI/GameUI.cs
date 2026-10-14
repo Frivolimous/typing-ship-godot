@@ -9,8 +9,9 @@ public partial class GameUI : Control
     public readonly Node2D BossView = new() { Position = new Vector2(-25, -25) };
     readonly Node2D effectsBack = new();
     readonly TextureRect dash = new() { MouseFilter = MouseFilterEnum.Ignore };
-    readonly Label diffText = new(), scoreText = new(), typeText = new(), centerText = new();
+    readonly Label diffText = new(), scoreText = new(), typeText = new();
     public readonly PopWarning PopWarning = new();
+    public PopBox? TutBox;
     int dashC;
 
     public string Typed => typeText.Text;
@@ -31,7 +32,6 @@ public partial class GameUI : Control
         diffText.LabelSettings = Fonts.Settings(Fonts.GameBold, 15, Colors.White, 3, new Color(green, 0.6f));
         scoreText.LabelSettings = Fonts.Settings(Fonts.GameBold, 18, Colors.White, 3, new Color(green, 0.6f));
         typeText.LabelSettings = Fonts.Settings(Fonts.GameBold, 15, Colors.White, 3, new Color(0xff5555aa));
-        centerText.LabelSettings = Fonts.Settings(Fonts.GameBold, 28, Colors.White, 6);
 
         typeText.Position = new Vector2(4, G.UiHeight + 21);
         diffText.Position = new Vector2(G.UiWidth - 111, G.UiHeight - 17);
@@ -40,9 +40,6 @@ public partial class GameUI : Control
         scoreText.Position = new Vector2(-40, G.UiHeight - 12);
         scoreText.Size = new Vector2(100, 22);
         scoreText.HorizontalAlignment = HorizontalAlignment.Right;
-        centerText.Position = new Vector2(0, 220);
-        centerText.Size = new Vector2(G.StageSize, 100);
-        centerText.HorizontalAlignment = HorizontalAlignment.Center;
 
         var scoreCaption = new Label
         {
@@ -64,8 +61,7 @@ public partial class GameUI : Control
         AddChild(scoreText);
         AddChild(scoreCaption);
         AddChild(PopWarning);
-        AddChild(centerText);
-        foreach (var l in new[] { diffText, scoreText, typeText, centerText, scoreCaption })
+        foreach (var l in new[] { diffText, scoreText, typeText, scoreCaption })
             l.MouseFilter = MouseFilterEnum.Ignore;
     }
 
@@ -101,8 +97,6 @@ public partial class GameUI : Control
     }
 
     public void ShowScore(int i) => scoreText.Text = i.ToString();
-
-    public void ShowMessage(string text) => centerText.Text = text;
 
     public void ResetLetter() => typeText.Text = "";
 

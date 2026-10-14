@@ -12,7 +12,7 @@ public partial class KeyboardControl : Node
 
     public override void _UnhandledInput(InputEvent e)
     {
-        if (e is not InputEventKey { Pressed: true } key) return;
+        if (e is not InputEventKey { Pressed: true } key || !G.Shell.InGame) return;
 
         if (key.Keycode == Key.Backspace)
         {
@@ -27,10 +27,23 @@ public partial class KeyboardControl : Node
 
         if (key.Echo) return;
 
-        // Escape stands in for the old on-screen pause button.
+        // A tutorial pop-up: Space continues, Escape continues with the tutorial switched off.
+        if (G.UI.TutBox is { } tut)
+        {
+            if (key.Keycode is Key.Space or Key.Escape)
+            {
+                tut.Remove();
+                if (key.Keycode == Key.Escape) M.TutOff();
+            }
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        // Escape pauses and resumes, as well as the pause button. It counts as pausing "without clicking".
         if (key.Keycode == Key.Escape && M.CanType && !G.Ctrl.LevelEnded)
         {
-            G.Ctrl.PauseGame(M.Running);
+            if (M.Running) TypedPause();
+            else G.Ctrl.PauseGame(false);
             GetViewport().SetInputAsHandled();
             return;
         }
@@ -39,6 +52,7 @@ public partial class KeyboardControl : Node
         if (c < 'a' || c > 'z') return;
         GetViewport().SetInputAsHandled();
         if (M.Running && M.CanType) TypeLetter(c.ToString());
+        else if (G.Shell.Pause.Visible) G.Shell.Pause.Nav.Type(c); // the pause screen's MENU, YES, NO
     }
 
     public void TypeLetter(string letter)
@@ -97,20 +111,26 @@ public partial class KeyboardControl : Node
         else if (TestWord(SupermanWord))
         {
             MakeSuperman();
-            if (M.Achieve[2] == 0) M.Achieve[2] = 1; // Riddler tiers: superman, kamikaze, chameleon in turn
+            if (M.Achieve[Strings.Riddler] == 0) Achievements.Award(Strings.Riddler, 1); // then kamikaze, then chameleon
         }
         else if (TestWord(KamikazeWord))
         {
-            if (M.Achieve[2] == 1) M.Achieve[2] = 2;
+            if (M.Achieve[Strings.Riddler] == 1) Achievements.Award(Strings.Riddler, 2);
             while (M.GObjects.Count > 0) G.Action.HitTarget(M.GObjects[0], ActionControl.Instant);
             G.Ctrl.PlayerDeath();
         }
         else if (TestWord(ChameleonWord))
         {
-            if (M.Achieve[2] == 2) M.Achieve[2] = 3;
+            if (M.Achieve[Strings.Riddler] == 2) Achievements.Award(Strings.Riddler, 3);
             Sprites.Recolour(M.PShip);
         }
-        else if (TestWord(PauseWord)) G.Ctrl.PauseGame(true);
+        else if (TestWord(PauseWord)) TypedPause();
+    }
+
+    void TypedPause()
+    {
+        G.Ctrl.PauseGame(true);
+        if (M.Achieve[Strings.Explorer] == 1) Achievements.Award(Strings.Explorer, 2);
     }
 
     static void MakeSuperman()
