@@ -1,0 +1,33 @@
+# Release checklist
+
+Things that must be settled before a commercial Steam release.
+
+## Rights and licensing
+
+- [ ] **Fonts.** The original used Consolas, Arial, Rosewood, Rocket Script, Quixley LET and Lily UPC, none
+      licensed for embedding in a paid game. The port reads Consolas and Arial from the system as placeholders
+      (scripts/Core/Fonts.cs). Replace them with bundled fonts under a suitable licence (e.g. OFL), and keep each
+      licence file in the repo.
+- [ ] **Art.** The original art is by Avi Kentridge. Get permission to use it, or replace it all.
+- [ ] **Music.** The original music is by Binyamin Hornick. Get permission, and decide whether to keep or
+      replace the tracks.
+- [ ] **Nebula and space images.** Some backgrounds look like they come from astronomy photos (e.g. Hubble).
+      Confirm the source and licence of each, or replace them.
+- [ ] Credits screen updated for the new release.
+
+## Build and export
+
+- [ ] Export presets (Windows; Linux for Steam Deck).
+- [ ] Add `data/*.txt` to the export's non-resource include filter, or words.txt won't ship.
+- [ ] Music is git-ignored. Make sure the release build machine has it (see assets/music/README.md).
+- [ ] Music: the WAVs are about 81 MB. Re-import as compressed (Ogg/QOA) or convert, to keep the download small.
+- [ ] Window and fullscreen settings, and a settings menu (volume, fullscreen, keyboard layout notes).
+- [ ] Remove or gate the dev flags (`--autotype`, `--level`, `--wpm`, `--screenshot`).
+
+## Steam
+
+- [ ] Steamworks integration (GodotSteam or Steamworks.NET): achievements mapped from the six in-game ones
+      (Soldier, Conqueror, Riddler, Defender, Perfection, Explorer, three tiers each), cloud saves.
+- [ ] Store page assets, capsule art, trailer.
+- [ ] Steam Deck: the game needs a keyboard. Decide on on-screen keyboard support or a "keyboard required" note.
+- [ ] Replace "More games" and "Visit our sponsors" (Explorer achievement tier 1) from the Flash-portal era.
