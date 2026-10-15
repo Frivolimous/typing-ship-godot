@@ -1,41 +1,49 @@
 # Level 2 (3 on the map).
 # How to write these: docs/level-format.md. The game reads this file when the level starts.
 
-missile sn 0.1  6,0 6,5 0,9
+pace hard
+duration 1:48
+density 39%/61%/100%/104%/123%
+
+missile sn 0.05 6,0 6,5 0,9
 repeat 0.01 5 1 mirrored
 
-missile sn 0.1  0,1 5,4 0,8
+missile sn 0.06 0,1 5,4 0,8
 mirror
-repeat 0.03 3 2 mirrored
+repeat 0.03 2 2 mirrored
 laser sn 0  0,6
 insert -6
 laser sn 0  12,6
 insert -4
 laser mn 0  6,0
 
-missile sn 0.17  3,0 3,4 12,11
+missile sn 0.1   3,0 3,4 12,11
 missile sn 0  4,0 5,4 8,0
-repeat 0.025 3 2
+repeat 0.025 1 2
 laser sn 0.01  2,0
 mirror
 missile sn 0.09  12,3 8,3 1,12
 missile sn 0  12,4 8,5 12,8
-repeat 0.025 3 2
+repeat 0.025 1 2
 laser sn 0.01  0,6
 mirror
-suicide mn 0.09  0,3 3,3
+easy: missile sn 0.05  6,0 6,5 6,0
+suicide mn 0.04  0,3 3,3
 repeat 0.01 3
 
-laser sn 0.13  0,3
+missile sn 0.04  4,0 4,5 12,7
+mirror
+easy: missile sn 0.02  6,0 6,5 6,0
+laser sn 0.02  0,3
 mirror
 laser mn 0  6,0
 laser sn 0.01  0,6
 mirror
 
-missile sn 0.18  2,0 2,7 2,12
+missile sn 0.08  2,0 2,7 2,12
 offset 0  1,0
 repeat 0.015 1 2
-repeat 0.05 1 4 mirrored
+wait 0.05
 laser mn 0  0,4
 missile sn 0.05  0,2 7,2 12,2
 offset 0  0,1
@@ -45,14 +53,16 @@ missile sn 0.05  12,5 5,5 0,5
 offset 0  0,1
 repeat 0.015 1 2
 
-missile sn 0.2  0,12 4,4 12,9
+missile sn 0.1  0,12 4,4 12,9
 repeat 0.006 3 1 mirrored
 laser mn 0.01  4,0
 mirror 0.01
 suicide mn 0.05  0,3 3,3
-repeat 0.015 7 1 mirrored
+repeat 0.015 3 1 mirrored
 
-laser mn 0.15  0,7
+missile sn 0.04  5,0 5,4 0,6
+mirror
+laser mn 0.04  0,7
 mirror
 laser sn 0.015  0,4
 mirror
@@ -61,22 +71,13 @@ mirror
 laser sn 0.015  5,0
 mirror
 
-missile sn 0.2  6,0 6,4 0,0
-mirror 0.027
-missile sn 0.027  6,0 6,6 0,9
-mirror 0.028
-repeat 0.028 4 4
-laser sn 0  0,3
-insert -18
-laser sn 0  12,3
-insert -15
-laser sn 0  0,6
-insert -12
-laser sn 0  12,6
-insert -9
-laser mn 0  3,0
-insert -6
-laser mn 0  9,0
-insert -3
-suicide ms 0.08  0,12 3,4
-repeat 0.015 7 1 mirrored
+missile sn 0.08  6,0 6,4 0,0
+mirror 0.02
+missile sn 0.02  6,0 6,6 0,9
+mirror 0.02
+laser sn 0  0,4
+repeat 0.02 2 5 mirrored
+laser mn 0.02  3,0
+mirror
+suicide mn 0.04  0,12 3,4
+repeat 0.015 5 1 mirrored
