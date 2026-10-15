@@ -1,10 +1,14 @@
 # Level 4 (4 on the map).
 # How to write these: docs/level-format.md. The game reads this file when the level starts.
 
+pace hard
+duration 2:06
+density 41.5%/60%/100%/121%/131%
+
 missile sn 0.05  5,0 5,6 4,12
 mirror
 
-missile sn 0.15  0,3 7,3 12,3
+missile sn 0.06  0,3 7,3 12,3
 missile sn 0.01  12,6 5,6 0,6
 repeat 0.01 3 2
 laser ss 0.03  3,0
@@ -12,52 +16,63 @@ mirror
 laser ss 0.02  0,9
 mirror
 
-missile sn 0.25  6,0 6,5 0,10
-repeat 0.015 7 1 mirrored
+missile sn 0.12  6,0 6,5 0,10
+mirror
+repeat 0.015 3 1 mirrored
 laser ss 0.015  0,3
 mirror
 missile sn 0.015  1,0 5,4 12,5
-repeat 0.015 5 1 mirrored
-laser ss 0.02  3,0
 mirror
+repeat 0.03 1 2
+wait 0.02
 
-missile sn 0.2  5,0 5,6 1,12
+missile sn 0.04 5,0 5,6 1,12
 mirror
-repeat 0.03 3 2
+repeat 0.03 2 2
 laser ms 0.03  0,9
-mirror
+normal+: mirror
 
-laser ms 0.25  6,0
+missile sn 0.05  4,0 4,5 0,8
+mirror
+laser ms 0.05  6,0
 laser ss 0.01  0,3
 mirror 0.01
 offset 0.02  0,3
 mirror 0.02
 
-suicide sn 0.25  1.5,0 1.5,6
+missile sn 0.05  6,0 6,4 0,6
+mirror
+suicide sn 0.045  1.5,0 1.5,6
 offset 0  3,0
 offset 0  3,0
 offset 0  3,0
-suicide sn 0.028  3,0 3,6
+suicide sn 0.022  3,0 3,6
 offset 0  3,0
 offset 0  3,0
-repeat 0.028 3 7
+repeat 0.022 1/2/2/2/2 7
 
-missile sn 0.25  0,4 3,6 6,0
-repeat 0.03 11 1 mirrored
+normal-: missile sn 0.04  3,0 6,5 9,0
+normal-: mirror
+easy: missile sn 0.02  5,0 5,5 5,0
+missile sn 0.02  0,4 3,6 6,0
+mirror
+repeat 0.045 5 2
 laser ss 0  2,0
 insert -9
-laser ss 0  4,0
+normal+: laser ss 0  4,0
 insert -6
-laser ss 0  10,0
+normal+: laser ss 0  10,0
 insert -3
 laser ss 0  8,0
 
-missile sn 0.25  12,2 7,3 0,2
+missile sn 0.06  12,2 7,3 0,2
 missile sn 0.015  1,12 5,6 12,8
-repeat 0.03 5 2
-laser ms 0  0,6
+repeat 0.012 9 2
+laser mn 0  0,6
 insert -8
-laser ms 0  12,6
+laser mn 0  12,6
 insert -6
-laser ms 0  6,0
+laser mn 0  6,0
 insert -4
+suicide mn 0.012  1,0 4,4
+repeat 0.006 3 1 mirrored
