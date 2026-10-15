@@ -19,7 +19,8 @@ ported, what's left, where the port deliberately differs from the original, and 
    paths in game.
    *In progress.* The rules are in src/Core with xUnit tests (tests/Core.Tests); levels are data/levels/*.txt
    (format: [level-format.md](level-format.md)) and the numbers data/tuning.txt. The level files were proven to
-   build exactly the old C# scripts' events (every level, WPM 1–150, several seeds, same random draws), and 240
+   build exactly the old C# scripts' events (every level, WPM 1–150, several seeds, same random draws; the test and
+   the old scripts are in commit 8bdb8a9, deleted after), and 240
    headless bot runs (levels 0–11 x 5 difficulties x 3 seeds, plus a slow bot) give per-tick traces byte-identical
    to the pre-refactor game. Editing: `--edit` (F5 reload, F6–F8 restart and jump, F9 grid and paths, F10
    invincible), `--from`, `--line`, `--check`; `ts 8`–`10`.
