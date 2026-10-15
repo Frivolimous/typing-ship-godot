@@ -1,0 +1,31 @@
+using TypingShip.Core;
+
+namespace TypingShip;
+
+// Global access to the game's parts, in the role the Flash version's Facade played. The rules are G.Model, a
+// plain-C# TypingShip.Core.Game; everything here in the Godot project only draws it, plays its sounds and feeds it
+// input. Gameplay runs in a fixed 24 Hz tick (the original frame rate); physics interpolation smooths the display.
+public static class G
+{
+    public const float ViewWidth = Playfield.ViewWidth, ViewHeight = Playfield.ViewHeight; // game-view space
+    public const float UiWidth = 550, UiHeight = 500;
+    public const float StageSize = 550;
+    public const int TickRate = Playfield.TickRate;
+
+    /// <summary>The rules: the level, ships, score, typing.</summary>
+    public static Game Model = null!;
+    public static GameControl Ctrl = null!;
+    public static Presenter World = null!;
+    public static SoundControl Sound = null!;
+    public static GameUI UI = null!;
+    public static Starfield Starfield = null!;
+    public static Shell Shell = null!;
+
+    /// <summary>Random numbers for the presentation (stars, particles, flicker).</summary>
+    public static Rng Rng = new();
+
+    /// <summary>Math.random(): [0, 1).</summary>
+    public static float Rand() => Rng.Rand();
+
+    public static Godot.Vector2 V(Vec2 v) => new(v.X, v.Y);
+}

@@ -19,33 +19,50 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
   behaviour (numbers, timings, quirks of feel), not just its intent. Read the relevant AS3 before porting a feature.
 - **Fix real bugs instead of preserving them** (Jeremy's call, e.g. the player missile heading). When a fix changes
   how the game plays, list it under "Deviations" in docs/porting.md.
-- Level scripts keep the original lowercase helper names (`missile`, `laser`, `mirror`, `repeat`, ...) so AS3
-  scripts paste in almost unchanged. `Math.random()` becomes `G.Rand()`.
-- A structural refactor (rules in a plain C# core, data files, unit tests, like eternal-dungeon) is planned *after*
-  the full port is verified against the original. Don't start it piecemeal.
+- **Levels and tuning are data**, for Jeremy to edit: `data/levels/*.txt` (the original LevelData helpers, one per
+  line: `missile sn 0.05  5,0 5,6 4,12`) and `data/tuning.txt`. The format is documented for him in
+  [docs/level-format.md](docs/level-format.md); keep that current when the format changes. Every mistake in a data
+  file must stop the game with a message naming the file and line.
 
-## Architecture (current)
+## Layout
 
-- `G` (scripts/Core/G.cs) is the global access point, in place of the old `Facade`: `G.Model`, `G.Ctrl`,
-  `G.Action`, `G.UI`, `G.Sound`, `G.Words`, `G.Starfield`, `G.Shell`, and `G.Rand()`.
-- **Shell** (scripts/UI/Shell.cs): the menus and other screens are `Screen`s; the shell shows one at a time with
-  the original's colour fades, or none while a level is on (GameUI). Keys go to `KeyboardControl` in a level and to
-  the shell otherwise. Each screen's `TypeNav` maps typed words to its buttons. Save data is `G.Model.Save`
-  (scripts/Core/SaveData.cs, JSON in user://).
-- **Timing:** all gameplay runs in `GameControl._PhysicsProcess` at a fixed **24 Hz** (the original frame rate;
-  `physics_ticks_per_second=24`). Per-tick values are in the original's units (px/tick and so on). Godot's physics
-  interpolation smooths the display. Call `ResetPhysicsInterpolation()` after placing a new node. Hand-drawn layers
-  (stars, particles) interpolate themselves with `Engine.GetPhysicsInterpolationFraction()`.
-- What used to be Flash ENTER_FRAME listeners are `ITicker`s registered with `G.Ctrl.AddTicker`, ticked every
-  physics frame, paused or not. Tickers that should freeze while paused check `G.Model.Running`.
+| Folder | What |
+|---|---|
+| `src/Core/` | **The rules**, plain C# with no Godot reference (a test checks): `Game` (state, the 24 Hz tick, weapons, typing), entities, bosses, the bot (`AutoTyper`), `Simulator`, the RNG, save data and scoring. `Levels/` parses and builds level files; `Data/` loads and checks the data files |
+| `tests/Core.Tests/` | xUnit tests of the rules and data files |
+| `game/` | The Godot project: presentation and input only |
+| `data/` | words.txt, tuning.txt, levels/ (read from disk in a checkout, embedded in the game assembly for exports) |
+| `docs/`, `reference/` | Docs; the original AS3 (read-only) |
+
+## Architecture
+
+- **Core** (`TypingShip.Core`): `Game` holds a session's rules and state (the original GameModel, GameControl,
+  ActionControl and KeyboardControl). `Game.Step()` is one 24 Hz tick. It tells the presentation what happens
+  through `IGameEvents` (sprites spawned or removed, explosions, beams, score pop-ups, sounds, pauses, tutorials,
+  achievements, level over), synchronously, mid-tick. Everything else the presentation reads from its state.
+- Everything random in the rules comes from `Game.Rng` (PCG32, bit-identical to Godot's RandomNumberGenerator).
+  Same data, seed and typing give the same game (`--trace` writes the state each tick, to compare runs).
+- **Game** (`game/scripts`): `G` (Core/G.cs) is the global access point: `G.Model` (the Core `Game`), `G.Ctrl`,
+  `G.World`, `G.UI`, `G.Sound`, `G.Starfield`, `G.Shell`, and `G.Rand()` for presentation-only randomness.
+  `GameControl._PhysicsProcess` calls `G.Model.Step()`, then `Presenter.Sync()` copies each entity's state into its
+  node (View/Views.cs), then ticks the visual effects (`IViewTicker`). The `Presenter` (View/Presenter.cs) implements
+  `IGameEvents`: it makes and frees the nodes, and plays effects and sounds.
+- **Shell** (UI/Shell.cs): the menus and other screens are `Screen`s; the shell shows one at a time with the
+  original's colour fades, or none while a level is on (GameUI). Keys go to `KeyboardControl` in a level (which
+  passes letters to `G.Model.TypeLetter`) and to the shell otherwise. Each screen's `TypeNav` maps typed words to its
+  buttons. Save data is `G.Model.Save` (Core `SaveData`, stored as JSON in user:// by Core/SaveFile.cs).
+- **Timing:** gameplay runs at a fixed **24 Hz** (the original frame rate; `physics_ticks_per_second=24`). Per-tick
+  values are in the original's units (px/tick and so on). Godot's physics interpolation smooths the display. Call
+  `ResetPhysicsInterpolation()` after placing a new node. Hand-drawn layers (stars, particles) interpolate
+  themselves with `Engine.GetPhysicsInterpolationFraction()`.
 - **Coordinates:** the viewport is 550x550 with stretch aspect `expand`, and a Camera2D keeps the square playfield
   centred. Wider windows show side panels. Ships live in `G.UI.GameView`, which is in game-view space (600x550,
   offset -25,-25, the original `GameUI.VIEW_*`). HUD elements use stage space (0-550).
-- **Removed objects:** `GameSprite.Remove()` detaches and frees the node and sets `Removed`. Other objects may
+- **Removed objects:** `Sprite.Remove()` takes a Core sprite out of play and sets `Removed`. Other objects may
   still hold a reference (a missile homing on a ship that escaped), so read positions through `P`, which keeps the
-  last position, and check `Removed`. Never call engine members on a removed sprite.
-- The game update loop relies on `Update()` returning false only when the object removed itself (the next object
-  slides into its slot). Keep that contract.
+  last position, and check `Removed`.
+- The tick relies on `Sprite.Update()` returning false only when the object removed itself (the next object slides
+  into its slot). Keep that contract.
 
 ## Pinned versions
 
@@ -53,13 +70,15 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
 |---|---|---|
 | Godot (.NET edition) | 4.7.2 stable mono | `C:\Tools\Godot_v4.7.2-stable_mono_win64\` (use `_console.exe` from scripts); `$env:GODOT` overrides |
 | .NET SDK | 10.0.x (pinned in `global.json`) | |
-| Target framework | net8.0 | |
+| Target framework | net8.0 for every project | |
+| Tests | xUnit v3 on Microsoft.Testing.Platform | |
 
 ## Verifying changes
 
-Build with `dotnet build`. Most testing happens through the dev flags in docs/commands.md:
+Build with `dotnet build` and run `dotnet test` (both from the repo root). Rules changes get unit tests in
+tests/Core.Tests. The rest of the testing happens through the dev flags in docs/commands.md:
 
-- **Headless simulation** (fast, no window): `--headless --fixed-fps 24 --path . -- --autotype --quit-on-end
+- **Headless simulation** (fast, no window): `--headless --fixed-fps 24 --path game -- --autotype --quit-on-end
   [--wpm=N] [--botwpm=N] [--level=N] [--seed=N]` prints a one-line result per level. A perfect bot should clear
   every level at every difficulty. A slow bot (`--botwpm` well below `--wpm`) should take damage.
 - **Screenshots** (needs a window): `--screenshot=path.png --at=600,1200` saves frames, then quits. Look at them.
@@ -68,7 +87,7 @@ Build with `dotnet build`. Most testing happens through the dev flags in docs/co
 
 ## Assets
 
-`assets/` holds what was extracted from the original `Typing Ship.fla` (a CS6 zip), named by their AS3 linkage
+`game/assets/` holds what was extracted from the original `Typing Ship.fla` (a CS6 zip), named by their AS3 linkage
 class names (`Enemy0.png`, `LaserS.wav`, `Music2.wav`). **Music is git-ignored** (Jeremy keeps it backed up
-elsewhere). Code must keep working when `assets/music/` is empty, and nothing should start tracking those files. The `.fla` and the raw art sources live outside the repo:
+elsewhere). Code must keep working when `game/assets/music/` is empty, and nothing should start tracking those files. The `.fla` and the raw art sources live outside the repo:
 `C:\JS Projects\Typing Ship PUB\` and `C:\JS Projects\Typing Ship\` (Audio/, Bitmaps/, Vector/).

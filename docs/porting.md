@@ -17,6 +17,12 @@ ported, what's left, where the port deliberately differs from the original, and 
    numbers move into data files that Jeremy can edit without touching code. Add tools to make editing quick:
    reload a level without restarting, start from any point in a level, and show the 12x12 spawn grid and ship
    paths in game.
+   *In progress.* The rules are in src/Core with xUnit tests (tests/Core.Tests); levels are data/levels/*.txt
+   (format: [level-format.md](level-format.md)) and the numbers data/tuning.txt. The level files were proven to
+   build exactly the old C# scripts' events (every level, WPM 1–150, several seeds, same random draws), and 240
+   headless bot runs (levels 0–11 x 5 difficulties x 3 seeds, plus a slow bot) give per-tick traces byte-identical
+   to the pre-refactor game. Editing: `--edit` (F5 reload, F6–F8 restart and jump, F9 grid and paths, F10
+   invincible), `--from`, `--line`, `--check`; `ts 8`–`10`.
 5. **Difficulty review:** play every level at every difficulty (bot simulations plus Jeremy's playtests) and
    check each one demands roughly its target WPM (25/40/65/75/90). Retune where it doesn't.
 6. **New features and deeper game logic:** new mechanics, enemies, modes and systems beyond the original (the
@@ -32,33 +38,37 @@ ported, what's left, where the port deliberately differs from the original, and 
 
 ## Class map
 
-| AS3 | C# | Status |
+Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presentation (`game/scripts/`).
+
+| AS3 | Rules (src/Core) | Presentation (game/scripts) |
 |---|---|---|
-| Facade | Core/G.cs | Done (globals, RNG, constants) |
-| GameModel | Game/GameModel.cs, Core/SaveData.cs | Done. The SharedObject is JSON in `user://save.json` (version 10, wiped if different, as before) |
-| GameControl | Game/GameControl.cs | Done (boss flow: `bossMode` escorts, `killBoss`, fade-out with explosions, `pauseGame`) |
-| ActionControl | Game/ActionControl.cs | Done (incl. `shootInstant`, achievements, tutorial pop-ups 7 and 8) |
-| KeyboardControl, KeyCon | Game/KeyboardControl.cs (in game), UI/Shell.cs (menus) | Done. Mouse handling is in each widget |
-| LevelData | Level/LevelData.cs | Done: levels 0–11, `bossLoop`, `boss0Suicides` |
-| LevelEvent, SpawnEvent, ObjectCommand | Level/ | Done |
-| BossEvent, BossShip, Scanner | Level/BossEvent.cs, Entities/BossShip.cs, Entities/Scanner.cs | Done, incl. boss tutorial pop-ups (tutFlags 9, 10) |
-| GameObject, GameSprite, TextObject | Entities/ | Done |
-| EnemyShip, PlayerShip, Missile | Entities/ | Done |
-| Turret, ShieldView, Charge, StealthEffect | Entities/, Fx/Effects.cs | Done, verified in levels 1–11 |
-| ScrambleObject | Entities/ScrambleObject.cs | Ported, but unused, as in the original |
-| Starfield, Star, Particle, Nebula | Fx/Starfield.cs | Done |
-| LaserEffect, EMPEffect | Fx/Effects.cs (BeamEffect) | Done |
-| PopScore, Overflow | Fx/Effects.cs | Done |
-| GameUI, ShipSystem, PopWarning | UI/GameUI.cs | Done |
-| SoundControl | Audio/SoundControl.cs | Done |
-| SpriteSheets | Core/Sprites.cs | Done; `recolour` (chameleon) is a shader |
-| WordList | Core/WordList.cs + data/words.txt | Done |
-| StringData | Core/Strings.cs | Done. GameStrings (old pre-menu texts) dropped: nothing used it |
-| MenuUI, MapUI, LevelButton, DiffSelect (+BoxButton) | UI/MenuUI.cs | Done |
-| UIButton, BitButton, MenuBox | UI/Widgets.cs (TextButton, BitButton, MenuBox), plus TypeNav for typed navigation | Done |
-| TypingTest, ScoreUI, GameOverUI, VictoryUI, AchieveUI (+Award), PauseUI | UI/Screens.cs | Done |
-| PopAchieve, PopBox | UI/Popups.cs | Done |
-| Transition, PauseB, MuteB | UI/Shell.cs (screen manager, fades, input outside the game) | Done. Pause and mute buttons are drawn placeholders: the originals were vector clips that weren't extracted |
+| Facade | Rng.cs (Math.random, as Godot's PCG32), Playfield.cs (sizes, difficulties) | Core/G.cs (globals) |
+| GameModel | Game.cs (run state), SaveData.cs (the SharedObject: JSON, version 10, wiped if different, as before) | Core/SaveFile.cs (user://save.json) |
+| GameControl | Game.cs: `Step`, `Tick`, boss flow (`bossMode` escorts, `killBoss`, fade-out), death, pause | Game/GameControl.cs (runs the tick, then draws) |
+| ActionControl | Game.Actions.cs (incl. `shootInstant`, achievements, tutorial pop-ups 7 and 8) | |
+| KeyboardControl, KeyCon | Game.Typing.cs (typed words, cheats) | Game/KeyboardControl.cs (keys in game), UI/Shell.cs (menus). Mouse handling is in each widget |
+| LevelData | data/levels/*.txt; Levels/LevelScript.cs (the file format), LevelBuilder.cs (the helpers: `missile`, `mirror`, `repeat`...), Data/GameData.cs (loading, checks) | |
+| LevelEvent, SpawnEvent, ObjectCommand | Levels/LevelEvents.cs; the ship-code numbers in data/tuning.txt (Data/Tuning.cs) | |
+| BossEvent, BossShip, Scanner | Levels/LevelEvents.cs, Boss.cs (incl. boss tutorial pop-ups, tutFlags 9 and 10) | View/Views.cs (BossView, ScannerView) |
+| GameObject, GameSprite, TextObject | Entities.cs (Entity, Sprite) | View/Views.cs (SpriteView, WordLabel) |
+| EnemyShip, PlayerShip, Missile, Turret | Entities.cs | View/Views.cs, View/Presenter.cs |
+| Charge, ShieldView, StealthEffect | Entities.cs (the charge timer, the shield flag, the fade-in count) | View/Views.cs (ChargeGlow), View/ShieldView.cs, Fx/Effects.cs |
+| ScrambleObject | Scramble.cs | Unused, as in the original |
+| Starfield, Star, Particle, Nebula | | Fx/Starfield.cs |
+| LaserEffect, EMPEffect | | Fx/Effects.cs (BeamEffect) |
+| PopScore, Overflow | Entities.cs (Overflow); the score itself in Game | Fx/Effects.cs (PopScore) |
+| GameUI, ShipSystem, PopWarning | Entities.cs (Hull: the repair word) | UI/GameUI.cs (HUD, HullBar) |
+| SoundControl | | Audio/SoundControl.cs |
+| SpriteSheets | ArtMask.cs (which pixels of the boss art are visible: scanner placement is a rule) | Core/Sprites.cs; `recolour` (chameleon) is a shader |
+| WordList | WordList.cs + data/words.txt | |
+| StringData | | Core/Strings.cs. GameStrings (old pre-menu texts) dropped: nothing used it |
+| MenuUI, MapUI, LevelButton, DiffSelect (+BoxButton) | | UI/MenuUI.cs |
+| UIButton, BitButton, MenuBox | | UI/Widgets.cs (TextButton, BitButton, MenuBox), plus TypeNav for typed navigation |
+| TypingTest, ScoreUI, GameOverUI, VictoryUI, AchieveUI (+Award), PauseUI | SaveData.cs (Scoring: the score screen's bonuses and medals) | UI/Screens.cs |
+| PopAchieve, PopBox | | UI/Popups.cs |
+| Transition, PauseB, MuteB | | UI/Shell.cs (screen manager, fades, input outside the game). Pause and mute buttons are drawn placeholders: the originals were vector clips that weren't extracted |
+| (new) the bot | AutoTyper.cs, Simulator.cs | Dev/DevAutoTyper.cs |
+| (new) level editing | | Dev/LevelEditor.cs (`--edit`, `--from`, `--line`) |
 | MenuBt, ConfirmMenu | | Dropped: never put on stage in the original (ConfirmMenu was an older difficulty/WPM picker) |
 | FlashPreloadProfiler | | Dropped |
 
@@ -92,6 +102,8 @@ ported, what's left, where the port deliberately differs from the original, and 
   placeholder messages until phase 8. The sponsor link still gives the bronze Explorer medal.
 - The score screen's count-up runs at 60 steps a second (the original's 10 ms timer, which Flash capped at about
   that). Its number column is right-aligned at x = 520; the original's autosized fields can't be reproduced exactly.
+- **The "New Achievement" pop-up** shows under "FINAL SCORE:" on the score screen, where the original's top-centre
+  spot would cover the "Level N Complete!" title. Elsewhere it's at the top centre as before.
 - **"superman" ends.** The cheat's hero is removed once it has flown off the top. The original kept it in the object
   list forever, so a level could never end after typing "superman" (unless you then typed "kamikaze").
 - **Turret explosions** happen at the turret. The original used the turret's position inside its ship, so the

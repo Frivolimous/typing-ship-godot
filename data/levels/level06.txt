@@ -1,0 +1,64 @@
+# Level 6 (6 on the map).
+# How to write these: docs/level-format.md. The game reads this file when the level starts.
+
+missile mn 0.05  2,0 2,7 2,12
+mirror
+missile mn 0  4,0 4,6 2,12
+mirror
+
+missile ms 0.15  1,0 5,4 11,12
+mirror
+missile mn 0.01  0,10 3,6 0,3
+repeat 0.01 3 1 mirrored
+
+missile ms 0.2  0,4 7,4 12,4
+offset 0.02  0,2
+repeat 0.03 3 2
+laser ms 0.04  0,2
+laser ms 0.04  0,8
+
+missile ms 0.25  2,0 2,7 2,12
+missile ms 0.01  3,0 5,5 12,7
+repeat 0.06 1 2
+missile mn 0.05  2,0 2,7 2,12
+missile mn 0.01  3,0 5,5 12,7
+repeat 0.06 3 2
+laser ss 0  12,3
+insert -7
+laser ss 0  8,0
+insert -4
+laser ss 0  6,0
+insert -1
+
+missile ms 0.2  5,0 5,6 0,10
+mirror
+missile mn 0.02  3,0 3,4 0,7
+repeat 0.035 11 1 mirrored
+laser ms 0  0,3
+insert -8
+laser ms 0  12,3
+insert -6
+
+missile ms 0.2  3,0 3,7 2,12
+mirror
+missile ms 0.04  4,0 4,6 2,12
+mirror
+missile ms 0.04  5,0 5,5 2,12
+mirror
+missile mn 0.07  3,0 3,7 2,12
+mirror
+missile mn 0.04  4,0 4,6 2,12
+mirror
+missile mn 0.04  5,0 5,5 2,12
+mirror
+
+laser mn 0.2  0,3
+mirror
+laser sn 0.01  0,6
+mirror
+laser ln 0  6,0
+
+suicide ss 0.35  1.4,0 1.4,6
+offset 0  3.8,0
+offset 0  3.8,0
+repeat 0.05 4 3 mirrored

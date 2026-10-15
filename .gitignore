@@ -26,9 +26,9 @@ Thumbs.db
 desktop.ini
 .DS_Store
 
-# Music is kept out of git (large; backed up elsewhere). See assets/music/README.md.
-assets/music/*
-!assets/music/README.md
+# Music is kept out of git (large; backed up elsewhere). See game/assets/music/README.md.
+game/assets/music/*
+!game/assets/music/README.md
 
 # Dev screenshots (--screenshot output)
 screenshots/

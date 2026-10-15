@@ -26,6 +26,10 @@ echo    5  Watch the bot play a level
 echo    6  Simulate a level at every difficulty  (fast, no window)
 echo    7  Simulate every level at every difficulty
 echo.
+echo    8  Edit a level: play it with the editing keys
+echo    9  Check the level and tuning files
+echo   10  Run the tests
+echo.
 echo    0  Quit
 echo.
 set "PICK="
@@ -37,18 +41,21 @@ pause
 goto menu
 
 :run
-if "%PICK%"=="1" dotnet build && "%GODOT%" --path .
-if "%PICK%"=="2" dotnet build && "%GODOT%" --path . --editor
+if "%PICK%"=="1" dotnet build && "%GODOT%" --path game
+if "%PICK%"=="2" dotnet build && "%GODOT%" --path game --editor
 if "%PICK%"=="3" dotnet build
-if "%PICK%"=="4" "%GODOT%" --headless --path . --import
+if "%PICK%"=="4" "%GODOT%" --headless --path game --import
 if "%PICK%"=="5" goto watch
 if "%PICK%"=="6" goto simone
 if "%PICK%"=="7" goto simall
+if "%PICK%"=="8" goto edit
+if "%PICK%"=="9" dotnet build && "%GODOT%" --headless --path game -- --check 2>nul | findstr /v /b /c:"Godot Engine"
+if "%PICK%"=="10" dotnet test
 exit /b
 
 :watch
 call :asklevel
-dotnet build && "%GODOT%" --path . -- --autotype --level=%LVL%
+dotnet build && "%GODOT%" --path game -- --autotype --level=%LVL%
 exit /b
 
 :simone
@@ -60,6 +67,24 @@ exit /b
 dotnet build && for /l %%L in (0,1,11) do call :sim %%L
 exit /b
 
+:edit
+call :asklevel
+set "START="
+set /p "START=  Start at (Enter = the beginning, 50 = 50%% of the way in, L40 = line 40 of the file): "
+set "FROM="
+if not "%START%"=="" (
+  if /i "%START:~0,1%"=="L" (set "FROM=--line=%START:~1%") else (set "FROM=--from=%START%")
+)
+set "BOT="
+set /p "BOT=  Let the bot play? (y/N): "
+set "AUTO="
+if /i "%BOT%"=="y" set "AUTO=--autotype"
+set "WPM="
+set /p "WPM=  Difficulty in WPM (Enter = 40, Normal): "
+if "%WPM%"=="" set "WPM=40"
+dotnet build && "%GODOT%" --path game -- --edit --overlay --level=%LVL% --wpm=%WPM% %FROM% %AUTO%
+exit /b
+
 :asklevel
 set "LVL=0"
 set /p "LVL=  Level (0-11, Enter for 0): "
@@ -68,6 +93,6 @@ exit /b
 :sim
 for %%W in (25 40 65 75 90) do (
   echo   level %1, wpm %%W:
-  "%GODOT%" --headless --fixed-fps 24 --path . -- --autotype --quit-on-end --level=%1 --wpm=%%W --seed=1 2>nul | findstr /b "Level"
+  "%GODOT%" --headless --fixed-fps 24 --path game -- --autotype --quit-on-end --level=%1 --wpm=%%W --seed=1 2>nul | findstr /b "Level"
 )
 exit /b

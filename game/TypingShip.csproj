@@ -1,0 +1,15 @@
+<Project Sdk="Godot.NET.Sdk/4.7.2">
+  <!-- Presentation and input only. The rules live in src/Core. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>TypingShip</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\Core\TypingShip.Core.csproj" />
+    <Using Include="TypingShip.Core" />
+    <!-- Data ships inside the game assembly, so exports carry it. In a checkout the game reads ../data directly
+         instead, so edited level files can be reloaded while it runs. -->
+    <EmbeddedResource Include="..\data\**\*.txt" LogicalName="data/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,194 @@
+using Godot;
+
+namespace TypingShip;
+
+// Shows the rules (G.Model) on screen: it hears what happens as it happens (TypingShip.Core.IGameEvents) and
+// keeps a node for each sprite in play, copying their state after every tick.
+public sealed class Presenter : IGameEvents
+{
+    readonly Dictionary<Entity, SpriteView> views = new();
+    readonly Dictionary<Scanner, ScannerView> scanners = new();
+    public PlayerView Player = null!;
+
+    /// <summary>Called when a level is won (true) or lost (false).</summary>
+    public event Action<bool>? LevelFinished;
+
+    public IEnumerable<SpriteView> Views => views.Values;
+
+    public SpriteView? ViewOf(Entity e) => views.GetValueOrDefault(e);
+
+    /// <summary>Makes the player's view (the player exists before any level, so there's no Spawned for it).</summary>
+    public void Init()
+    {
+        Player = new PlayerView(G.Model.Player);
+    }
+
+    /// <summary>Copies every sprite's state into its node (once per tick).</summary>
+    public void Sync()
+    {
+        if (G.Model.Player.Destroyed) Player.GetParent()?.RemoveChild(Player);
+        Player.Sync();
+        foreach (var v in views.Values) v.Sync();
+        foreach (var s in scanners.Values) s.Sync();
+    }
+
+    /// <summary>Pausing hides the words, so they can't be read ahead.</summary>
+    public void ShowAll(bool b)
+    {
+        foreach (var v in views.Values) v.ShowWord(b);
+        G.UI.Hull.ShowWord(b);
+        foreach (var s in scanners.Values) s.Word.ShowWord(b);
+    }
+
+    // ---- IGameEvents ----
+
+    public void Spawned(Sprite s, Layer layer)
+    {
+        SpriteView view = s switch
+        {
+            EnemyShip e => new EnemyShipView(e),
+            Missile m => new SpriteView(m, m.FromPlayer ? Sprites.PMissile : Sprites.EMissile, 0.1f),
+            Superman => new SpriteView(s, new[] { Sprites.Superman }, 0.2f),
+            Boss b => new BossView(b),
+            _ => new SpriteView(s, null, 0.2f), // boss 3's counter-words: just a word
+        };
+        views[s] = view;
+        var gameView = G.UI.GameView;
+        switch (layer)
+        {
+            case Layer.Front: gameView.AddChild(view); break;
+            case Layer.Back: G.UI.AddToGameViewBack(view); break;
+            case Layer.Bottom: gameView.AddChild(view); gameView.MoveChild(view, 0); break;
+            case Layer.Boss: G.UI.BossView.AddChild(view); break;
+        }
+        view.ResetPhysicsInterpolation();
+        if (s is EnemyShip { Hull: "xm" } && view is EnemyShipView ev) new StealthEffect(ev);
+    }
+
+    public void Removed(Entity e)
+    {
+        if (e is Scanner s)
+        {
+            if (scanners.Remove(s, out var sv))
+            {
+                sv.GetParent()?.RemoveChild(sv);
+                sv.QueueFree();
+            }
+            return;
+        }
+        if (views.Remove(e, out var view)) view.Detach();
+    }
+
+    public void ScannerAdded(Scanner s)
+    {
+        var view = new ScannerView(s);
+        scanners[s] = view;
+        G.UI.GameView.AddChild(view);
+        view.ResetPhysicsInterpolation();
+    }
+
+    public void Explosion(Vec2 at, int size) => G.Starfield.Explosion(at.X, at.Y, size);
+
+    public void Beam(Vec2 from, Vec2 to, BeamKind kind) => new BeamEffect(from, to, kind);
+
+    public void ScorePopup(Vec2 at, int amount, bool inGameView)
+    {
+        if (inGameView) new PopScore(G.V(at), amount);
+        else new PopScore(G.UI.TypedPosition + new Vector2(5, -5), amount, false);
+    }
+
+    public void Sound(GameSound sound) => G.Sound.Sound(sound switch
+    {
+        GameSound.Type => SoundControl.Type,
+        GameSound.Laser => SoundControl.Laser,
+        GameSound.Charge => SoundControl.Charge,
+        GameSound.Heal => SoundControl.Heal,
+        GameSound.Emp => SoundControl.EmpSound,
+        GameSound.BossCharge => SoundControl.BossCharge,
+        GameSound.BossFire => SoundControl.BossFire,
+        _ => SoundControl.Superman,
+    });
+
+    public void Music(int track) => G.Sound.Play(track);
+
+    public void SetMute(bool mute) => G.Sound.Mute = mute;
+
+    public void Chameleon() => Sprites.Recolour(Player.View);
+
+    public void Paused(bool paused)
+    {
+        ShowAll(!paused);
+        G.Shell.PauseB.SetPaused(paused);
+        if (paused)
+        {
+            if (G.Model.Tutorial == null) G.Shell.Pause.Show(true);
+            else if (G.Model.Tutorial == 8) G.UI.Hull.ShowWord(true); // the tutorial is about the hull's word
+        }
+        else
+        {
+            G.UI.TutBox?.Remove();
+            G.Shell.Pause.Show(false);
+        }
+    }
+
+    public void TutorialShown(int index, Vec2? pointer, PointerDir dir) =>
+        new PopBox(index, pointer is { } p ? G.V(p) : null, dir);
+
+    public void AchievementAwarded(int achievement, int tier) => new PopAchieve(achievement, tier);
+
+    public void LevelStarted()
+    {
+        G.Starfield.SetBack(G.Model.Level);
+        var gameView = G.UI.GameView;
+        if (Player.GetParent() == null) gameView.AddChild(Player);
+        else gameView.MoveChild(Player, -1);
+        Player.Sync();
+        Player.ResetPhysicsInterpolation();
+    }
+
+    public void LevelOver(bool cleared) => LevelFinished?.Invoke(cleared);
+
+    public void TickStarted() => G.Starfield.Update();
+
+    public void TickAdvanced()
+    {
+        G.UI.OnTick();
+        SpriteTick();
+    }
+
+    int spriteCount;
+
+    /// <summary>SpriteSheets.onTick: animations advance every other tick.</summary>
+    void SpriteTick()
+    {
+        if (++spriteCount <= 1) return;
+        spriteCount = 0;
+        Player.AdvanceFrame();
+        foreach (var o in G.Model.Objects)
+            if (views.TryGetValue(o, out var v)) v.AdvanceFrame();
+    }
+
+    public void ChargeTicked(Charge c)
+    {
+        var glow = c.Origin == G.Model.Player ? Player.Glow : (views.GetValueOrDefault(c.Origin) as EnemyShipView)?.Glow;
+        var color = ChargeGlow.NextColor(); // drawn even without a view, so the random numbers stay in step
+        glow?.SetColor(color);
+    }
+
+    public void BossBurning(Boss b)
+    {
+        if (G.Rand() > 0.6f)
+        {
+            var p = b.RandomPoint(G.Rng);
+            G.Starfield.Explosion(p.X, p.Y);
+        }
+    }
+
+    public void BeamHitsPlayer()
+    {
+        var player = G.Model.Player;
+        var size = Player.View.Texture.GetSize() * Player.View.Scale;
+        G.Starfield.Explosion(player.Position.X - size.X / 2 + G.Rand() * size.X,
+            player.Position.Y - size.Y / 2 + G.Rand() * size.Y);
+    }
+}

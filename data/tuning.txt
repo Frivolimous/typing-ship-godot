@@ -1,0 +1,100 @@
+# Millennium Typer: tuning numbers
+#
+# Every line is "name = value". Anything after a # is a note for people and is ignored.
+# The game checks this file when it starts: a typo or a missing line stops it with a message saying which line.
+# With the editing keys on (--edit), F5 reloads this file along with the level.
+#
+# Units: positions and distances are pixels in the 600 x 550 game view. Times are ticks (24 a second).
+# "wpm" is the difficulty: Easy 25, Normal 40, Hard 65, Extreme 75, Insane 90. Speeds that say "x wpm" are
+# multiplied by it, so everything gets faster on harder difficulties.
+#
+# These are the original game's numbers. Change them to retune; docs/level-format.md explains ship codes.
+
+[enemy ships]
+# Every enemy starts with these, then each letter of its ship code adds to them.
+points = 5
+speed = 0.5               # acceleration; the total is then multiplied by wpm / 100
+
+[size]
+# The ship code's 1st letter: word length, and points and speed added.
+s = letters 4, points 0, speed 0          # small
+m = letters 6, points 1, speed -0.2       # medium
+l = letters 8, points 3, speed -0.25      # large
+x = letters 7, points 3, speed -0.1       # stealth: fades in, always fires missiles ("xm")
+n = letters 7, points 0, speed 0          # invisible laser turret (dropped by boss 2: "nl")
+
+[weapon]
+# The ship code's 2nd letter. m (missile) changes nothing.
+laser extra letters = 1   # l: a laser ship's word is this much longer
+laser points = 1
+laser speed = -0.1
+suicide letters = 3       # s: suicide ships and mines always have this many letters
+suicide points = -3
+suicide speed = 0.2
+mine speed = -0.2         # used instead of suicide speed for small suicide ships (mines)
+
+[defence]
+# The ship code's 3rd letter: extra points.
+n = points 0              # none
+s = points 2              # shield: an EMP word has to knock it out first
+t = points 2              # turret: shoots down player missiles
+b = points 5              # both
+
+[hull health]
+# The ship code's first two letters: the hulls that exist, and how many player missiles each one takes.
+sm = 1
+sl = 1
+ss = 1
+mm = 2
+ml = 2
+ms = 1
+lm = 4
+ll = 4
+xm = 1
+nl = 1
+
+[enemy weapons]
+missile speed = 0.008     # x wpm
+missile points = 1        # for shooting down a missile (none during a boss fight)
+fire rate wpm = 150       # each fire command adds wpm / 150 to a counter, kept between the min and max below;
+fire rate min = 0.3       #   a missile only launches when the counter passes 1
+fire rate max = 1
+fire rate health 2 = 1.5  # ...times this for ships with 2 health
+fire rate health 3 = 2    # ...and this for 3 or more
+laser charge = 6000       # a laser charges for this / wpm ticks
+turret range = 100        # turrets shoot down player missiles this close to their ship
+stealth fade wpm = 30     # stealth ships fade in over about 100 / (1 + wpm / this) ticks
+
+[player]
+health = 5
+typing bar = 20           # letters the typing bar holds; each letter past that costs a point
+heal word shortest = 8    # the hull-repair word's length, picked once per game
+heal word longest = 9
+overflow = 30             # ticks a word stays typeable after its ship leaves the screen
+missile speed = 0.1       # x wpm
+missile hit range = 30
+emp charge = 5            # ticks before an EMP (typed at a shield) hits
+
+[level scripts]
+jitter = 10               # ships aim up to this far either side of each grid point (inside the view)
+arrive distance = 20      # how close a ship gets to a point before moving on
+halt scale = 400          # "halt N" waits N x this / wpm ticks
+shrink from = 0.1         # steps of at least this much distance...
+shrink wpm = 300          # ...are shortened at higher wpm: multiplied by 1 - wpm / this,
+shrink limit = 0.5        #   but never by less than this
+end wait = 0.05           # distance between the last ship leaving and the level ending
+
+[bosses]
+health = 3                # hits to kill a boss
+points = 100              # for the kill
+scanner ring = 300        # the scanner ring's starting radius
+scanner step = 30         # each scanner word shrinks the ring this much
+scanner word = 3          # letters in the scanner's words
+scanner final word = 10   # letters in the word that hits the boss
+first attack = 6          # halt before a boss's first attack (scaled like "halt")
+boss 1 attack = 48        # halt between attacks: boss 1 launches six suicide ships
+boss 2 attack = 23        # boss 2 drops an invisible laser turret...
+boss 2 attack per health = 3   # ...waiting this much longer for each health it has left
+boss 3 attack = 70        # boss 3 charges its beam
+boss 3 beam = 300         # the beam's timing unit: the whole attack lasts 44 x (this / wpm) ticks
+counter word = 11         # boss 3's counter-words have this many letters, less the boss's health
