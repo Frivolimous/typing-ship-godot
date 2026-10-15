@@ -23,10 +23,12 @@ Things that must be settled before a commercial Steam release.
 - [ ] Music is git-ignored. Make sure the release build machine has it (see game/assets/music/README.md).
 - [ ] Music: the WAVs are about 81 MB. Re-import as compressed (Ogg/QOA) or convert, to keep the download small.
 - [ ] Window and fullscreen settings, and a settings menu (volume, fullscreen, keyboard layout notes).
-- [ ] Remove or gate the dev flags (`--autotype`, `--level`, `--wpm`, `--screenshot`, `--keys`, `--profile`, `--edit`, `--from`,
+- [ ] Remove or gate the dev flags (`--autotype`, `--level`, `--wpm`, `--cps`, `--classic`, `--screenshot`, `--keys`, `--profile`, `--edit`, `--from`,
       `--line`, `--trace`, ...) and the
       original's dev keys outside a level (Ctrl+Home invincible, Ctrl+Page Up unlock all, Ctrl+Page Down wipe the save).
 - [ ] The save (user://save.json) uses System.Text.Json reflection. Check it still works in a trimmed export build.
+- [ ] Remove the Classic levels: data/levels/classic/, `--classic`, `ts 12`, Game.Classic, ClassicTraceTests and its
+      classic-traces.txt, and the Classic half of the pacing report.
 
 ## Steam
 

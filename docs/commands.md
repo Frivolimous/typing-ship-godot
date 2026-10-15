@@ -18,7 +18,8 @@ whatever the `GODOT` environment variable is set to. Commands run from the repo 
 | Edit a level, with the editing keys and grid | 8 | `$GODOT --path game -- --edit --overlay --level=N [--from=50] [--line=40] [--autotype]` |
 | Check the level and tuning files | 9 | `$GODOT --headless --path game -- --check` |
 | Run the tests | 10 | `dotnet test` |
-| Level pacing report: typing demand over time for every level and difficulty, as charts (`pacing/pacing.html`) and CSVs for spreadsheets (`pacing.csv`, `summary.csv`) | 11 | `dotnet run --project src/Sim -- pacing [--level=N] [--seed=N] [--out=folder]` |
+| Level pacing report: typing demand over time for every level and difficulty, the game's levels and the Classic ones side by side, as a share of the difficulty's speed (average and 10-second peak), with a `density` to try where a level asks for more than Classic did. Charts (`pacing/pacing.html`) and CSVs for spreadsheets (`pacing.csv`, `summary.csv`) | 11 | `dotnet run --project src/Sim -- pacing [--level=N] [--seed=N] [--out=folder]` |
+| Play the Classic levels (the original 12 as they were), with a save file of their own | 12 | `$GODOT --path game -- --classic --profile=classic` |
 
 How to write levels, the editing keys, and what the checks report: [level-format.md](level-format.md).
 

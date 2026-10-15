@@ -46,9 +46,19 @@ ported, what's left, where the port deliberately differs from the original, and 
    - **Difficulty selection:** open to experiments (Jeremy iterated on it a lot in the original).
    - **Pacing rework:** levels last 2–4 minutes at every difficulty (time-based pacing). Difficulty comes from
      more and/or faster enemies, not from level length. The 12 original levels are the baseline: Jeremy picks
-     the best-tuned difficulty (probably Hard) as the template and tunes the others around it.
+     the best-tuned difficulty (probably Hard) as the template and tunes the others around it. **Mechanism
+     done; the levels themselves are next, after Jeremy sets new targets.** The level format has `pace hard`
+     (the level's clock runs at Hard's speed at every difficulty), difficulty tags (`hard+:` and `only` blocks),
+     numbers per difficulty (`1/2/3/3/4`) and `density` (keeps evenly spread waves); see
+     [level-format.md](level-format.md). A Classic level with `pace hard` plays on Hard exactly as Classic
+     (tested). The pacing report (`ts 11`) puts the game's levels and Classic side by side as average and peak
+     demand ÷ stated speed, with a density to try. Classic across all 12 levels averages about 0.70–0.76 of the
+     stated speed at every difficulty, with 10-second peaks of 2.2× (Easy) down to 1.3× (Insane); levels last
+     about 2:08 on Hard. Found while testing: with a pace line, ships stay slower on Easy, so a level's last ships
+     take longer to leave and the level runs about 20% longer there.
    - **Classic:** the original 12 levels stay available as a baseline and check during development, and are
-     removed before release.
+     removed before release. **Done:** data/levels/classic/ (`--classic`, `ts 12`); data/levels/ is the game's
+     own set, for now unchanged copies.
 6. **New features and deeper game logic:** new mechanics, enemies, modes and systems beyond the original (the
    old TODO list in Facade.as is a starting point: dodging, tractor beam, mega bomb, boss AI, space mines).
    This comes before the visual overhaul so the final art covers the new content too. Decided so far:

@@ -30,7 +30,7 @@ public partial class Main : Node2D
         }
         if (args.ContainsKey("check"))
         {
-            GD.Print($"Data OK: words, tuning, {GameData.LevelCount} levels and the boss fights all load ({DataFiles.Folder ?? "embedded"}).");
+            GD.Print($"Data OK: words, tuning, the typing test, and {GameData.LevelCount} levels with their boss fights in each level set (the game's and Classic) all load ({DataFiles.Folder ?? "embedded"}).");
             GetTree().Quit();
             return;
         }

@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Millennium Typer Pacing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,11 +99,14 @@ footer code { font: 12px var(--mono); color: var(--ink-2); }
     <h1>Millennium Typer Pacing</h1>
     <p class="lede">How fast each level asks you to type, second by second. <b>Demand</b> is the letters of every word
       that appears (ships, missiles, turrets, boss words) over a rolling <span id="win">10</span>-second window, as
-      words per minute at 5 letters a word. A perfect bot plays each level at the difficulty's stated WPM. Above the
-      stated WPM, words pile up on screen; below it, you get breathing room.</p>
+      words per minute at 5 letters a word, or as a share of the difficulty's stated speed (100% = typing flat out). A
+      perfect bot plays each level at the stated speed. Above it, words pile up on screen; below it, you get breathing
+      room. <b>Game levels</b> are data/levels, <b>Classic</b> the original 12 (data/levels/classic): the Classic shares
+      are the calibration the reworked levels should keep.</p>
   </header>
 
   <div class="controls" role="toolbar" aria-label="Chart options">
+    <div class="group" id="sets"><span>Levels</span></div>
     <div class="group" id="diffs"><span>Difficulty</span></div>
     <div class="group" id="xmode"><span>X axis</span></div>
   </div>
@@ -129,7 +133,7 @@ footer code { font: 12px var(--mono); color: var(--ink-2); }
   <section class="panel" aria-labelledby="tb-h">
     <div class="panel-head">
       <h2 id="tb-h">The numbers</h2>
-      <p class="note">Average / peak demand in WPM, then length. Ratio = average demand ÷ stated WPM.</p>
+      <p class="note">Average / peak demand as a share of the stated speed, then length, and for the game levels a density to try that should bring the average near the Classic share.</p>
     </div>
     <div class="table-wrap"><table id="table"></table></div>
   </section>
@@ -146,7 +150,10 @@ const DIFFS = [
   { name: "Extreme", wpm: 75, v: "--s4" }, { name: "Insane", wpm: 90, v: "--s5" },
 ];
 const BOSS = new Set([4, 8, 12]);
-const state = { diff: "All", x: "progress", ov: "avg" };
+const state = { set: "both", diff: "All", x: "progress", ov: "ratio" };
+const SETS = [{ value: "main", label: "Game levels" }, { value: "classic", label: "Classic" }, { value: "both", label: "Both (Classic dashed)" }];
+const visibleSets = () => state.set === "both" ? ["main", "classic"] : [state.set];
+const setLabel = s => s === "classic" ? " (Classic)" : "";
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const colorOf = name => css(DIFFS.find(d => d.name === name).v);
 const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
@@ -198,7 +205,7 @@ function lineChart(host, { series, xMax, yMax, xTicks, xFmt, refs = [], height =
   }
   for (const s of series) {
     const d = s.pts.map((p, i) => `${i ? "L" : "M"}${sx(p[0]).toFixed(1)},${sy(p[1]).toFixed(1)}`).join("");
-    el("path", { class: "series", d, stroke: s.color }, svg);
+    el("path", { class: "series", d, stroke: s.color, ...(s.dash ? { "stroke-dasharray": "5 4", opacity: 0.8 } : {}) }, svg);
   }
   // Hover: crosshair, dots and a tooltip with every series' value at that x.
   const cross = el("line", { class: "cross", y1: m.t, y2: m.t + ih, visibility: "hidden" }, svg);
@@ -241,19 +248,25 @@ function legend(id, diffs) {
     `<span><span class="sw" style="background:var(${d.v})"></span>${d.name} (${d.wpm} WPM)</span>`).join("");
 }
 
+const runOf = (set, level, diff) => DATA.runs.find(r => r.set === set && r.level === level && r.diff === diff);
+
 function renderOverview() {
-  chips("ovmode", [{ value: "avg", label: "Average demand" }, { value: "peak", label: "Peak demand" }, { value: "ratio", label: "Average ÷ stated WPM" }], "ov", renderAll);
+  chips("ovmode", [
+    { value: "ratio", label: "Average ÷ stated" }, { value: "peakratio", label: "Peak ÷ stated" },
+    { value: "avg", label: "Average WPM" }, { value: "peak", label: "Peak WPM" },
+  ], "ov", renderAll);
   const diffs = visibleDiffs();
   const key = state.ov;
-  const val = r => key === "avg" ? r.avg : key === "peak" ? r.peak : r.avg / r.wpm * 100;
-  const series = diffs.map(d => ({
-    name: d.name, color: colorOf(d.name),
-    pts: DATA.runs.filter(r => r.diff === d.name).map(r => [r.level, val(r)]),
-    label: p => key === "ratio" ? `${Math.round(p[1])}%` : `${Math.round(p[1])} WPM`,
-  }));
-  const yMaxRaw = Math.max(...series.flatMap(s => s.pts.map(p => p[1])), key === "ratio" ? 100 : 0);
+  const ratio = key === "ratio" || key === "peakratio";
+  const val = r => key === "avg" ? r.avg : key === "peak" ? r.peak : key === "ratio" ? r.avg / r.wpm * 100 : r.peak / r.wpm * 100;
+  const series = diffs.flatMap(d => visibleSets().map(set => ({
+    name: d.name + setLabel(set), color: colorOf(d.name), dash: set === "classic",
+    pts: DATA.runs.filter(r => r.set === set && r.diff === d.name).map(r => [r.level, val(r)]),
+    label: p => ratio ? `${Math.round(p[1])}%` : `${Math.round(p[1])} WPM`,
+  }))).filter(s => s.pts.length);
+  const yMaxRaw = Math.max(...series.flatMap(s => s.pts.map(p => p[1])), ratio ? 100 : 0);
   const step = niceStep(yMaxRaw);
-  const refs = key === "ratio" ? [{ y: 100, label: "= stated WPM" }]
+  const refs = ratio ? [{ y: 100, label: "= stated speed" }]
     : diffs.length === 1 ? [{ y: diffs[0].wpm, label: `stated ${diffs[0].wpm}` }] : [];
   lineChart(document.getElementById("overview"), {
     series, xMax: 12.5, yMax: Math.ceil(yMaxRaw / step) * step, height: 240,
@@ -267,7 +280,8 @@ function renderLevels() {
   const diffs = visibleDiffs();
   const host = document.getElementById("levels");
   host.innerHTML = "";
-  const runs = DATA.runs.filter(r => diffs.some(d => d.name === r.diff));
+  const sets = visibleSets();
+  const runs = DATA.runs.filter(r => sets.includes(r.set) && diffs.some(d => d.name === r.diff));
   const yMaxRaw = Math.max(...runs.flatMap(r => r.d));
   const step = niceStep(yMaxRaw);
   const yMax = Math.ceil(yMaxRaw / step) * step;
@@ -276,18 +290,19 @@ function renderLevels() {
     ? "X axis: share of the level's running time, so every difficulty lines up. Same y-scale on all twelve."
     : "X axis: seconds of play. Same scales on all twelve, so lengths compare directly.";
   legend("lv-legend", diffs);
-  for (let level = 1; level <= 12; level++) {
+  const levels = [...new Set(runs.map(r => r.level))].sort((a, b) => a - b);
+  for (const level of levels) {
     const card = document.createElement("div");
     card.className = "panel level";
     const lr = runs.filter(r => r.level === level);
-    const meta = lr.map(r => `${r.diff.slice(0, 2)} ${fmtTime(r.seconds)}`).join(" · ");
+    const meta = lr.filter(r => r.set === sets[0]).map(r => `${r.diff.slice(0, 2)} ${fmtTime(r.seconds)}`).join(" · ");
     card.innerHTML = `<div class="panel-head"><h3>Level ${level}${BOSS.has(level) ? '<span class="boss">BOSS</span>' : ""}</h3><span class="meta">${meta}</span></div>`;
     const chart = document.createElement("div"); chart.className = "chart"; card.appendChild(chart);
     host.appendChild(card);
     const prog = state.x === "progress";
     const xMax = prog ? 100 : Math.ceil(longest / 60) * 60;
     const series = lr.map(r => ({
-      name: r.diff, color: colorOf(r.diff),
+      name: r.diff + setLabel(r.set), color: colorOf(r.diff), dash: r.set === "classic",
       pts: r.d.map((v, i) => [prog ? (i + 1) / r.seconds * 100 : i + 1, v]),
       label: p => `${Math.round(p[1])} WPM` + (prog ? ` at ${fmtTime(p[0] / 100 * r.seconds)}` : ""),
     }));
@@ -304,11 +319,13 @@ function renderTable() {
   const diffs = visibleDiffs();
   const t = document.getElementById("table");
   let h = `<thead><tr><th>Level</th>${diffs.map(d => `<th>${d.name} · ${d.wpm}</th>`).join("")}</tr></thead><tbody>`;
-  for (let level = 1; level <= 12; level++) {
-    h += `<tr><td>${level}${BOSS.has(level) ? " ★" : ""}</td>`;
+  const levels = [...new Set(DATA.runs.map(r => r.level))].sort((a, b) => a - b);
+  for (const level of levels) for (const set of visibleSets()) {
+    h += `<tr><td>${level}${BOSS.has(level) ? " ★" : ""}${set === "classic" ? ' <span class="sub">Classic</span>' : ""}</td>`;
     for (const d of diffs) {
-      const r = DATA.runs.find(x => x.level === level && x.diff === d.name);
-      h += `<td>${Math.round(r.avg)} / ${Math.round(r.peak)} <span class="sub">${fmtTime(r.seconds)} · ${Math.round(r.avg / r.wpm * 100)}%</span>${r.cleared ? "" : " ✗"}</td>`;
+      const r = runOf(set, level, d.name);
+      const dens = r.density != null && r.density < 99.5 ? ` · try ${r.density}%` : "";
+      h += `<td>${Math.round(r.avg / r.wpm * 100)}% / ${Math.round(r.peak / r.wpm * 100)}% <span class="sub">${fmtTime(r.seconds)}${dens}</span>${r.cleared ? "" : " ✗"}</td>`;
     }
     h += "</tr>";
   }
@@ -316,6 +333,7 @@ function renderTable() {
 }
 
 function renderAll() {
+  chips("sets", SETS, "set", renderAll);
   chips("diffs", [{ value: "All", label: "All" }, ...DIFFS.map(d => ({ value: d.name, label: d.name, color: d.v }))], "diff", renderAll);
   chips("xmode", [{ value: "progress", label: "Level progress" }, { value: "time", label: "Seconds" }], "x", renderAll);
   renderOverview(); renderLevels(); renderTable();

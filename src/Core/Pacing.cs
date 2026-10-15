@@ -30,7 +30,7 @@ public static class Pacing
         public double PeakRatio => PeakCps / Cps;
     }
 
-    public static Run Measure(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1)
+    public static Run Measure(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1, bool classic = false)
     {
         var samples = new List<Sample>();
         var seen = new HashSet<(object, string)>();
@@ -38,7 +38,7 @@ public static class Pacing
         var perSecond = new List<int>();
         int newChars = 0;
 
-        var result = Simulator.Run(data, art, level, cps, seed, onTick: game =>
+        var result = Simulator.Run(data, art, level, cps, seed, classic: classic, onTick: game =>
         {
             current.Clear();
             int chars = 0;
