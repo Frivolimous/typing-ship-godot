@@ -163,7 +163,8 @@ public class PacingFormatTests
     {
         Assert.Equal(1, Fails("density 0%\n").Line);
         Assert.Contains("five percentages", Fails("density 50%/60%\n").Message);
-        Assert.Contains("five percentages", Fails("density 150%\n").Message);
+        Assert.Contains("five percentages", Fails("density 350%\n").Message);
+        Assert.Equal(new[] { 1.5, 1.5, 1.5, 1.5, 1.5 }, Parse("density 150%\n").Density);
         Assert.Equal(new[] { 0.6, 0.6, 0.6, 0.6, 0.6 }, Parse("density 60\n").Density);
     }
 
@@ -174,5 +175,66 @@ public class PacingFormatTests
         Assert.Equal("levels/classic/level03.txt", TestData.Data.Classic.LevelFile(3));
         Assert.Equal("levels/level03.txt", TestData.Data.Main.LevelFile(3));
         Assert.All(TestData.Data.Classic.Levels, l => Assert.Null(l.Pace));
+    }
+
+    // ---- density above 100% ----
+
+    [Fact]
+    public void Density_above_100_percent_adds_copies_of_waves()
+    {
+        int baseShips = Ships(Waves, Difficulty.Hard); // 5 ships in 4 waves (the mirror arrives with the first)
+        Assert.Equal(baseShips * 2, Ships("density 200%\n" + Waves, Difficulty.Hard)); // every wave copied once
+        Assert.Equal(baseShips + 2 + 1, Ships("density 150%\n" + Waves, Difficulty.Hard)); // waves 1 and 3 (2 + 1 ships)
+        Assert.Equal(baseShips * 3, Ships("density 300%\n" + Waves, Difficulty.Hard));
+    }
+
+    [Fact]
+    public void Copies_follow_their_wave_by_the_copy_gap_and_keep_events_in_order()
+    {
+        var events = Build("density 200%\n" + Waves, Difficulty.Hard);
+        Assert.Equal(events.Select(e => e.Distance).OrderBy(d => d), events.Select(e => e.Distance));
+        var first = events.OfType<SpawnEvent>().First();
+        Assert.Contains(events.OfType<SpawnEvent>(), s => s != first && s.Type == first.Type && s.X == first.X &&
+            Math.Abs(s.Distance - (first.Distance + TestData.Tuning.CopyGap)) < 1e-12);
+    }
+
+    [Fact]
+    public void Density_per_difficulty_can_thin_and_fatten_in_one_level()
+    {
+        const string d = "density 50%/100%/100%/150%/200%\n";
+        Assert.True(Ships(d + Waves, Difficulty.Easy) < Ships(Waves, Difficulty.Easy));
+        Assert.Equal(Ships(Waves, Difficulty.Hard), Ships(d + Waves, Difficulty.Hard));
+        Assert.True(Ships(d + Waves, Difficulty.Insane) > Ships(d + Waves, Difficulty.Extreme));
+    }
+
+    // ---- duration ----
+
+    [Fact]
+    public void Duration_parses_and_needs_a_pace()
+    {
+        Assert.Equal(135, Parse("pace hard\nduration 2:15\n" + Waves).Duration);
+        Assert.Equal(90, Parse("pace hard\nduration 90\n" + Waves).Duration);
+        Assert.Contains("needs a pace", Fails("duration 2:15\n" + Waves).Message);
+        Assert.Equal(2, Fails("pace hard\nduration 2:5\n").Line);
+        Assert.Equal(2, Fails("pace hard\nduration 0:05\n").Line);
+        Assert.Contains("already set", Fails("pace hard\nduration 2:15\nduration 2:20\n").Message);
+    }
+
+    [Fact]
+    public void A_level_with_a_duration_has_its_last_spawn_at_the_duration_minus_the_tail_at_every_difficulty()
+    {
+        var classic = File.ReadAllText(Path.Combine(TestData.DataDir, "levels", "classic", "level00.txt"));
+        var data = TestData.With(("levels/level00.txt", "pace hard\nduration 1:30\n" + classic));
+        double expected = (90 - TestData.Tuning.DurationTail) * Playfield.TickRate;
+        foreach (var cps in Difficulty.Cps)
+        {
+            long tick = 0;
+            var r = Simulator.Run(data, TestData.Art, 0, cps, seed: 1, onTick: g =>
+            {
+                if (tick == 0 && g.LevelData.Count == 0) tick = g.Ticks;
+            });
+            Assert.True(r.Cleared, r.Line);
+            Assert.InRange(tick, expected - 2, expected + 2); // the last event fires on the tick the clock passes it
+        }
     }
 }

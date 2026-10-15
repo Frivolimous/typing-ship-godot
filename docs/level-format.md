@@ -122,7 +122,8 @@ last the same time at every difficulty and get harder through more (or faster) s
 | `hard+: missile sn 0.05  5,0 5,6` | A tag before a line: this ship only comes on Hard and up. `hard` is only Hard, `normal-` Normal and below, `normal-extreme` the three in between, `all` every difficulty |
 | `only extreme+` | Every line below is tagged until `only all` (or the end of the file or section). A tagged line inside a block needs both to allow it |
 | `repeat 0.05 0/1/2/2/3` | Five numbers separated by `/` are one per difficulty, Easy to Insane. Works anywhere a number goes, e.g. a gap `0.1/0.08/0.06/0.05/0.05` (with a pace line, a gap that differs changes the level's length) |
-| `density 40%/65%/100%/100%/100%` | Keeps that share of the waves on each difficulty (one value for all, or five). Ships arriving at the same moment are one wave, and the waves kept are spread evenly (40%: the 1st, 3rd, 6th, 8th...). It only leaves ships out, so the difficulty you write the level for should have the most |
+| `density 40%/65%/100%/150%/200%` | How many waves each difficulty gets, as a share of the file's (one value for all, or five; 1% to 300%). Ships arriving at the same moment are one wave. Below 100% waves are left out, spread evenly (40%: the 1st, 3rd, 6th, 8th...). Above 100% waves get copies that follow one "copy gap" (tuning, 0.01) after the wave, flying the same path: 150% copies every other wave, 200% every wave, 250% every wave once and every other wave twice. These are the "fatter waves" of [pacing-rules.md](pacing-rules.md) |
+| `duration 2:15` | The level lasts this long at every difficulty: its clock is set so the last event comes at the duration minus the tuning's "duration tail" (5 s). Needs a `pace` line, which keeps the waves' timing the same at every difficulty. [pacing-rules.md](pacing-rules.md) gives each level's target (`90 + 9 x (level - 1)` seconds) |
 
 Leaving ships out never shortens the level: the gaps stay where they were. Copies follow their ship: a `mirror`
 or `clone` of a `hard+` ship is `hard+` too. The boss escorts in bosses.txt can be tagged, and they follow their
@@ -133,8 +134,9 @@ share of the difficulty's speed (see [commands.md](commands.md)). The Classic le
 of it, with 10-second peaks well above it on the low difficulties.
 
 A quick way to start reworking a level: put `pace hard` at the top. It then plays on Hard exactly like Classic Hard.
-Thin it for Easy and Normal with `density` (the report suggests values) or tags, and add tagged waves for Extreme
-and Insane.
+Add `duration` for its target length, thin it for Easy and Normal and fatten it for Extreme and Insane with `density`
+(the report suggests values), or use tags. Then run the rule check, `ts 13` (`pacing --check`), which lists every
+rule of [pacing-rules.md](pacing-rules.md) the level breaks, with the time it happens.
 
 ## bosses.txt
 

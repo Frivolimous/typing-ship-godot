@@ -21,6 +21,8 @@ public sealed partial class Game
     // ---- State (GameModel) ----
     public bool Running, CanType, BossMode, Perfect, Invincible;
     public double Distance, MaxDistance;
+    /// <summary>Distance the ship travels each tick in the current level (see ClockFor).</summary>
+    public double Clock;
     public int ScoreC, Level = -1, MissedShips, TotalShips;
     /// <summary>The difficulty, as a typing speed in characters per second (see <see cref="Speed"/>).</summary>
     public double Cps = Difficulty.Normal;
@@ -118,6 +120,7 @@ public sealed partial class Game
         BossMode = false;
         LevelData = Set.BuildLevel(Level, Context);
         MaxDistance = LevelData[^1].Distance;
+        Clock = ClockFor(Set.Levels[Level], MaxDistance);
         ship.Destroyed = false;
         Delay = 0;
         finalDelay = false;
@@ -125,6 +128,18 @@ public sealed partial class Game
         toRun = null;
         Events.LevelStarted();
         Events.Music(1 + Level % 4);
+    }
+
+    /// <summary>
+    /// How far the ship travels each tick. Classic: at the difficulty's speed (wpm / 24 / 3600 in the original); with
+    /// a pace line, at that pace whatever the difficulty, so the level lasts the same time on all of them. With a
+    /// duration line as well, at whatever speed brings the level's last event in at the duration minus the tail.
+    /// </summary>
+    double ClockFor(Levels.LevelScript script, double lastEvent)
+    {
+        if (script.Duration is { } seconds && lastEvent > 0)
+            return lastEvent / (Math.Max(1, seconds - Tuning.DurationTail) * Playfield.TickRate);
+        return (script.Pace ?? Cps) / 7200;
     }
 
     /// <summary>
@@ -169,9 +184,7 @@ public sealed partial class Game
             return;
         }
 
-        // Classic: the clock runs at the difficulty's speed (wpm / 24 / 3600 in the original); with a pace line, at
-        // that pace whatever the difficulty, so the level lasts the same time on all of them.
-        Distance += (Set.Levels[Level].Pace ?? Cps) / 7200;
+        Distance += Clock;
         Events.TickAdvanced();
 
         if (LevelData.Count > 0)

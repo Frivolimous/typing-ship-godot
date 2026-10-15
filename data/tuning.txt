@@ -86,6 +86,8 @@ shrink from = 0.1         # steps of at least this much distance...
 shrink cps = 25           # ...are shortened at higher speeds: multiplied by 1 - cps / this,
 shrink limit = 0.5        #   but never by less than this
 end wait = 0.05           # distance between the last ship leaving and the level ending
+duration tail = 5         # seconds: a level with a "duration" line has its last event this long before the end
+copy gap = 0.01           # distance between a wave and each copy a density above 100% adds
 
 [bosses]
 health = 3                # hits to kill a boss

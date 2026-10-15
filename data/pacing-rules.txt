@@ -1,0 +1,58 @@
+# Millennium Typer: level pacing rules
+#
+# The numbers behind docs/pacing-rules.md, which explains each rule. The pacing report checks every regular level at
+# every difficulty against them:  dotnet run --project src/Sim -- pacing --check   (ts 13)
+#
+# Everything is measured on LOAD: demand (the letters of new words over the last 10 seconds, as WPM) divided by the
+# difficulty's WPM, P. So 0.5 means half of P, 1.2 means 20% faster than P. Shares can be written as 25% or 0.25.
+# Every line is "name = value"; anything after a # is a note.
+
+# ---- what counts as what ----
+burst = 0.5                      # a burst is seconds at or above this load; a lull, below it
+intro seconds = 8                # the first seconds of a level aren't checked by rules 3-7
+
+# ---- 1. duration: last spawn + the tuning's "duration tail" (5 s) ----
+duration base = 90               # seconds for level 1...
+duration per level = 9           # ...plus this per level after it (level 11 = 3:00)
+duration tolerance = 3           # how far off (seconds) still passes
+
+# ---- 2. average load, over the whole level ----
+average min = 0.65
+average max = 0.80
+average target base = 0.65       # the target for level 1...
+average target per level = 0.015 # ...rising this much per level (level 11 = 0.80)
+average target tolerance = 0.03  # further than this from the target is a warning (it doesn't fail the check)
+
+# ---- 3. lulls ----
+lull floor = 0.3                 # below this load...
+lull floor seconds = 7           # ...for at most this many seconds at a time
+empty screen seconds = 3         # nothing visible to type for at most this long
+lull share = 25%                 # at most this share of the checked time below the burst level
+
+# ---- 4. earned lulls ----
+earned by peak = 1.0             # a lull may dip below the lull floor only after a burst peaking above this
+lull base seconds = 4            # a lull lasts at most this long...
+lull max seconds = 10            # ...plus 1 s per second the burst before spent above "earned by peak", up to this
+
+# ---- 5. sustained intensity ----
+intense = 1.0                    # above this load...
+intense seconds = 13             # ...for at most this many seconds at a time
+very intense = 1.2               # above this load...
+very intense share = 20%         # ...for at most this share of the checked time
+
+# ---- 6. peaks ----
+peak cap = 1.5                   # peaks stay at or below this...
+spike cap = 1.6                  # ...except one spike per level, up to this,
+spike seconds = 5                # staying above the peak cap at most this long,
+release = 0.65                   # and followed by a release: load below this
+release within = 5               # within this many seconds of the spike
+release hold = 5                 # and staying there at least this long
+
+# ---- 7. level arc: no numbers; the highest peak comes in the second half, and the final peak tops the first half ----
+
+# ---- exemptions: "exempt LEVEL: RULE, RULE" (levels as on the map; rules: duration, average, lulls, earned,
+# intensity, peaks, arc, or all) ----
+exempt 4: all                    # boss levels keep their own pacing
+exempt 8: all
+exempt 12: all
+exempt 3: arc                    # its last peak comes early; revisit after playtesting

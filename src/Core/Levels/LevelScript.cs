@@ -121,8 +121,17 @@ public sealed class LevelScript
     /// difficulty's own speed.
     /// </summary>
     public double? Pace { get; private set; }
-    /// <summary>"density 40%/65%/100%/100%/100%": the share of ship waves kept at each difficulty (0 to 1), or null.</summary>
+    /// <summary>
+    /// "density 40%/65%/100%/150%/200%": how many ship waves each difficulty gets, as a share of the file's (0.01 to 3).
+    /// Below 100% waves are left out evenly; above it, waves get copies that follow a moment later. Null: 100%.
+    /// </summary>
     public double[]? Density { get; private set; }
+    /// <summary>
+    /// "duration 2:15": the level's length in seconds, the same at every difficulty. The level's clock is set so its
+    /// last event comes at this time minus the tuning's "duration tail". Needs a pace line. Null: the clock runs at
+    /// the pace (or the difficulty's speed).
+    /// </summary>
+    public double? Duration { get; private set; }
 
     LevelScript(string file, string section, List<Statement> statements)
     {
@@ -134,7 +143,7 @@ public sealed class LevelScript
     public static readonly string[] Commands =
     {
         "missile", "laser", "suicide", "stealth", "ship", "boss", "mirror", "clone", "offset", "repeat", "insert", "wait", "jump",
-        "loop", "pace", "density", "only",
+        "loop", "pace", "density", "duration", "only",
     };
 
     static readonly Dictionary<string, string> Usage = new()
@@ -154,7 +163,8 @@ public sealed class LevelScript
         ["jump"] = "jump DISTANCE",
         ["loop"] = "loop [FROM]",
         ["pace"] = "pace DIFFICULTY   e.g. pace hard",
-        ["density"] = "density PERCENT   or one per difficulty, Easy to Insane: density 40%/65%/100%/100%/100%",
+        ["density"] = "density PERCENT   or one per difficulty, Easy to Insane: density 40%/65%/100%/150%/200%",
+        ["duration"] = "duration M:SS   e.g. duration 2:15 (needs a pace line)",
         ["only"] = "only TAG   e.g. only hard+ (the lines below happen on Hard and up; \"only all\" ends it)",
     };
 
@@ -172,12 +182,15 @@ public sealed class LevelScript
         int lineNo = 0, block = DifficultyTag.All;
         double? pace = null;
         double[]? density = null;
-        int paceLine = 0, densityLine = 0;
+        double? duration = null;
+        int paceLine = 0, densityLine = 0, durationLine = 0;
 
         void EndSection()
         {
-            if (current.Count == 0 && section == "" && pace == null && density == null) return;
-            result[section] = new LevelScript(file, section, current) { Pace = pace, Density = density };
+            if (current.Count == 0 && section == "" && pace == null && density == null && duration == null) return;
+            if (duration != null && pace == null)
+                throw new DataError(file, durationLine, "A duration needs a pace line too (like \"pace hard\"), so the waves keep the same timing at every difficulty.");
+            result[section] = new LevelScript(file, section, current) { Pace = pace, Density = density, Duration = duration };
         }
 
         foreach (var raw in text.Split('\n'))
@@ -232,6 +245,12 @@ public sealed class LevelScript
                     density = ParseDensity(words.Length == 2 ? words[1] : "", file, lineNo);
                     densityLine = lineNo;
                     continue;
+                case "duration":
+                    if (section != "") throw new DataError(file, lineNo, "Only a level file can set its duration.");
+                    if (durationLine > 0) throw new DataError(file, lineNo, $"The duration is already set on line {durationLine}.");
+                    duration = ParseDuration(words.Length == 2 ? words[1] : "", file, lineNo);
+                    durationLine = lineNo;
+                    continue;
             }
             var s = ParseLine(line, file, lineNo);
             current.Add(mask == DifficultyTag.All ? s : s with { Mask = mask });
@@ -240,7 +259,21 @@ public sealed class LevelScript
         return result;
     }
 
-    /// <summary>"40%" or "40%/65%/100%/100%/100%" (the % is optional): shares from 1% to 100%.</summary>
+    /// <summary>"40%" or "40%/65%/100%/150%/200%" (the % is optional): shares from 1% to 300%.</summary>
+    /// <summary>"2:15" or "135": seconds, from 10 s to 10 minutes.</summary>
+    static double ParseDuration(string s, string file, int lineNo)
+    {
+        static bool Int(string p, out int v) => int.TryParse(p, NumberStyles.None, CultureInfo.InvariantCulture, out v);
+        var parts = s.Split(':');
+        int seconds = -1;
+        if (parts.Length == 1 && Int(parts[0], out var whole)) seconds = whole;
+        else if (parts.Length == 2 && parts[1].Length == 2 && Int(parts[0], out var m) && Int(parts[1], out var sec) && sec < 60)
+            seconds = m * 60 + sec;
+        if (seconds is < 10 or > 600)
+            throw new DataError(file, lineNo, "Expected \"duration M:SS\" (or seconds), like \"duration 2:15\", from 0:10 to 10:00.");
+        return seconds;
+    }
+
     static double[] ParseDensity(string s, string file, int lineNo)
     {
         var parts = s.Split('/');
@@ -249,9 +282,9 @@ public sealed class LevelScript
         {
             var part = parts.Length == 1 ? parts[0] : k < parts.Length ? parts[k] : "";
             if (parts.Length is not (1 or 5) ||
-                !double.TryParse(part.TrimEnd('%'), NumberStyles.Float, CultureInfo.InvariantCulture, out var v) || v is < 1 or > 100)
+                !double.TryParse(part.TrimEnd('%'), NumberStyles.Float, CultureInfo.InvariantCulture, out var v) || v is < 1 or > 300)
                 throw new DataError(file, lineNo, "Expected \"density PERCENT\", like \"density 60%\", or five percentages from 1% " +
-                    "to 100% separated by / (Easy to Insane), like \"density 40%/65%/100%/100%/100%\".");
+                    "to 300% separated by / (Easy to Insane), like \"density 40%/65%/100%/150%/200%\".");
             values[k] = v / 100;
         }
         return values;

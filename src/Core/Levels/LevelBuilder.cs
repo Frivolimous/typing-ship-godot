@@ -82,6 +82,41 @@ public sealed class LevelBuilder
             }
             kept = result;
         }
+        else if (thin && c.Density > 1)
+        {
+            // Fatter waves: spread the extra share evenly. With density 150%, every other wave gets one copy; with
+            // 200%, every wave gets one; with 250%, every wave one and every other wave a second. Each copy flies the
+            // same plan (re-jittered, like "clone") one copy gap after the wave, then the next another gap later.
+            double extra = c.Density - 1;
+            var result = new List<LevelEvent>();
+            var pending = new List<LevelEvent>();
+            int wave = -1, copies = 0;
+            double last = double.NaN;
+            void Flush()
+            {
+                for (int k = 1; k <= copies; k++)
+                    foreach (var e in pending)
+                        if (e is SpawnEvent s)
+                            result.Add(new SpawnEvent(c, s.Distance + k * c.Tuning.CopyGap, s.Type, s.X, s.Y,
+                                s.Commands.Select(cmd => cmd.Clone()).ToArray()) { File = s.File, Line = s.Line, Mask = s.Mask });
+                pending.Clear();
+            }
+            foreach (var e in kept)
+            {
+                if (e is SpawnEvent && e.Distance != last)
+                {
+                    Flush();
+                    wave++;
+                    last = e.Distance;
+                    copies = (int)(Math.Ceiling((wave + 1) * extra - 1e-9) - Math.Ceiling(wave * extra - 1e-9));
+                }
+                result.Add(e);
+                if (e is SpawnEvent) pending.Add(e);
+            }
+            Flush();
+            // Copies land a little after their wave, so put everything back in order (a stable sort keeps ties as written).
+            kept = result.OrderBy(e => e.Distance).ToList();
+        }
         // Leaving out the last ships mustn't end the level sooner: the level keeps its length.
         if (kept.Count < array.Count && (kept.Count == 0 || kept.Max(e => e.Distance) < end))
             kept.Add(new MarkerEvent(end, MarkerEvent.Kind.Wait, 0) { File = file, Line = array[^1].Line });

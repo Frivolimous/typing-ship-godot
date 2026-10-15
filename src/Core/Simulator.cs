@@ -40,7 +40,8 @@ public static class Simulator
     public sealed record Result(bool Cleared, string Line, Game Game);
 
     public static Result Run(GameData data, ArtLibrary art, int level, double cps, ulong seed, double botCps = 0,
-        TextWriter? trace = null, int maxTicks = 200_000, Action<Game>? onTick = null, bool classic = false)
+        TextWriter? trace = null, int maxTicks = 200_000, Action<Game>? onTick = null, bool classic = false,
+        double errorRate = 0)
     {
         var game = new Game(data, new Rng(seed), art) { Cps = cps, Trace = trace, Classic = classic };
         game.TutOff(); // tutorial pop-ups would wait for Space
@@ -52,7 +53,7 @@ public static class Simulator
             line = game.ResultLine(c);
         });
         game.Events = events;
-        var bot = new AutoTyper(game, botCps);
+        var bot = new AutoTyper(game, botCps, errorRate, errorSeed: seed);
         game.NewGame(level);
         while (cleared == null && game.Ticks < maxTicks)
         {

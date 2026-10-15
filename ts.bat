@@ -31,6 +31,7 @@ echo    9  Check the level and tuning files
 echo   10  Run the tests
 echo   11  Level pacing report, game levels and Classic  (charts and CSVs in pacing\)
 echo   12  Play the Classic levels  (the original 12 as they were; own save file)
+echo   13  Check the pacing rules  (every rule a game level breaks; docs\pacing-rules.md)
 echo.
 echo    0  Quit
 echo.
@@ -55,6 +56,7 @@ if "%PICK%"=="9" dotnet build && "%GODOT%" --headless --path game -- --check 2>n
 if "%PICK%"=="10" dotnet test
 if "%PICK%"=="11" dotnet run --project src\Sim -- pacing && start "" "pacing\pacing.html"
 if "%PICK%"=="12" dotnet build && "%GODOT%" --path game -- --classic --profile=classic
+if "%PICK%"=="13" dotnet run --project src\Sim -- pacing --check
 exit /b
 
 :watch

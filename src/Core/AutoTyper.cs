@@ -13,6 +13,14 @@ public sealed class AutoTyper
     readonly Game game;
     /// <summary>Characters per second; 0 = type at the game's speed.</summary>
     public double BotCps;
+    /// <summary>
+    /// Share of keystrokes that hit a wrong letter (0 = never). A mistake costs the next keystroke too: the bot
+    /// presses Backspace, like a player correcting it. The mistakes come from the bot's own random numbers, so the
+    /// game's are untouched.
+    /// </summary>
+    public double ErrorRate;
+    readonly Rng errors;
+    bool mistyped;
     float charge;
     string? word;
     Entity? owner;
@@ -20,10 +28,12 @@ public sealed class AutoTyper
 
     const float Never = 100000;
 
-    public AutoTyper(Game game, double botCps = 0)
+    public AutoTyper(Game game, double botCps = 0, double errorRate = 0, ulong errorSeed = 1)
     {
         this.game = game;
         BotCps = botCps;
+        ErrorRate = errorRate;
+        errors = new Rng(errorSeed);
     }
 
     float Rate => (float)(BotCps > 0 ? BotCps : game.Cps) / Playfield.TickRate; // letters per tick
@@ -41,6 +51,21 @@ public sealed class AutoTyper
                 owner?.Word != word || typed >= word.Length || Hopeless(owner, word.Length - typed))
                 Pick();
             if (word == null) return;
+            if (mistyped)
+            {
+                m.Backspace();
+                mistyped = false;
+                continue;
+            }
+            if (ErrorRate > 0 && errors.Randf() < ErrorRate)
+            {
+                char wrong;
+                do wrong = (char)('a' + (int)(errors.Randf() * 26) % 26);
+                while (wrong == word[typed]);
+                m.TypeLetter(wrong);
+                mistyped = true;
+                continue;
+            }
             m.TypeLetter(word[typed++]);
             // Leftover letters plus a word can spell "pause" (the original's pause command); a player would just resume.
             if (!m.Running && !m.LevelEnded) m.Resume();

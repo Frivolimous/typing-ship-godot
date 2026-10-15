@@ -45,7 +45,14 @@ ported, what's left, where the port deliberately differs from the original, and 
      Jeremy; the test picks one at random), rules in src/Core/TypingTestRun.cs, the screen in
      UI/Screens.cs. The suggestion keeps the old mapping (the hardest difficulty at or below the result).
    - **Difficulty selection:** open to experiments (Jeremy iterated on it a lot in the original).
-   - **Pacing rework:** levels last 2–4 minutes at every difficulty (time-based pacing). Difficulty comes from
+   - **Pacing rules** ([pacing-rules.md](pacing-rules.md), Jeremy, from playtesting Hard): regular levels last
+     `90 + 9 x (level - 1)` seconds (1:30 to 3:00) at every difficulty, measured to the last spawn plus a 5 s tail;
+     waves keep their timing and get fatter with P; average load 0.65–0.80, with rules for lulls, earned lulls,
+     sustained intensity, peaks and the level arc. Boss levels are exempt from all of them; level 3 from the arc rule
+     for now. **Done:** the checker (`ts 13`, `pacing --check`, numbers in data/pacing-rules.txt), a realistic bot
+     (80% speed, 3.5% mistakes) in the report, and the level-format lines the rework needs: `duration` and `density`
+     above 100%. **Next:** the timestamped level edits in the spec, then converting the levels.
+   - **Pacing rework:** levels last the same time at every difficulty (time-based pacing; durations above). Difficulty comes from
      more and/or faster enemies, not from level length. The 12 original levels are the baseline: Jeremy picks
      the best-tuned difficulty (probably Hard) as the template and tunes the others around it. **Mechanism
      done; the levels themselves are next, after Jeremy sets new targets.** The level format has `pace hard`

@@ -56,6 +56,7 @@ public sealed class Tuning
     public double HaltScale = 100 / 3.0;
     public double ShrinkFrom = 0.1, ShrinkCps = 25, ShrinkLimit = 0.5;
     public double EndWait = 0.05;
+    public double DurationTail = 5, CopyGap = 0.01;
 
     // [bosses]
     public int BossHealth = 3, BossPoints = 100;
@@ -121,6 +122,8 @@ public sealed class Tuning
         D(Scripts, "shrink cps", (t, v) => t.ShrinkCps = v),
         D(Scripts, "shrink limit", (t, v) => t.ShrinkLimit = v),
         D(Scripts, "end wait", (t, v) => t.EndWait = v),
+        D(Scripts, "duration tail", (t, v) => t.DurationTail = v),
+        D(Scripts, "copy gap", (t, v) => t.CopyGap = v),
 
         I(Bosses, "health", (t, v) => t.BossHealth = v),
         I(Bosses, "points", (t, v) => t.BossPoints = v),
