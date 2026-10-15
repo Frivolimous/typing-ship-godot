@@ -1,8 +1,12 @@
 # Level 9 (8 on the map).
 # How to write these: docs/level-format.md. The game reads this file when the level starts.
 
+pace hard
+duration 2:51
+density 37.5%/63%/100%/109.5%/129.5%
+
 missile ln 0.05  -1,-1 5,6 13,13
-mirror 0.01
+normal+: mirror 0.01
 
 missile mn 0.1  0,1 9,3 0,6
 missile mn 0.013  12,8 3,6 12,3
@@ -12,12 +16,14 @@ missile ln 0  13,5 6,3 -1,4
 laser lb 0.06  4.5,0
 laser lb 0.01  7.5,0
 
-missile ln 0.3  3,-1 3,5 3,13
+missile mn 0.2  4,0 5,4 12,7
+mirror
+missile ln 0.1  3,-1 3,5 3,13
 mirror
 missile ln 0.04  -1,1 6,3 9,13
-mirror
+normal+: mirror
 laser lt 0.04  0,5
-mirror
+normal+: mirror
 missile mn 0.14  0,1 5,5 12,1
 missile mn 0  0,9 6,6 0,3
 missile mn 0  12,9 7,5 0,9
@@ -29,16 +35,28 @@ missile ls 0.07  -1,6 8,6 13,6
 offset 0  0,2
 laser lb 0.05  0,7
 
-ship lmt 0.1  3,0  move 3,3  halt 15  halt 10 fire  move 0,3
+# Added for the longer level: a second wave before the big climb.
+missile mn 0.12  0,3 9,4 0,8
+missile mn 0.015  12,6 3,5 12,2
+repeat 0.02 2 2
+laser lb 0.04  3,0
+wait 0.01
+missile ss 0.08  10,12 10,3 3,2.5 2,12
+repeat 0.012 2
+missile ls 0.06  13,4 4,6 -1,6
+offset 0  0,2
+
+ship lmt 0.12  3,0  move 3,3  halt 15  halt 10 fire  move 0,3
 mirror
 ship lmt 0.05  5,0  move 5,3  halt 15  halt 10 fire  move 0,3
 mirror
 missile mn 0.06  0,12 4,7 4,0
 mirror
 missile mn 0.03  6,0 6,5 1,12
-mirror
 
-missile ms 0.23  2,0 2,6 6,4 10,12
+
+extreme+: missile mn 0.14  6,0 6,4 6,0
+missile ms 0.09  2,0 2,6 6,4 10,12
 mirror 0.018
 missile mn 0.018  2,0 2,6 6,4 10,12
 repeat 0.018 5 1 mirrored
@@ -46,8 +64,22 @@ missile ln 0.04  -1,-1 2,3 -1,13
 mirror
 laser lb 0.05  6,0
 
-laser lb 0.35  4,0
+# Added for the longer level: a steady stretch before the stealth finale.
+missile mn 0.1  1,0 4,5 12,9
+mirror
+repeat 0.04 2 2
+laser lt 0.03  0,4
+wait 0
+missile ss 0.06  2,12 2,4 9,3 10,12
+repeat 0.015 2
+missile ln 0.04  -1,2 6,4 13,2
+wait 0
+
+laser lb 0.12  4,0
 mirror
 stealth 0.05  3,5 0,12
 mirror 0.01
 stealth 0.01  6,4 6,0
+
+# The stealth ships fire for several seconds after they appear: this pause puts their last missiles near 2:46.
+wait 0.57/0.25/0.25/0.25/0.25
