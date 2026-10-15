@@ -26,18 +26,51 @@ ported, what's left, where the port deliberately differs from the original, and 
    tick for tick. Editing: `--edit` (F5 reload, F6–F8 restart and jump, F9 grid and paths, F10
    invincible), `--from`, `--line`, `--check`; `ts 8`–`10`. Checked with windowed walk-throughs of every screen and of
    the editing keys (including F5 after an edit, and F5 on a broken file). Level design itself is for Jeremy to try.
-5. **Difficulty review:** play every level at every difficulty (bot simulations plus Jeremy's playtests) and
-   check each one demands roughly its target WPM (25/40/65/75/90). Retune where it doesn't.
+5. **CPS model, typing test and pacing rework** (replaces "difficulty review"):
+   - **CPS in code, WPM for players.** The rules and tuning work in characters per second
+     (CPS = WPM × 5 / 60); every player-facing number stays WPM.
+   - **Keep the original calibration.** The original pacing was balanced on what real people at a stated WPM
+     could manage, in a sawtooth difficulty curve. The pacing report (`ts 11`) shows the Classic levels'
+     average demand at about 55–65% of the stated WPM, with peaks up to about 1.9×. Whatever the rework does,
+     those stated-to-true ratios hold at each difficulty.
+   - **Typing test:** prose of about 250 characters with a 90 s cap, written as lore that introduces the
+     game. "Fun and close enough" matters more than matching in-game typing exactly. Timer starts on the first
+     keystroke; it reports net WPM and accuracy.
+   - **Difficulty selection:** open to experiments (Jeremy iterated on it a lot in the original).
+   - **Pacing rework:** levels last 2–4 minutes at every difficulty (time-based pacing). Difficulty comes from
+     more and/or faster enemies, not from level length. The 12 original levels are the baseline: Jeremy picks
+     the best-tuned difficulty (probably Hard) as the template and tunes the others around it.
+   - **Classic:** the original 12 levels stay available as a baseline and check during development, and are
+     removed before release.
 6. **New features and deeper game logic:** new mechanics, enemies, modes and systems beyond the original (the
    old TODO list in Facade.as is a starting point: dodging, tractor beam, mega bomb, boss AI, space mines).
-   This comes before the visual overhaul so the final art covers the new content too.
+   This comes before the visual overhaul so the final art covers the new content too. Decided so far:
+   - **Endless mode:** a wave generator built from authored wave patterns, with density ramping over time.
+     Steam leaderboards bracketed by CPS. No anti-cheat at release; patch later if cheating becomes a problem.
+   - **Daily challenge:** one seed per UTC day, so everyone gets the same wave pattern (words can differ,
+     because typed words return to the pool). Unlimited attempts, best score counts, one leaderboard per day.
+     Daily modifiers ("lasers only", "double shields") come later.
+   - **Custom word lists and language packs:**
+     - Validate lists: every word length the ships use (3–10) needs enough words, at least about 6 and
+       ideally 20 or more.
+     - Accented Latin, Cyrillic and Greek are fine. Languages typed through an input method (Chinese, Japanese,
+       Korean) don't work with matching one keystroke at a time.
+     - Case-folding needs care per language (e.g. Turkish i).
+     - The final font must cover the supported alphabets.
+     - Cheat words (superman, pause, mute, ...) can clash with list words; move them or localise them.
+     - Only official packs count on leaderboards.
+     - Check the licence of every word source.
+     - Ship a set of pre-selected lists, and use Steam Workshop for sharing.
+     - Word packs only: no menu translation.
+   - Larger word lists are needed anyway: higher densities run the current 9- and 10-letter lists dry.
 7. **Visual overhaul:** new art and fonts, side-panel HUD and decoration, effects (shaders, particles, screen
    shake), and UI polish. Make it look as good as possible.
 8. **Placeholder cleanup:** replace the Flash-portal leftovers ("submit high score", "display high score", the
    sponsor link and "More games") with real features or remove them. Done just before Steam, because
    leaderboards are the likely replacement for submitting high scores.
-9. **Steam integration:** Steamworks, achievements, cloud saves, leaderboards, Steam Deck support, and store
-   builds. See [release-checklist.md](release-checklist.md).
+9. **Steam integration:** Steamworks, achievements, cloud saves, Steam Deck support and store builds, plus
+   the endless and daily leaderboards and Workshop word lists from phase 6. See
+   [release-checklist.md](release-checklist.md).
 
 ## Class map
 
