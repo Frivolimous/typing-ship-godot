@@ -36,7 +36,8 @@ ported, what's left, where the port deliberately differs from the original, and 
      WPM arithmetic, `Speed` keeps the original's result (whole ticks, missile speeds); see its comments.
    - **Keep the original calibration.** The original pacing was balanced on what real people at a stated WPM
      could manage, in a sawtooth difficulty curve. The pacing report (`ts 11`) shows the Classic levels'
-     average demand at about 55–65% of the stated WPM, with peaks up to about 1.9×. Whatever the rework does,
+     average demand at about 70–76% of the stated WPM (across all 12 levels), with 10-second peaks from about
+     2.2× on Easy down to 1.3× on Insane. Whatever the rework does,
      those stated-to-true ratios hold at each difficulty.
    - **Typing test:** prose of about 250 characters with a 90 s cap, written as lore that introduces the
      game. "Fun and close enough" matters more than matching in-game typing exactly. Timer starts on the first
