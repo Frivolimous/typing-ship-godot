@@ -41,8 +41,8 @@ ported, what's left, where the port deliberately differs from the original, and 
      those stated-to-true ratios hold at each difficulty.
    - **Typing test:** prose of about 250 characters with a 90 s cap, written as lore that introduces the
      game. "Fun and close enough" matters more than matching in-game typing exactly. Timer starts on the first
-     keystroke; it reports net WPM and accuracy. **Done:** five draft passages in data/typing-test.txt (Jeremy
-     picks or edits; the test picks one at random), rules in src/Core/TypingTestRun.cs, the screen in
+     keystroke; it reports net WPM and accuracy. **Done:** five passages in data/typing-test.txt (all kept by
+     Jeremy; the test picks one at random), rules in src/Core/TypingTestRun.cs, the screen in
      UI/Screens.cs. The suggestion keeps the old mapping (the hardest difficulty at or below the result).
    - **Difficulty selection:** open to experiments (Jeremy iterated on it a lot in the original).
    - **Pacing rework:** levels last 2–4 minutes at every difficulty (time-based pacing). Difficulty comes from

@@ -6,7 +6,7 @@
 # screen), using only what every keyboard can type: plain letters, digits, spaces and punctuation. Capitals don't
 # need Shift: the test ignores case.
 #
-# Drafts for Jeremy to pick from or edit. Delete the ones you don't want.
+# All five are in use (Jeremy, 2026-10-15). Add more by leaving a blank line before each new one.
 
 # 1. The original's story, retold
 An evil emperor from a distant star has sent his fleet to destroy Earth. Our people built one last ship to stop
@@ -24,7 +24,7 @@ shielded ship needs a short word first to knock out its shield. If your hull is 
 calm and keep your hands on the keys.
 
 # 4. The last ship
-Year one thousand of the new calendar. The emperor's armada has crossed the void, and the old defences have
+Year one thousand of the new calendar. The emperor's armada has crossed the void, and the old defenses have
 already fallen. Only the Millennium remains, a ship built to move as fast as human thought. Its weapons wait for
 one thing: your words.
 
