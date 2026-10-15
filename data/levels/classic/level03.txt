@@ -1,0 +1,16 @@
+# Level 3 (boss 1, B1 on the map).
+# How to write these: docs/level-format.md. The game reads this file when the level starts.
+
+missile sn 0.1  0,3 3,5 8,0
+repeat 0.02 5 1 mirrored
+laser ss 0.02  5,0
+mirror 0.02
+suicide mn 0.02  0,2 6,3
+mirror 0.02
+suicide mn 0.02  0,4 6,5
+mirror 0.02
+repeat 0.02 1 4
+laser ms 0.02  0,2
+mirror 0.02
+
+boss 0.2 1

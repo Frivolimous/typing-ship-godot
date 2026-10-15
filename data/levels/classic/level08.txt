@@ -1,0 +1,49 @@
+# Level 8 (7 on the map).
+# How to write these: docs/level-format.md. The game reads this file when the level starts.
+
+missile sn 0.07  0,2 4,2 0,7
+repeat 0.008 5 1 mirrored
+
+missile sn 0.05  0,3 5,4 12,8
+repeat 0.015 9 1 mirrored
+laser ln 0  3,0
+insert -7
+laser ln 0  9,0
+insert -5
+laser ln 0  6,0
+missile sn 0.02  1,12 4,6 12,2
+repeat 0.02 5 1 mirrored
+
+missile sn 0.17  12,12 8,3 2,6 12,7
+repeat 0.01 12 1
+laser ln 0  3,0
+insert -10
+laser ln 0  9,0
+insert -5
+suicide mn 0.05  0,0 3,4
+repeat 0.01 3
+
+laser ms 0.23  4,0
+mirror 0.01
+laser ls 0.01  6,0
+laser ss 0.04  0,4
+mirror 0.022
+offset 0.022  0,3
+mirror 0.022
+
+missile ss 0.22  0,12 4,3 10,6 0,6
+repeat 0.03 7 1
+laser ls 0  5,0
+insert -5
+laser ls 0  7,0
+insert -1
+suicide mn 0.13  12,0 9,4
+repeat 0.01 3
+
+laser ls 0.3  2,0
+offset 0.01  2,0
+offset 0.01  2,0
+offset 0.01  2,0
+offset 0.01  2,0
+suicide mn 0.13  0,12 2,5
+repeat 0.01 7 1 mirrored

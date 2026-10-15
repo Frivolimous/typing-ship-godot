@@ -72,6 +72,7 @@ public partial class Main : Node2D
         G.Model = new Game(data, rules, new ArtLibrary(Sprites.Mask), SaveFile.Load(), G.World);
         if (args.TryGetValue("wpm", out var wpm)) G.Model.Cps = Speed.FromWpm(double.Parse(wpm, CultureInfo.InvariantCulture));
         if (args.TryGetValue("cps", out var cps)) G.Model.Cps = double.Parse(cps, CultureInfo.InvariantCulture);
+        G.Model.Classic = args.ContainsKey("classic");
         G.UI = new GameUI { Name = "GameUI" };
         G.Starfield.Back.Size = new Vector2(G.StageSize, G.StageSize);
         G.Starfield.SetBack(0); // behind the typing test before any level has been played

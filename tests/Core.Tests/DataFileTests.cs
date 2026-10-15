@@ -226,8 +226,8 @@ public class LevelFormatTests
     [Fact]
     public void Every_real_level_and_boss_section_loads()
     {
-        Assert.Equal(GameData.LevelCount, TestData.Data.Levels.Count);
-        Assert.Equal(4, TestData.Data.BossScripts.Count);
+        Assert.Equal(GameData.LevelCount, TestData.Data.Main.Levels.Count);
+        Assert.Equal(4, TestData.Data.Main.BossScripts.Count);
     }
 
     [Fact]

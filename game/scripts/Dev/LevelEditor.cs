@@ -61,7 +61,7 @@ public partial class LevelEditor : Node
         {
             var events = m.LevelData.Where(e => e.Line >= n).ToList();
             if (events.Count > 0) return events.Min(e => e.Distance);
-            Warn($"--line={n}: no ship comes from line {n} or later in {GameData.LevelFile(m.Level)}.");
+            Warn($"--line={n}: no ship comes from line {n} or later in {m.Set.LevelFile(m.Level)}.");
             return 0;
         }
         if (from != null && double.TryParse(from.TrimEnd('%'), System.Globalization.CultureInfo.InvariantCulture, out double pct))
@@ -132,7 +132,7 @@ public partial class LevelEditor : Node
         if (!keys) return;
         var m = G.Model;
         var next = m.LevelData.FirstOrDefault(e => e.Line > 0);
-        banner.Text = $"EDIT  {GameData.LevelFile(m.Level)}  {m.Distance / m.MaxDistance:P0}  " +
+        banner.Text = $"EDIT  {m.Set.LevelFile(m.Level)}  {m.Distance / m.MaxDistance:P0}  " +
             (next != null ? $"next: line {next.Line}" : m.BossMode ? "boss escorts" : "no more ships") +
             (m.Invincible ? "  INVINCIBLE" : "") +
             "\nF5 reload  F6 restart  F7/F8 back/ahead  F9 grid  F10 invincible";

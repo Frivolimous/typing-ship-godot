@@ -127,7 +127,7 @@ public sealed class Boss : Sprite
         switch (Index)
         {
             case 0:
-                foreach (var e in Game.Data.BuildHangar(c))
+                foreach (var e in Game.Set.BuildHangar(c))
                 {
                     var ship = Game.Spawn(e, show: false);
                     Game.Objects.Insert(0, ship);

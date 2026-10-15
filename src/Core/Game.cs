@@ -62,7 +62,12 @@ public sealed partial class Game
         Player = new PlayerShip(this);
     }
 
-    public LevelContext Context => new(Rng, Tuning, Cps);
+    /// <summary>Play the Classic levels (the original 12, a baseline during development) instead of the game's.</summary>
+    public bool Classic;
+    public LevelSet Set => Classic ? Data.Classic : Data.Main;
+
+    /// <summary>The current level's context: the difficulty, and the level's pace and density.</summary>
+    public LevelContext Context => Set.Context(Level, Rng, Tuning, Cps);
 
     /// <summary>Editing aid: use newly loaded data files from the next level start (or restart) on.</summary>
     public void Reload(GameData data) => Data = data;
@@ -111,7 +116,7 @@ public sealed partial class Game
         LevelEnded = false;
         CanType = true;
         BossMode = false;
-        LevelData = Data.BuildLevel(Level, Context);
+        LevelData = Set.BuildLevel(Level, Context);
         MaxDistance = LevelData[^1].Distance;
         ship.Destroyed = false;
         Delay = 0;
@@ -164,7 +169,9 @@ public sealed partial class Game
             return;
         }
 
-        Distance += Cps / 7200; // wpm / 24 / 3600 in the original
+        // Classic: the clock runs at the difficulty's speed (wpm / 24 / 3600 in the original); with a pace line, at
+        // that pace whatever the difficulty, so the level lasts the same time on all of them.
+        Distance += (Set.Levels[Level].Pace ?? Cps) / 7200;
         Events.TickAdvanced();
 
         if (LevelData.Count > 0)
@@ -178,7 +185,7 @@ public sealed partial class Game
         }
         else if (BossMode)
         {
-            LevelData = Data.BuildBossLoop(Boss!.Index, Context, Distance);
+            LevelData = Set.BuildBossLoop(Boss!.Index, Context, Distance);
         }
         else if (Boss == null && Objects.Count == 0)
         {
@@ -214,7 +221,7 @@ public sealed partial class Game
                 Events.Spawned(Boss, Layer.Boss);
                 break;
             case MarkerEvent { Type: MarkerEvent.Kind.Loop } m:
-                foreach (var ev in Data.BuildLevel(Level, Context).Skip((int)m.Index))
+                foreach (var ev in Set.BuildLevel(Level, Context).Skip((int)m.Index))
                 {
                     ev.Distance += m.Distance;
                     LevelData.Add(ev);

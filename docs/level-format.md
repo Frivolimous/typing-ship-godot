@@ -11,6 +11,11 @@ word lengths, health) are in `data/tuning.txt`. Edit them in any text editor; no
 | level02 | 3 | | level06 | 6 | | level10 | 9 |
 | level03 | B1 | | level07 | B2 | | level11 | B3 |
 
+**Classic levels.** `data/levels/classic/` holds the original 12 levels and their bosses.txt exactly as the original
+game had them: a baseline to compare against while the game's own levels are reworked (play them with `--classic`,
+see [commands.md](commands.md)). They're removed before release. A test checks they still play exactly as recorded,
+so leave them alone; edit the ones in `data/levels/`. For now those are still copies of the Classic ones.
+
 The lines are the original game's LevelData helpers, one per line, so the old scripts read almost the same:
 
 ```
@@ -104,6 +109,32 @@ the copy commands after them, so `mirror` after a `repeat` mirrors the last copy
 
 **Random numbers.** Anywhere a number goes, `3~6` means any number from 3 to 6, and `0|12` means 0 or 12, picked
 afresh each time the level starts. The boss escorts use these: `stealth 0.3  2~10,5~7 0|12,5`.
+
+## Pacing and difficulty
+
+In the Classic levels the difficulty sets how fast the level goes by: everything, including the player's travel,
+runs at the difficulty's speed, so the same level takes 3:27 on Easy and 0:51 on Insane. These lines let a level
+last the same time at every difficulty and get harder through more (or faster) ships instead.
+
+| Line | What it does |
+|---|---|
+| `pace hard` | The level's clock runs at Hard's speed on every difficulty (one line, anywhere in the file; `easy` to `insane`). On Hard it plays exactly as without the line; on the others it lasts the same time as on Hard. Ships still fly, halt, charge and fire at the chosen difficulty's speed, so they're slower on Easy |
+| `hard+: missile sn 0.05  5,0 5,6` | A tag before a line: this ship only comes on Hard and up. `hard` is only Hard, `normal-` Normal and below, `normal-extreme` the three in between, `all` every difficulty |
+| `only extreme+` | Every line below is tagged until `only all` (or the end of the file or section). A tagged line inside a block needs both to allow it |
+| `repeat 0.05 0/1/2/2/3` | Five numbers separated by `/` are one per difficulty, Easy to Insane. Works anywhere a number goes, e.g. a gap `0.1/0.08/0.06/0.05/0.05` (with a pace line, a gap that differs changes the level's length) |
+| `density 40%/65%/100%/100%/100%` | Keeps that share of the waves on each difficulty (one value for all, or five). Ships arriving at the same moment are one wave, and the waves kept are spread evenly (40%: the 1st, 3rd, 6th, 8th...). It only leaves ships out, so the difficulty you write the level for should have the most |
+
+Leaving ships out never shortens the level: the gaps stay where they were. Copies follow their ship: a `mirror`
+or `clone` of a `hard+` ship is `hard+` too. The boss escorts in bosses.txt can be tagged, and they follow their
+level's pace and density; boss 1's hangar is never thinned.
+
+The pacing report (`ts 11`) shows how much typing each level asks for, Classic and reworked side by side, as a
+share of the difficulty's speed (see [commands.md](commands.md)). The Classic levels ask on average for about 70%
+of it, with 10-second peaks well above it on the low difficulties.
+
+A quick way to start reworking a level: put `pace hard` at the top. It then plays on Hard exactly like Classic Hard.
+Thin it for Easy and Normal with `density` (the report suggests values) or tags, and add tagged waves for Extreme
+and Insane.
 
 ## bosses.txt
 

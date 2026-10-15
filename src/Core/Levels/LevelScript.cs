@@ -298,7 +298,7 @@ public sealed class LevelScript
             "clone" => new Statement.Copy(lineNo, p.More ? p.Number("distance") : Zero, p.More ? p.Back() : -1),
             "offset" => new Statement.Offset(lineNo, p.Number("distance"), p.Point("offset (x,y)"), p.More ? p.Back() : -1),
             "repeat" => new Statement.Repeat(lineNo, p.Number("distance"),
-                p.More ? p.Number("number of times", 1, 1000) : One,
+                p.More ? p.Number("number of times", 0, 1000) : One,
                 p.More ? p.Int("number of ships to repeat", 1, 1000) : 1,
                 p.More && p.Word("mirrored")),
             "insert" => new Statement.Insert(lineNo, p.Int("position", -10000, 10000)),

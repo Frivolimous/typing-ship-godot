@@ -23,7 +23,7 @@ public class ClassicTraceTests
     static string TraceOf(int level, int wpm, ulong seed, bool slow)
     {
         var sb = new StringWriter();
-        Simulator.Run(TestData.Data, TestData.Art, level, Speed.FromWpm(wpm), seed, slow ? Speed.FromWpm(wpm * 6 / 10) : 0, sb);
+        Simulator.Run(TestData.Data, TestData.Art, level, Speed.FromWpm(wpm), seed, slow ? Speed.FromWpm(wpm * 6 / 10) : 0, sb, classic: true);
         return sb.ToString();
     }
 

@@ -1,0 +1,32 @@
+# Level 7 (boss 2, B2 on the map).
+# How to write these: docs/level-format.md. The game reads this file when the level starts.
+
+suicide sn 0.1  1.5,0 1.5,6
+offset 0  3,0
+offset 0  3,0
+offset 0  3,0
+laser ms 0.04  3,0
+mirror
+
+suicide sn 0.09  1.5,0 1.5,6
+offset 0  3,0
+offset 0  3,0
+offset 0  3,0
+missile mn 0.02  0,2 6,2 12,2
+missile mn 0.02  12,4 6,4 0,4
+
+suicide sn 0.09  1.5,0 1.5,6
+offset 0  3,0
+offset 0  3,0
+offset 0  3,0
+missile ss 0.02  3,0 3,6 2,12
+mirror 0.02
+
+suicide ss 0.09  1.5,0 1.5,6
+offset 0  3,0
+offset 0  3,0
+offset 0  3,0
+missile ms 0.02  0,2 3,6 0,9
+mirror 0.02
+
+boss 0.2 2

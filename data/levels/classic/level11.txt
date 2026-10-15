@@ -1,0 +1,28 @@
+# Level 11 (boss 3, B3 on the map).
+# How to write these: docs/level-format.md. The game reads this file when the level starts.
+
+missile ln 0.1  1,-1 4,6 -1,13
+mirror
+laser ln 0.06  0,5
+mirror
+
+missile ls 0.09  -1,2 6,3.5 13,5
+missile ls 0  13,8 6,6.5 -1,5
+laser ls 0.06  3,0
+mirror
+
+missile lt 0.09  5,-1 5,4 -1,8
+mirror
+laser lt 0.09  0,3
+mirror
+
+missile lb 0.09  -1,1 4,2 -1,12
+mirror
+laser lb 0.09  5,0
+mirror
+
+stealth 0.2  3,4 0,5
+mirror 0.024
+stealth 0.024  6,3 6,0 shield
+
+boss 0.02 3

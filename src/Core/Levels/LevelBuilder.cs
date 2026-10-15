@@ -15,7 +15,7 @@ public sealed class LevelBuilder
     readonly double mult;
     double dist;
     string file = "";
-    int line;
+    int line, mask = DifficultyTag.All;
 
     LevelBuilder(LevelContext c, double startDistance)
     {
@@ -25,13 +25,20 @@ public sealed class LevelBuilder
         dist = startDistance;
     }
 
-    /// <summary>Builds a script's events, starting at the given distance (bossLoop starts where the ship is).</summary>
-    public static List<LevelEvent> Build(LevelScript script, LevelContext c, double startDistance = 0)
+    /// <summary>
+    /// Builds a script's events, starting at the given distance (bossLoop starts where the ship is). A level file's
+    /// pace and density apply to it (and, through the context, to its boss escorts). Lines tagged for other
+    /// difficulties are left out, then the density thins out ship waves (not for boss 1's hangar: thin = false).
+    /// </summary>
+    public static List<LevelEvent> Build(LevelScript script, LevelContext c, double startDistance = 0, bool thin = true)
     {
+        if (script.Pace is { } pace) c = c with { Pace = pace };
+        if (script.Density is { } density) c = c with { Density = density[c.DifficultyIndex] };
         var b = new LevelBuilder(c, startDistance) { file = script.File };
         foreach (var s in script.Statements)
         {
             b.line = s.Line;
+            b.mask = s.Mask;
             try
             {
                 b.Run(s);
@@ -41,7 +48,44 @@ public sealed class LevelBuilder
                 throw new DataError(script.File, s.Line, e.Message);
             }
         }
-        return b.array;
+        return b.Finish(thin);
+    }
+
+    /// <summary>Leaves out what this difficulty doesn't have: tagged lines, then waves the density thins out.</summary>
+    List<LevelEvent> Finish(bool thin)
+    {
+        if (array.Count == 0) return array;
+        double end = array.Max(e => e.Distance);
+        int d = c.DifficultyIndex;
+        var kept = array.Where(e => DifficultyTag.Includes(e.Mask, d)).ToList();
+        if (thin && c.Density < 1)
+        {
+            // Ships that arrive together (same distance) are one wave. Keep waves evenly: with density 40%, the 1st,
+            // 3rd, 6th, 8th... (wave k stays when ceil((k + 1) x density) > ceil(k x density)).
+            var result = new List<LevelEvent>();
+            int wave = -1;
+            bool keep = true;
+            double last = double.NaN;
+            foreach (var e in kept)
+            {
+                if (e is SpawnEvent)
+                {
+                    if (e.Distance != last)
+                    {
+                        wave++;
+                        last = e.Distance;
+                        keep = Math.Ceiling((wave + 1) * c.Density - 1e-9) > Math.Ceiling(wave * c.Density - 1e-9);
+                    }
+                    if (!keep) continue;
+                }
+                result.Add(e);
+            }
+            kept = result;
+        }
+        // Leaving out the last ships mustn't end the level sooner: the level keeps its length.
+        if (kept.Count < array.Count && (kept.Count == 0 || kept.Max(e => e.Distance) < end))
+            kept.Add(new MarkerEvent(end, MarkerEvent.Kind.Wait, 0) { File = file, Line = array[^1].Line });
+        return kept;
     }
 
     double E(Num n) => n.Eval(c.Rng, c.DifficultyIndex);
@@ -113,10 +157,11 @@ public sealed class LevelBuilder
         }
     }
 
-    T Add<T>(T e) where T : LevelEvent
+    T Add<T>(T e, LevelEvent? copyOf = null) where T : LevelEvent
     {
         e.File = file;
         e.Line = line;
+        e.Mask = mask & (copyOf?.Mask ?? DifficultyTag.All); // a copy of a ship that isn't there isn't there either
         array.Add(e);
         return e;
     }
@@ -207,14 +252,14 @@ public sealed class LevelBuilder
     {
         var src = At(j, "clone");
         setDist(d);
-        Add(new SpawnEvent(c, dist, src.Type, src.X, src.Y, src.Commands.Select(cmd => cmd.Clone()).ToArray()));
+        Add(new SpawnEvent(c, dist, src.Type, src.X, src.Y, src.Commands.Select(cmd => cmd.Clone()).ToArray()), src);
     }
 
     void mirror(double d = 0, int j = -1)
     {
         var src = At(j, "mirror");
         setDist(d);
-        Add(new SpawnEvent(c, dist, src.Type, Playfield.ViewWidth - src.X, src.Y, src.Commands.Select(cmd => cmd.Mirror()).ToArray()));
+        Add(new SpawnEvent(c, dist, src.Type, Playfield.ViewWidth - src.X, src.Y, src.Commands.Select(cmd => cmd.Mirror()).ToArray()), src);
     }
 
     void offset(double d = 0, double xOff = 0, double yOff = 0, int j = -1)
@@ -222,7 +267,7 @@ public sealed class LevelBuilder
         var src = At(j, "offset");
         setDist(d);
         float x = (float)(xOff * Playfield.GridX), y = (float)(yOff * Playfield.GridY);
-        Add(new SpawnEvent(c, dist, src.Type, src.X + x, src.Y + y, src.Commands.Select(cmd => cmd.Offset(x, y)).ToArray()));
+        Add(new SpawnEvent(c, dist, src.Type, src.X + x, src.Y + y, src.Commands.Select(cmd => cmd.Offset(x, y)).ToArray()), src);
     }
 
     /// <summary>Repeat the last repeatC spawns repeatN times (mirrored if reverse), keeping their spacing.</summary>
