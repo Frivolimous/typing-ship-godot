@@ -118,7 +118,7 @@ public class LevelFormatTests
         Assert.Equal(Step.Kind.Halt, ship.Steps[2].Type);
         var r = Assert.IsType<Statement.Repeat>(s.Statements[6]);
         Assert.True(r.Mirrored);
-        Assert.Equal((7, 1), (r.Times, r.Count));
+        Assert.Equal((7.0, 1), (r.Times.Eval(null!, 0), r.Count));
     }
 
     [Fact]

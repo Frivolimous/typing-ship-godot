@@ -2,8 +2,18 @@ using TypingShip.Core.Data;
 
 namespace TypingShip.Core.Levels;
 
-/// <summary>What building a level needs: the random numbers, the tuning, and the difficulty.</summary>
-public sealed record LevelContext(Rng Rng, Tuning Tuning, double Cps);
+/// <summary>
+/// What building a level needs: the random numbers, the tuning, the difficulty (its speed in CPS), and the level's
+/// pace (<see cref="LevelScript.Pace"/>, null for Classic pacing) and density at this difficulty.
+/// </summary>
+public sealed record LevelContext(Rng Rng, Tuning Tuning, double Cps, double? Pace = null, double Density = 1)
+{
+    /// <summary>0 (easy) to 4 (insane).</summary>
+    public int DifficultyIndex => Difficulty.Of(Cps) - 1;
+
+    /// <summary>The speed the level's clock runs at: its pace, or (Classic) the difficulty's own speed.</summary>
+    public double ClockCps => Pace ?? Cps;
+}
 
 /// <summary>Something in a level that happens once the ship has travelled Distance.</summary>
 public abstract class LevelEvent
@@ -12,6 +22,8 @@ public abstract class LevelEvent
     /// <summary>Where it came from (for the editing overlay and "start from line N"), or 0.</summary>
     public string File = "";
     public int Line;
+    /// <summary>The difficulties it happens at (<see cref="DifficultyTag"/>).</summary>
+    public int Mask = DifficultyTag.All;
 }
 
 /// <summary>The original's LevelEvent: Loop (re-run the level from event Index), Wait, or Jump (skip ahead).</summary>

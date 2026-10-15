@@ -21,7 +21,7 @@ public sealed class LevelBuilder
     {
         this.c = c;
         var t = c.Tuning;
-        mult = Math.Max(1 - c.Cps / t.ShrinkCps, t.ShrinkLimit);
+        mult = Math.Max(1 - c.ClockCps / t.ShrinkCps, t.ShrinkLimit);
         dist = startDistance;
     }
 
@@ -44,6 +44,8 @@ public sealed class LevelBuilder
         return b.array;
     }
 
+    double E(Num n) => n.Eval(c.Rng, c.DifficultyIndex);
+
     void Run(Statement s)
     {
         var r = c.Rng;
@@ -52,60 +54,60 @@ public sealed class LevelBuilder
             // Numbers are rolled in the order they're written, as the original evaluated its arguments.
             case Statement.Missile m:
             {
-                double d = m.Dist.Eval(r), x = m.From.X.Eval(r), y = m.From.Y.Eval(r);
+                double d = E(m.Dist), x = E(m.From.X), y = E(m.From.Y);
                 var to = new double[6];
                 Array.Fill(to, -1);
                 for (int i = 0; i < m.To.Length; i++)
                 {
-                    to[i * 2] = m.To[i].X.Eval(r);
-                    to[i * 2 + 1] = m.To[i].Y.Eval(r);
+                    to[i * 2] = E(m.To[i].X);
+                    to[i * 2 + 1] = E(m.To[i].Y);
                 }
                 missile(m.Type, d, x, y, to[0], to[1], to[2], to[3], to[4], to[5]);
                 break;
             }
             case Statement.Laser l:
             {
-                double d = l.Dist.Eval(r), x = l.At.X.Eval(r), y = l.At.Y.Eval(r), speed = l.Speed.Eval(r);
+                double d = E(l.Dist), x = E(l.At.X), y = E(l.At.Y), speed = E(l.Speed);
                 laser(l.Type, d, x, y, (int)speed);
                 break;
             }
             case Statement.Suicide su:
             {
-                double d = su.Dist.Eval(r), x = su.From.X.Eval(r), y = su.From.Y.Eval(r), xTo = su.To.X.Eval(r), yTo = su.To.Y.Eval(r);
+                double d = E(su.Dist), x = E(su.From.X), y = E(su.From.Y), xTo = E(su.To.X), yTo = E(su.To.Y);
                 suicide(su.Type, d, x, y, xTo, yTo);
                 break;
             }
             case Statement.Stealth st:
             {
-                double d = st.Dist.Eval(r), x = st.From.X.Eval(r), y = st.From.Y.Eval(r), xTo = st.To.X.Eval(r), yTo = st.To.Y.Eval(r);
+                double d = E(st.Dist), x = E(st.From.X), y = E(st.From.Y), xTo = E(st.To.X), yTo = E(st.To.Y);
                 stealth(d, x, y, xTo, yTo, st.Shield);
                 break;
             }
             case Statement.Ship sh:
             {
-                double d = sh.Dist.Eval(r), x = sh.From.X.Eval(r), y = sh.From.Y.Eval(r);
+                double d = E(sh.Dist), x = E(sh.From.X), y = E(sh.From.Y);
                 var commands = sh.Steps.Select(step => step.Type switch
                 {
-                    Step.Kind.Move => move(step.To!.X.Eval(r), step.To.Y.Eval(r), step.Fire),
+                    Step.Kind.Move => move(E(step.To!.X), E(step.To.Y), step.Fire),
                     Step.Kind.Halt => halt(step.Halt, step.Fire),
                     _ => fire(),
                 }).ToArray();
                 ship(sh.Code, d, x, y, commands);
                 break;
             }
-            case Statement.Boss bo: boss(bo.Dist.Eval(r), bo.Number - 1); break;
-            case Statement.Mirror mi: mirror(mi.Dist.Eval(r), mi.Back); break;
-            case Statement.Copy cl: clone(cl.Dist.Eval(r), cl.Back); break;
+            case Statement.Boss bo: boss(E(bo.Dist), bo.Number - 1); break;
+            case Statement.Mirror mi: mirror(E(mi.Dist), mi.Back); break;
+            case Statement.Copy cl: clone(E(cl.Dist), cl.Back); break;
             case Statement.Offset o:
             {
-                double d = o.Dist.Eval(r), x = o.By.X.Eval(r), y = o.By.Y.Eval(r);
+                double d = E(o.Dist), x = E(o.By.X), y = E(o.By.Y);
                 offset(d, x, y, o.Back);
                 break;
             }
-            case Statement.Repeat re: repeat(re.Dist.Eval(r), re.Times, re.Count, re.Mirrored); break;
+            case Statement.Repeat re: repeat(E(re.Dist), (int)E(re.Times), re.Count, re.Mirrored); break;
             case Statement.Insert ins: insert(ins.At); break;
-            case Statement.Wait w: wait(w.Dist.Eval(r)); break;
-            case Statement.Jump j: jump(j.Dist.Eval(r)); break;
+            case Statement.Wait w: wait(E(w.Dist)); break;
+            case Statement.Jump j: jump(E(j.Dist)); break;
             case Statement.Loop lo: loopBack(lo.From); break;
             default: throw new InvalidOperationException($"Unknown statement {s}");
         }

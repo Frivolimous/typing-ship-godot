@@ -10,12 +10,13 @@ namespace TypingShip.Core.Levels;
 /// </summary>
 public abstract record Num
 {
-    public abstract double Eval(Rng rng);
+    /// <param name="difficulty">0 (easy) to 4 (insane), for numbers that differ by difficulty.</param>
+    public abstract double Eval(Rng rng, int difficulty);
     public virtual bool IsConstant => false;
 
     public sealed record Const(double Value) : Num
     {
-        public override double Eval(Rng rng) => Value;
+        public override double Eval(Rng rng, int difficulty) => Value;
         public override bool IsConstant => true;
         public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
     }
@@ -23,16 +24,52 @@ public abstract record Num
     /// <summary>"a~b": a + random x (b - a), worked out in float like the original's "a + Math.random() * (b - a)".</summary>
     public sealed record Range(double From, double To) : Num
     {
-        public override double Eval(Rng rng) => (float)From + rng.Rand() * (float)(To - From);
+        public override double Eval(Rng rng, int difficulty) => (float)From + rng.Rand() * (float)(To - From);
         public override string ToString() => $"{From.ToString(CultureInfo.InvariantCulture)}~{To.ToString(CultureInfo.InvariantCulture)}";
     }
 
     /// <summary>"a|b": a or b, half the time each (the original's "Math.random() > 0.5 ? a : b").</summary>
     public sealed record Either(double First, double Second) : Num
     {
-        public override double Eval(Rng rng) => rng.Rand() > 0.5 ? First : Second;
+        public override double Eval(Rng rng, int difficulty) => rng.Rand() > 0.5 ? First : Second;
         public override string ToString() => $"{First.ToString(CultureInfo.InvariantCulture)}|{Second.ToString(CultureInfo.InvariantCulture)}";
     }
+
+    /// <summary>"1/2/3/3/4": one number per difficulty, Easy to Insane.</summary>
+    public sealed record ByDifficulty(double[] Values) : Num
+    {
+        public override double Eval(Rng rng, int difficulty) => Values[difficulty];
+        public override string ToString() => string.Join('/', Values.Select(v => v.ToString(CultureInfo.InvariantCulture)));
+    }
+}
+
+/// <summary>
+/// Which difficulties a line of a level file happens at, as a bit mask (bit 0 Easy to bit 4 Insane). Written
+/// "hard" (only Hard), "hard+" (Hard and up), "normal-" (Normal and down), "normal-extreme" (a range) or "all".
+/// </summary>
+public static class DifficultyTag
+{
+    public const int All = 0b11111;
+
+    public static bool Includes(int mask, int difficulty) => (mask & (1 << difficulty)) != 0;
+
+    /// <summary>The mask for a tag, or null if it isn't one.</summary>
+    public static int? Parse(string tag)
+    {
+        tag = tag.ToLowerInvariant();
+        if (tag == "all") return All;
+        int Index(string name) => Array.FindIndex(Difficulty.Names, n => n.Equals(name, StringComparison.OrdinalIgnoreCase));
+        int from, to;
+        if (tag.EndsWith('+')) (from, to) = (Index(tag[..^1]), 4);
+        else if (tag.EndsWith('-')) (from, to) = (0, Index(tag[..^1]));
+        else if (tag.Split('-') is [var a, var b]) (from, to) = (Index(a), Index(b));
+        else from = to = Index(tag);
+        if (from < 0 || to < 0 || from > to) return null;
+        return (1 << (to + 1)) - (1 << from);
+    }
+
+    public const string Help = "A difficulty tag is a difficulty (easy, normal, hard, extreme, insane), optionally with + " +
+        "(that one and up) or - (that one and down), a range like normal-extreme, or all.";
 }
 
 public sealed record Point(Num X, Num Y)
@@ -49,6 +86,9 @@ public sealed record Step(Step.Kind Type, Point? To = null, int Halt = 0, bool F
 /// <summary>One line of a level file.</summary>
 public abstract record Statement(int Line)
 {
+    /// <summary>The difficulties it happens at (<see cref="DifficultyTag"/>).</summary>
+    public int Mask { get; init; } = DifficultyTag.All;
+
     public sealed record Missile(int Line, string Type, Num Dist, Point From, Point[] To) : Statement(Line);
     public sealed record Laser(int Line, string Type, Num Dist, Point At, Num Speed) : Statement(Line);
     public sealed record Suicide(int Line, string Type, Num Dist, Point From, Point To) : Statement(Line);
@@ -58,7 +98,7 @@ public abstract record Statement(int Line)
     public sealed record Mirror(int Line, Num Dist, int Back) : Statement(Line);
     public sealed record Copy(int Line, Num Dist, int Back) : Statement(Line);
     public sealed record Offset(int Line, Num Dist, Point By, int Back) : Statement(Line);
-    public sealed record Repeat(int Line, Num Dist, int Times, int Count, bool Mirrored) : Statement(Line);
+    public sealed record Repeat(int Line, Num Dist, Num Times, int Count, bool Mirrored) : Statement(Line);
     public sealed record Insert(int Line, int At) : Statement(Line);
     public sealed record Wait(int Line, Num Dist) : Statement(Line);
     public sealed record Jump(int Line, Num Dist) : Statement(Line);
@@ -75,6 +115,14 @@ public sealed class LevelScript
     public string File { get; }
     public string Section { get; }
     public IReadOnlyList<Statement> Statements { get; }
+    /// <summary>
+    /// "pace hard": the level's clock runs at that difficulty's speed (in CPS) whatever the difficulty, so it lasts
+    /// the same time on all of them. Null (no pace line): the Classic pacing, where the clock runs at the
+    /// difficulty's own speed.
+    /// </summary>
+    public double? Pace { get; private set; }
+    /// <summary>"density 40%/65%/100%/100%/100%": the share of ship waves kept at each difficulty (0 to 1), or null.</summary>
+    public double[]? Density { get; private set; }
 
     LevelScript(string file, string section, List<Statement> statements)
     {
@@ -84,7 +132,10 @@ public sealed class LevelScript
     }
 
     public static readonly string[] Commands =
-        { "missile", "laser", "suicide", "stealth", "ship", "boss", "mirror", "clone", "offset", "repeat", "insert", "wait", "jump", "loop" };
+    {
+        "missile", "laser", "suicide", "stealth", "ship", "boss", "mirror", "clone", "offset", "repeat", "insert", "wait", "jump",
+        "loop", "pace", "density", "only",
+    };
 
     static readonly Dictionary<string, string> Usage = new()
     {
@@ -102,6 +153,9 @@ public sealed class LevelScript
         ["wait"] = "wait DISTANCE",
         ["jump"] = "jump DISTANCE",
         ["loop"] = "loop [FROM]",
+        ["pace"] = "pace DIFFICULTY   e.g. pace hard",
+        ["density"] = "density PERCENT   or one per difficulty, Easy to Insane: density 40%/65%/100%/100%/100%",
+        ["only"] = "only TAG   e.g. only hard+ (the lines below happen on Hard and up; \"only all\" ends it)",
     };
 
     static readonly Regex CommaSpaces = new(@"\s*,\s*", RegexOptions.Compiled);
@@ -115,7 +169,17 @@ public sealed class LevelScript
         var result = new Dictionary<string, LevelScript>();
         var current = new List<Statement>();
         string section = "";
-        int lineNo = 0;
+        int lineNo = 0, block = DifficultyTag.All;
+        double? pace = null;
+        double[]? density = null;
+        int paceLine = 0, densityLine = 0;
+
+        void EndSection()
+        {
+            if (current.Count == 0 && section == "" && pace == null && density == null) return;
+            result[section] = new LevelScript(file, section, current) { Pace = pace, Density = density };
+        }
+
         foreach (var raw in text.Split('\n'))
         {
             lineNo++;
@@ -124,16 +188,73 @@ public sealed class LevelScript
             if (line.StartsWith('['))
             {
                 if (!line.EndsWith(']')) throw new DataError(file, lineNo, $"A section name needs a closing ]: \"{line}\".");
-                if (current.Count > 0 || section != "") result[section] = new LevelScript(file, section, current);
+                EndSection();
                 section = string.Join(' ', line[1..^1].Split(' ', StringSplitOptions.RemoveEmptyEntries)).ToLowerInvariant();
                 if (result.ContainsKey(section)) throw new DataError(file, lineNo, $"Section [{section}] appears twice.");
                 current = new List<Statement>();
+                block = DifficultyTag.All;
                 continue;
             }
-            current.Add(ParseLine(line, file, lineNo));
+
+            var words = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            int mask = block;
+            if (words[0].EndsWith(':'))
+            {
+                // "hard+: missile ..." happens only on those difficulties (and only where an "only" block allows).
+                mask &= DifficultyTag.Parse(words[0][..^1])
+                    ?? throw new DataError(file, lineNo, $"\"{words[0][..^1]}\" isn't a difficulty tag. {DifficultyTag.Help}");
+                if (words.Length == 1) throw new DataError(file, lineNo, $"Nothing follows the tag \"{words[0]}\".");
+                line = line[(line.IndexOf(':') + 1)..].Trim();
+                words = words[1..];
+            }
+
+            switch (words[0].ToLowerInvariant())
+            {
+                case "only":
+                    if (words.Length != 2 || DifficultyTag.Parse(words[1]) is not { } only)
+                        throw new DataError(file, lineNo, $"Expected \"only TAG\", like \"only hard+\" or \"only all\". {DifficultyTag.Help}");
+                    if (mask != block) throw new DataError(file, lineNo, "An \"only\" line can't have a tag of its own.");
+                    block = only;
+                    continue;
+                case "pace":
+                    if (section != "") throw new DataError(file, lineNo, "Only a level file can set its pace (the boss sections use the level's).");
+                    if (paceLine > 0) throw new DataError(file, lineNo, $"The pace is already set on line {paceLine}.");
+                    int i = words.Length == 2 ? Array.FindIndex(Difficulty.Names, n => n.Equals(words[1], StringComparison.OrdinalIgnoreCase)) : -1;
+                    if (i < 0)
+                        throw new DataError(file, lineNo, "Expected \"pace DIFFICULTY\", like \"pace hard\" " +
+                            $"({string.Join(", ", Difficulty.Names).ToLowerInvariant()}).");
+                    pace = Difficulty.Cps[i];
+                    paceLine = lineNo;
+                    continue;
+                case "density":
+                    if (section != "") throw new DataError(file, lineNo, "Only a level file can set the density (the boss sections use the level's).");
+                    if (densityLine > 0) throw new DataError(file, lineNo, $"The density is already set on line {densityLine}.");
+                    density = ParseDensity(words.Length == 2 ? words[1] : "", file, lineNo);
+                    densityLine = lineNo;
+                    continue;
+            }
+            var s = ParseLine(line, file, lineNo);
+            current.Add(mask == DifficultyTag.All ? s : s with { Mask = mask });
         }
-        if (current.Count > 0 || section != "") result[section] = new LevelScript(file, section, current);
+        EndSection();
         return result;
+    }
+
+    /// <summary>"40%" or "40%/65%/100%/100%/100%" (the % is optional): shares from 1% to 100%.</summary>
+    static double[] ParseDensity(string s, string file, int lineNo)
+    {
+        var parts = s.Split('/');
+        var values = new double[5];
+        for (int k = 0; k < 5; k++)
+        {
+            var part = parts.Length == 1 ? parts[0] : k < parts.Length ? parts[k] : "";
+            if (parts.Length is not (1 or 5) ||
+                !double.TryParse(part.TrimEnd('%'), NumberStyles.Float, CultureInfo.InvariantCulture, out var v) || v is < 1 or > 100)
+                throw new DataError(file, lineNo, "Expected \"density PERCENT\", like \"density 60%\", or five percentages from 1% " +
+                    "to 100% separated by / (Easy to Insane), like \"density 40%/65%/100%/100%/100%\".");
+            values[k] = v / 100;
+        }
+        return values;
     }
 
     /// <summary>Parses a level file with no sections.</summary>
@@ -177,7 +298,7 @@ public sealed class LevelScript
             "clone" => new Statement.Copy(lineNo, p.More ? p.Number("distance") : Zero, p.More ? p.Back() : -1),
             "offset" => new Statement.Offset(lineNo, p.Number("distance"), p.Point("offset (x,y)"), p.More ? p.Back() : -1),
             "repeat" => new Statement.Repeat(lineNo, p.Number("distance"),
-                p.More ? p.Int("number of times", 1, 1000) : 1,
+                p.More ? p.Number("number of times", 1, 1000) : One,
                 p.More ? p.Int("number of ships to repeat", 1, 1000) : 1,
                 p.More && p.Word("mirrored")),
             "insert" => new Statement.Insert(lineNo, p.Int("position", -10000, 10000)),
@@ -189,14 +310,14 @@ public sealed class LevelScript
         p.End();
         if (s is Statement.Laser { At: var at } && at.X.IsConstant && at.Y.IsConstant)
         {
-            double x = at.X.Eval(null!), y = at.Y.Eval(null!);
+            double x = at.X.Eval(null!, 0), y = at.Y.Eval(null!, 0);
             if (x != 0 && x != 12 && y != 0 && y != 12)
                 throw new DataError(file, lineNo, $"A laser ship has to start on the edge of the grid (x 0 or 12, or y 0 or 12), not at {at}.");
         }
         return s;
     }
 
-    static readonly Num Zero = new Num.Const(0);
+    static readonly Num Zero = new Num.Const(0), One = new Num.Const(1);
 
     /// <summary>Reads a line's words in order, with messages that say what was expected.</summary>
     sealed class LineReader(string[] tokens, string file, int line, string cmd)
@@ -238,8 +359,34 @@ public sealed class LevelScript
 
         public Num Number(string what) => ParseNum(Next(what), what);
 
+        /// <summary>A whole number from min to max, or one for each difficulty ("1/2/3/3/4").</summary>
+        public Num Number(string what, int min, int max)
+        {
+            var s = Next(what);
+            var parts = s.Split('/');
+            if (parts.Length is not (1 or 5))
+                throw Err($"\"{s}\" isn't a whole number (expected the {what}), or five of them separated by / (Easy to Insane).");
+            var values = new double[parts.Length];
+            for (int k = 0; k < parts.Length; k++)
+            {
+                if (!int.TryParse(parts[k], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out int v))
+                    throw Err($"\"{parts[k]}\" isn't a whole number (expected the {what}).");
+                if (v < min || v > max) throw Err($"The {what} must be from {min} to {max}, not {v}.");
+                values[k] = v;
+            }
+            return values.Length == 1 ? new Num.Const(values[0]) : new Num.ByDifficulty(values);
+        }
+
         Num ParseNum(string s, string what)
         {
+            if (s.Contains('/'))
+            {
+                var parts = s.Split('/');
+                var values = new double[parts.Length];
+                if (parts.Length == 5 && parts.Select((part, k) => TryDouble(part, out values[k])).All(ok => ok))
+                    return new Num.ByDifficulty(values);
+                throw Err($"\"{s}\" isn't one number per difficulty for the {what}; write five, Easy to Insane, like 0.1/0.08/0.06/0.05/0.05.");
+            }
             if (s.Contains('~'))
             {
                 var parts = s.Split('~');
