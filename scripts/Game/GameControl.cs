@@ -59,8 +59,12 @@ public partial class GameControl : Node
         G.Sound.Play(1 + M.Level % 4);
     }
 
+    /// <summary>Dev aid (--trace=file): one line of game state per tick, to compare runs exactly.</summary>
+    public System.IO.StreamWriter? Trace;
+
     public override void _PhysicsProcess(double delta)
     {
+        if (Trace != null && M.Running) WriteTrace();
         if (M.Running) Tick();
         for (int i = 0; i < tickers.Count;)
         {
@@ -121,6 +125,25 @@ public partial class GameControl : Node
         M.Boss?.Update();
 
         G.UI.PopWarning.Update();
+    }
+
+    void WriteTrace()
+    {
+        static string F(float f) => f.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"{M.Distance.ToString("R", System.Globalization.CultureInfo.InvariantCulture)} s{M.Score} h{M.PShip.Health} [{G.UI.Typed}] hull:{M.Hull.TextObject?.Text}");
+        foreach (var o in M.GObjects)
+        {
+            sb.Append($" | {o.GetType().Name} {F(o.Position.X)},{F(o.Position.Y)} {F(o.Rotation)} {o.TextObject?.Text} p{o.Priority}");
+            if (o.Turret != null) sb.Append($" t:{o.Turret.TextObject?.Text}");
+            if (o is EnemyShip { Charge: { } c }) sb.Append($" c{c.Remaining}");
+            if (o.Modulate.A < 1) sb.Append($" a{F(o.Modulate.A)}");
+        }
+        foreach (var o in M.GOverflow) sb.Append($" | of {o.Word}");
+        if (M.Boss is { } b)
+            sb.Append($" | boss {F(b.Position.X)},{F(b.Position.Y)} h{b.Health} sc:{b.Scanner?.TextObject?.Text} " +
+                (b.Scanner != null ? F(b.Scanner.Position.X) + "," + F(b.Scanner.Position.Y) : ""));
+        Trace!.WriteLine(sb.ToString());
     }
 
     /// <summary>SpriteSheets.onTick: animations advance every other tick.</summary>

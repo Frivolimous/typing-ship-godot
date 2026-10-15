@@ -100,7 +100,7 @@ public partial class MenuUI : Screen
         if (c > 12 && c <= 22)
         {
             creditsB.Position = new Vector2((22 - c) * 50, 0);
-            testB.Position = new Vector2(440 + (22 - c) * 50, 412);
+            testB.Position = new Vector2(430 + (22 - c) * 50, 412);
         }
         if (c <= 28)
         {
@@ -125,7 +125,7 @@ public partial class MenuUI : Screen
         Tuck(highB, c, 9, -348, 275);
         if (c > 9 && c <= 19) highC.Position = new Vector2(5, 563 - 40 * (c - 9) / 10f);
         if (c > 12 && c <= 22) startB.Position = new Vector2(300 * (c - 12) / 10f, 0);
-        if (c <= 10) testB.Position = new Vector2(440, 412).Lerp(new Vector2(445, 8), c / 10f);
+        if (c <= 10) testB.Position = new Vector2(430, 412).Lerp(new Vector2(435, 8), c / 10f);
         if (c <= 30) SetMask(550 * (30 - c) / 30f);
         if (c > 30) introCounter = 0;
     }

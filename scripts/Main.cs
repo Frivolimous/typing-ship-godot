@@ -66,6 +66,8 @@ public partial class Main : Node2D
         G.Ctrl.LevelOver += cleared => GD.Print(
             $"Level {G.Model.Level} {(cleared ? "cleared" : "lost")}: score {G.Model.Score}, ships {G.Model.TotalShips}, " +
             $"missed {G.Model.MissedShips}, health {G.Model.PShip.Health}, ticks {Engine.GetPhysicsFrames()}");
+        if (args.TryGetValue("trace", out var trace)) G.Ctrl.Trace = new System.IO.StreamWriter(trace);
+        G.Ctrl.LevelOver += _ => G.Ctrl.Trace?.Flush();
         if (args.ContainsKey("quit-on-end")) G.Ctrl.LevelOver += _ => GetTree().Quit();
         if (bot)
         {

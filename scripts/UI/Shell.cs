@@ -36,6 +36,7 @@ public partial class Shell : Control, ITicker
     float speed;
 
     public bool InGame => current == null;
+    public bool ShowingScore => current == Score;
     public bool Transitioning => fade.Visible;
 
     public Shell()
