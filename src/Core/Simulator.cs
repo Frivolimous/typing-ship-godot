@@ -40,7 +40,7 @@ public static class Simulator
     public sealed record Result(bool Cleared, string Line, Game Game);
 
     public static Result Run(GameData data, ArtLibrary art, int level, int wpm, ulong seed, int botWpm = 0,
-        TextWriter? trace = null, int maxTicks = 200_000)
+        TextWriter? trace = null, int maxTicks = 200_000, Action<Game>? onTick = null)
     {
         var game = new Game(data, new Rng(seed), art) { Wpm = wpm, Trace = trace };
         game.TutOff(); // tutorial pop-ups would wait for Space
@@ -57,6 +57,7 @@ public static class Simulator
         while (cleared == null && game.Ticks < maxTicks)
         {
             game.Step();
+            onTick?.Invoke(game);
             if (cleared == null) bot.Step();
         }
         trace?.Flush();

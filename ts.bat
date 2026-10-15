@@ -29,6 +29,7 @@ echo.
 echo    8  Edit a level: play it with the editing keys
 echo    9  Check the level and tuning files
 echo   10  Run the tests
+echo   11  Level pacing report  (charts and CSVs in pacing\)
 echo.
 echo    0  Quit
 echo.
@@ -51,6 +52,7 @@ if "%PICK%"=="7" goto simall
 if "%PICK%"=="8" goto edit
 if "%PICK%"=="9" dotnet build && "%GODOT%" --headless --path game -- --check 2>nul | findstr /v /b /c:"Godot Engine"
 if "%PICK%"=="10" dotnet test
+if "%PICK%"=="11" dotnet run --project src\Sim -- pacing && start "" "pacing\pacing.html"
 exit /b
 
 :watch

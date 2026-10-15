@@ -32,3 +32,6 @@ game/assets/music/*
 
 # Dev screenshots (--screenshot output)
 screenshots/
+
+# Pacing reports (dotnet run --project src/Sim -- pacing)
+pacing/
