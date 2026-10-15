@@ -1,20 +1,25 @@
 # Level 8 (7 on the map).
 # How to write these: docs/level-format.md. The game reads this file when the level starts.
 
+pace hard
+duration 2:42
+density 39.5%/64.5%/100%/105.5%/130%
+
 missile sn 0.07  0,2 4,2 0,7
 repeat 0.008 5 1 mirrored
 
 missile sn 0.05  0,3 5,4 12,8
-repeat 0.015 9 1 mirrored
+repeat 0.015 7 1 mirrored
 laser ln 0  3,0
 insert -7
 laser ln 0  9,0
 insert -5
 laser ln 0  6,0
 missile sn 0.02  1,12 4,6 12,2
-repeat 0.02 5 1 mirrored
+repeat 0.02 3 1 mirrored
 
-missile sn 0.17  12,12 8,3 2,6 12,7
+missile mn 0.08  6,0 6,4 6,0
+missile sn 0.053  12,12 8,3 2,6 12,7
 repeat 0.01 12 1
 laser ln 0  3,0
 insert -10
@@ -23,7 +28,8 @@ insert -5
 suicide mn 0.05  0,0 3,4
 repeat 0.01 3
 
-laser ms 0.23  4,0
+missile mn 0.07  6,0 6,4 6,0
+laser ms 0.071  4,0
 mirror 0.01
 laser ls 0.01  6,0
 laser ss 0.04  0,4
@@ -31,19 +37,58 @@ mirror 0.022
 offset 0.022  0,3
 mirror 0.022
 
-missile ss 0.22  0,12 4,3 10,6 0,6
-repeat 0.03 7 1
+missile mn 0.07  6,0 6,4 6,0
+missile ss 0.063  0,12 4,3 10,6 0,6
+repeat 0.022 9 1
 laser ls 0  5,0
-insert -5
+insert -6
 laser ls 0  7,0
-insert -1
-suicide mn 0.13  12,0 9,4
+insert -2
+suicide mn 0.1  12,0 9,4
 repeat 0.01 3
 
-laser ls 0.3  2,0
+missile sn 0.1  0,3 5,4 12,8
+repeat 0.015 7 1 mirrored
+laser ln 0  3,0
+insert -7
+laser ln 0  9,0
+insert -4
+suicide mn 0.04  0,0 3,4
+repeat 0.01 3
+
+missile sn 0.08  2,0 2,6 0,7
+missile sn 0  3,0 3,6 12,9
+repeat 0.035 3 2 mirrored
+
+missile mn 0.05  6,0 6,4 6,0
+laser ms 0.044  4,0
+mirror 0.01
+laser ls 0.01  6,0
+laser ss 0.04  0,4
+mirror 0.022
+offset 0.022  0,3
+mirror 0.022
+
+missile ss 0.08  12,12 8,3 2,6 12,7
+repeat 0.015 5 1
+laser ln 0  3,0
+insert -8
+wait 0
+
+suicide mn 0.04  0,0 3,4
+repeat 0.01 1
+
+missile mn 0.1  4,0 5,4 12,7
+mirror
+laser ls 0.05  2,0
 offset 0.01  2,0
 offset 0.01  2,0
 offset 0.01  2,0
 offset 0.01  2,0
-suicide mn 0.13  0,12 2,5
-repeat 0.01 7 1 mirrored
+missile sn 0.01  0,3 5,4 12,8
+mirror
+suicide mn 0.03  0,12 2,5
+repeat 0.012 3 1 mirrored
+
+# The last ships still fire for a few seconds: this pause puts their last words near 2:37.
+wait 0.06
