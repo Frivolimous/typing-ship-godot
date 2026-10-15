@@ -32,7 +32,6 @@ public static class Strings
 
     // Difficulty select, easiest first
     public static readonly string[] Diffs = { "EASY", "NORMAL", "HARD", "EXTREME", "INSANE" };
-    public static readonly int[] DiffWpm = Difficulty.Wpm;
 
     // Game over screen
     public const string Menu = "MENU", HsSubmit = "SUBMIT SCORE", MoreGames = "MORE GAMES",
@@ -45,10 +44,10 @@ public static class Strings
     public const string HighscoreStub = "This will display the high score.", SubmitStub = "This will submit the high score.",
         SponsorStub = "This will lead to the sponsor's website.";
 
-    public const string TestText =
-        "An evil galactic emperor from a far away star system is sending his fleet to destroy Earth.  Earth's people are " +
-        "frightened, fearing that they will be wiped out entirely.  Fortunately, they have just constructed a super " +
-        "advanced spacecraft that is ready to take on the evil emperor's fleet.";
+    // Typing test (the passages are in data/typing-test.txt)
+    public const string TestHint = "Type the text. The clock starts with your first key.";
+    public static string TestResult(int wpm, int accuracy, string difficulty) =>
+        $"Net speed: {wpm} WPM\nAccuracy: {accuracy}%\nSuggested: {difficulty}";
 
     public const string FinalCredits =
         "As the debris settles in the depths of space a heavy sigh of relief washes across all the people of earth.  " +

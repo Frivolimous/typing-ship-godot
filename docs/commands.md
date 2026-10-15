@@ -38,7 +38,7 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 | `--menu` | With `--autotype`: start on the title menu anyway (the bot plays once you start a level) |
 | `--map` | Start on the level map instead of the title |
 | `--profile=NAME` | Use the save file `user://NAME.json` instead of `user://save.json` (keeps test runs out of your save) |
-| `--keys=t:text,...` | Scripted input at given ticks: letters and digits are typed, `{space}`, `{enter}`, `{esc}`, `{backspace}`, `{f1}`–`{f12}` press keys, `{click:XxY}` clicks at a stage position. E.g. `--keys=40:start,75:1,85:normal` |
+| `--keys=t:text,...` | Scripted input at given ticks: letters, digits and punctuation (except commas) are typed, `{space}`, `{comma}`, `{enter}`, `{esc}`, `{backspace}`, `{f1}`–`{f12}` press keys, `{click:XxY}` clicks at a stage position. E.g. `--keys=40:start,75:1,85:normal` |
 | `--screenshot=path.png` | Save a screenshot after 10 ticks and quit (`--frames=N` for a different tick) |
 | `--at=a,b,c` | With `--screenshot`: save `path_a.png`, `path_b.png`, ... at those ticks, then quit |
 | `--speed=N` | Run N times faster (windowed runs; capped by frame rate) |

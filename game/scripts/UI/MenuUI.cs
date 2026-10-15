@@ -422,7 +422,7 @@ public partial class DiffSelect : Control
         Position = new Vector2(Math.Min(at.X + 20, G.StageSize - Size.X - 2), Math.Min(at.Y, G.StageSize - Size.Y - 2));
         // New: point out the hardest difficulty the typing test says you can keep up with.
         int test = G.Model.Save.TestWpm;
-        recommended = test <= 0 ? -1 : Math.Max(0, Array.FindLastIndex(Strings.DiffWpm, w => w <= test));
+        recommended = TypingTestRun.Suggest(test);
         Visible = true;
         QueueRedraw();
     }

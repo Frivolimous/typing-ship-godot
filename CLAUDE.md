@@ -31,7 +31,7 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
 | `src/Core/` | **The rules**, plain C# with no Godot reference (a test checks): `Game` (state, the 24 Hz tick, weapons, typing), entities, bosses, the bot (`AutoTyper`), `Simulator`, the RNG, save data and scoring. `Levels/` parses and builds level files; `Data/` loads and checks the data files |
 | `tests/Core.Tests/` | xUnit tests of the rules and data files |
 | `game/` | The Godot project: presentation and input only |
-| `data/` | words.txt, tuning.txt, levels/ (read from disk in a checkout, embedded in the game assembly for exports) |
+| `data/` | words.txt, tuning.txt, typing-test.txt (the typing test's passages), levels/ (read from disk in a checkout, embedded in the game assembly for exports) |
 | `docs/`, `reference/` | Docs; the original AS3 (read-only) |
 
 ## Architecture

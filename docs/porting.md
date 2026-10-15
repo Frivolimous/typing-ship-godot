@@ -40,7 +40,9 @@ ported, what's left, where the port deliberately differs from the original, and 
      those stated-to-true ratios hold at each difficulty.
    - **Typing test:** prose of about 250 characters with a 90 s cap, written as lore that introduces the
      game. "Fun and close enough" matters more than matching in-game typing exactly. Timer starts on the first
-     keystroke; it reports net WPM and accuracy.
+     keystroke; it reports net WPM and accuracy. **Done:** five draft passages in data/typing-test.txt (Jeremy
+     picks or edits; the test picks one at random), rules in src/Core/TypingTestRun.cs, the screen in
+     UI/Screens.cs. The suggestion keeps the old mapping (the hardest difficulty at or below the result).
    - **Difficulty selection:** open to experiments (Jeremy iterated on it a lot in the original).
    - **Pacing rework:** levels last 2–4 minutes at every difficulty (time-based pacing). Difficulty comes from
      more and/or faster enemies, not from level length. The 12 original levels are the baseline: Jeremy picks
@@ -135,6 +137,10 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   for the mouse. The original had the screen but no way to open it. Its result is saved and the difficulty box marks
   the hardest difficulty at or below it. In the original the result only set a WPM that the difficulty box then
   overwrote.
+- **The typing test is a new design** (phase 5): one of the passages of story in data/typing-test.txt, picked at
+  random, for up to 90 seconds from the first key, with a clock in the corner. Wrong keys still flash the cross and
+  don't move on, but now count against accuracy. The result is net WPM (correct characters, 5 to a word; the
+  original counted words) and accuracy, and the box names the suggested difficulty, chosen as before.
 - **The typing test no longer gives an achievement.** The original set the bronze Perfection medal but announced
   it as "Explorer", a bug.
 - **Escape counts as pausing "without clicking"** for the silver Explorer medal, as typing "pause" does.

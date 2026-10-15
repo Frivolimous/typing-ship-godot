@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Godot;
 
 namespace TypingShip;
@@ -97,31 +96,49 @@ public partial class AchieveUI : Screen
     }
 }
 
-// Type the story paragraph; the time from the first letter to the last gives your WPM. A wrong key flashes a red
-// cross for a second. Escape cancels.
+// The typing test: a passage of the story from data/typing-test.txt, for up to 90 seconds from the first key. A
+// wrong key flashes a red cross for a second and counts against accuracy. At the end it shows net WPM (correct
+// characters), accuracy and the difficulty it suggests (the rules are Core's TypingTestRun). Escape cancels.
 public partial class TypingTest : Screen
 {
-    static readonly string Story = Strings.TestText;
-    static readonly int NumWords = Regex.Split(Story, @"\W+").Length; // split(/\W+/), trailing "" included
-
     readonly RichTextLabel top, bottom;
+    readonly Label clock, hint;
     readonly Control errorS;
-    readonly MenuBox finishB = new("", 175, 225, 200, 100);
-    int typed;
-    ulong startMs;
+    readonly MenuBox finishB = new("", 135, 200, 280, 140);
+    TypingTestRun run = new("");
     double errorT, finishT;
+
+    static double Now => Time.GetTicksMsec() / 1000.0;
 
     public TypingTest()
     {
         top = Rich(30, Palette.Gold);
         bottom = Rich(290, Palette.Red);
-        top.Text = Story;
         errorS = new Cross { Visible = false };
         AddChild(errorS);
-        AddChild(finishB);
         // The original's MenuBt cancelled the test with the mouse; it never made it onto the stage.
         var back = new TextButton(Strings.Menu, Cancel, Palette.Gold, Palette.GoldOver, true) { Position = new Vector2(10, 520) };
         AddChild(back);
+        hint = new Label
+        {
+            Text = Strings.TestHint,
+            Position = new Vector2(100, 524),
+            Size = new Vector2(330, 20),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            LabelSettings = Fonts.Settings(Fonts.Space, 13, Palette.Gold),
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        AddChild(hint);
+        clock = new Label
+        {
+            Position = new Vector2(430, 1),
+            Size = new Vector2(100, 28),
+            HorizontalAlignment = HorizontalAlignment.Right,
+            LabelSettings = Fonts.Settings(Fonts.Space, 22, Palette.Gold),
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        AddChild(clock);
+        AddChild(finishB);
     }
 
     RichTextLabel Rich(float y, Color c)
@@ -145,9 +162,14 @@ public partial class TypingTest : Screen
 
     public override void NavIn()
     {
-        typed = 0;
+        var passages = G.Model.Data.TestPassages;
+        run = new TypingTestRun(passages[Math.Min((int)(G.Rand() * passages.Count), passages.Count - 1)]);
         bottom.Text = "";
+        top.ScrollToLine(0);
+        bottom.ScrollToLine(0);
+        hint.Visible = true;
         Highlight();
+        ShowClock();
     }
 
     public override bool OnKey(InputEventKey key)
@@ -158,54 +180,72 @@ public partial class TypingTest : Screen
             return true;
         }
         if (key.Unicode == 0) return true; // Shift and the like do nothing
-        if (finishB.Visible || typed >= Story.Length) return true;
+        if (finishB.Visible || run.Finished) return true;
         Update((char)key.Unicode);
         return true;
     }
 
     void Update(char c)
     {
-        if (char.ToLowerInvariant(c) != char.ToLowerInvariant(Story[typed]))
+        hint.Visible = false;
+        bool right = run.Type(c, Now);
+        if (right)
+        {
+            bottom.Text = Escape(run.Passage[..run.Typed]);
+            Highlight();
+            int lines = bottom.GetLineCount();
+            if (lines > 3)
+            {
+                top.ScrollToLine(lines - 3);
+                bottom.ScrollToLine(lines - 3);
+            }
+        }
+        else if (!run.Finished)
         {
             errorS.Visible = true;
             errorT = 1;
-            return;
         }
-        typed++;
-        bottom.Text = Escape(Story[..typed]);
-        Highlight();
-        int lines = bottom.GetLineCount();
-        if (lines > 3)
-        {
-            top.ScrollToLine(lines - 3);
-            bottom.ScrollToLine(lines - 3);
-        }
-        if (typed == 1) startMs = Time.GetTicksMsec();
-        else if (typed == Story.Length)
-        {
-            double wpm = NumWords / (double)(Time.GetTicksMsec() - startMs) * 60000;
-            G.Model.Save.TestWpm = (int)wpm;
-            G.Model.Save.Save();
-            Finish($"Your typing speed is:\n   {(int)wpm} WPM.");
-        }
+        if (run.Finished) Done();
     }
 
     void Highlight() =>
-        top.Text = typed == 0 ? Story : $"[bgcolor=#ffcc3355]{Escape(Story[..typed])}[/bgcolor]{Escape(Story[typed..])}";
+        top.Text = run.Typed == 0 ? Escape(run.Passage)
+            : $"[bgcolor=#ffcc3355]{Escape(run.Passage[..run.Typed])}[/bgcolor]{Escape(run.Passage[run.Typed..])}";
 
     static string Escape(string s) => s.Replace("[", "[lb]");
+
+    void ShowClock()
+    {
+        int s = (int)Math.Ceiling(run.Remaining(Now));
+        clock.Text = $"{s / 60}:{s % 60:00}";
+    }
+
+    void Done()
+    {
+        ShowClock();
+        int wpm = (int)run.NetWpm;
+        G.Model.Save.TestWpm = wpm;
+        G.Model.Save.Save();
+        int suggest = TypingTestRun.Suggest(wpm);
+        Finish(Strings.TestResult(wpm, (int)Math.Round(run.Accuracy * 100), Strings.Diffs[Math.Max(0, suggest)]));
+    }
 
     void Finish(string message)
     {
         finishB.Message = message;
         finishB.Visible = true;
-        finishT = 4;
+        finishT = 6;
     }
 
     public override void _Process(double delta)
     {
         if (errorT > 0 && (errorT -= delta) <= 0) errorS.Visible = false;
         if (finishT > 0 && (finishT -= delta) <= 0) FinishTick();
+        if (!finishB.Visible)
+        {
+            ShowClock();
+            if (run.Tick(Now)) Done(); // out of time
+        }
     }
 
     void FinishTick()

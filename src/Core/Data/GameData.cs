@@ -45,19 +45,21 @@ public abstract class DataSource
 }
 
 /// <summary>
-/// Everything the rules read from data/: the word list, the tuning numbers and the level scripts. Load() checks it
+/// Everything the rules read from data/: the word list, the tuning numbers, the level scripts and the typing test. Load() checks it
 /// all (including a trial build of every level) and throws a <see cref="DataError"/> for the first mistake.
 /// </summary>
 public sealed class GameData
 {
     public const int LevelCount = 12;
-    public const string BossFile = "levels/bosses.txt";
+    public const string BossFile = "levels/bosses.txt", TestFile = "typing-test.txt";
 
     public string Words { get; }
     public Tuning Tuning { get; }
     public IReadOnlyList<LevelScript> Levels { get; }
     /// <summary>bosses.txt: "[boss N escorts]" (sent in during the fight) and "[boss 1 hangar]" (boss 1's ships).</summary>
     public IReadOnlyDictionary<string, LevelScript> BossScripts { get; }
+    /// <summary>typing-test.txt: the typing test's passages.</summary>
+    public IReadOnlyList<string> TestPassages { get; private init; } = Array.Empty<string>();
 
     GameData(string words, Tuning tuning, IReadOnlyList<LevelScript> levels, IReadOnlyDictionary<string, LevelScript> boss)
     {
@@ -82,7 +84,10 @@ public sealed class GameData
             if (!RequiredBossSections.Contains(name))
                 throw new DataError(BossFile, 0, $"Unknown section [{name}].{DataError.DidYouMean(name, RequiredBossSections)} " +
                     $"The sections are {string.Join(", ", RequiredBossSections.Select(s => $"[{s}]"))}.");
-        var data = new GameData(Need("words.txt"), tuning, levels, boss);
+        var data = new GameData(Need("words.txt"), tuning, levels, boss)
+        {
+            TestPassages = TypingTestRun.ParsePassages(Need(TestFile), TestFile),
+        };
         data.Check();
         return data;
     }

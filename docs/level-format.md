@@ -126,3 +126,9 @@ levels/level07.txt, line 12: mirror copies the ship 1 back, but there are only 0
 ```
 
 The same goes for tuning.txt: a misspelt or missing setting stops the game with the line to fix.
+
+## The typing test
+
+The typing test's passages are in `data/typing-test.txt`, one paragraph each, separated by blank lines; the test
+picks one at random. Keep them to about 250 characters (150 to 300 is allowed) of plain keyboard characters. The
+file explains the rest.

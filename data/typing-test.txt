@@ -1,0 +1,34 @@
+# Millennium Typer: the typing test's passages
+#
+# The test picks one of these at random. Each is a paragraph: lines next to each other join into one passage, and
+# a blank line starts the next. Anything after a # is a note and isn't part of the text.
+# Aim for about 250 characters (the game refuses anything under 150, or over 300, which no longer fits the
+# screen), using only what every keyboard can type: plain letters, digits, spaces and punctuation. Capitals don't
+# need Shift: the test ignores case.
+#
+# Drafts for Jeremy to pick from or edit. Delete the ones you don't want.
+
+# 1. The original's story, retold
+An evil emperor from a distant star has sent his fleet to destroy Earth. Our people built one last ship to stop
+him: the Millennium, a fighter that obeys its pilot's words. Every word you type sends a missile at an enemy.
+Type fast, type true, and Earth may live.
+
+# 2. The warning
+The warning came from the edge of the solar system: a fleet of a thousand ships, led by an emperor who has never
+lost a war. Earth has one answer. Its pilots do not steer or aim. They type, and the Millennium turns every word
+they write into fire.
+
+# 3. The briefing (doubles as a tutorial)
+Pilot, listen closely. Every enemy ship carries a code word. Type it and your missiles find their mark. A
+shielded ship needs a short word first to knock out its shield. If your hull is hit, type the repair word. Keep
+calm and keep your hands on the keys.
+
+# 4. The last ship
+Year one thousand of the new calendar. The emperor's armada has crossed the void, and the old defences have
+already fallen. Only the Millennium remains, a ship built to move as fast as human thought. Its weapons wait for
+one thing: your words.
+
+# 5. The doubters
+They laughed when the engineers said a warship could be flown from a keyboard. They stopped laughing when a pilot
+typing ninety words a minute shot down the first enemy scout. Now the emperor's fleet is coming, and Earth needs
+every fast pair of hands it has.
