@@ -171,8 +171,7 @@ public sealed class Presenter : IGameEvents
     public void ChargeTicked(Charge c)
     {
         var glow = c.Origin == G.Model.Player ? Player.Glow : (views.GetValueOrDefault(c.Origin) as EnemyShipView)?.Glow;
-        var color = ChargeGlow.NextColor(); // drawn even without a view, so the random numbers stay in step
-        glow?.SetColor(color);
+        glow?.SetColor(ChargeGlow.NextColor());
     }
 
     public void BossBurning(Boss b)

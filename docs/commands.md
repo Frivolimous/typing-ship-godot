@@ -36,7 +36,7 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 | `--menu` | With `--autotype`: start on the title menu anyway (the bot plays once you start a level) |
 | `--map` | Start on the level map instead of the title |
 | `--profile=NAME` | Use the save file `user://NAME.json` instead of `user://save.json` (keeps test runs out of your save) |
-| `--keys=t:text,...` | Scripted input at given ticks: letters and digits are typed, `{space}`, `{enter}`, `{esc}` press keys, `{click:XxY}` clicks at a stage position. E.g. `--keys=40:start,75:1,85:normal` |
+| `--keys=t:text,...` | Scripted input at given ticks: letters and digits are typed, `{space}`, `{enter}`, `{esc}`, `{backspace}`, `{f1}`–`{f12}` press keys, `{click:XxY}` clicks at a stage position. E.g. `--keys=40:start,75:1,85:normal` |
 | `--screenshot=path.png` | Save a screenshot after 10 ticks and quit (`--frames=N` for a different tick) |
 | `--at=a,b,c` | With `--screenshot`: save `path_a.png`, `path_b.png`, ... at those ticks, then quit |
 | `--speed=N` | Run N times faster (windowed runs; capped by frame rate) |
@@ -65,7 +65,8 @@ Add `--level=N` for another level. `ts 6` asks for a level and simulates it at a
 every level (60 runs, a few minutes). `ts 5` asks for a level and opens a window where the bot plays it.
 
 The rules don't need Godot, so the tests run the same bot without it: `dotnet test` plays every level at every
-difficulty in a few seconds (tests/Core.Tests/SimulatorTests.cs).
+difficulty in a few seconds (tests/Core.Tests/SimulatorTests.cs). For the same seed it plays the same game as the
+headless run above, tick for tick.
 
 The bot (`--autotype`) types at exactly the difficulty's WPM and never mistypes. It plays earliest-deadline-first:
 whatever will hurt soonest (an incoming missile, a suicide ship, a laser about to fire, boss 3's beam) as long as it

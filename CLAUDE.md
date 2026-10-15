@@ -41,7 +41,9 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
   through `IGameEvents` (sprites spawned or removed, explosions, beams, score pop-ups, sounds, pauses, tutorials,
   achievements, level over), synchronously, mid-tick. Everything else the presentation reads from its state.
 - Everything random in the rules comes from `Game.Rng` (PCG32, bit-identical to Godot's RandomNumberGenerator).
-  Same data, seed and typing give the same game (`--trace` writes the state each tick, to compare runs).
+  The presentation has its own (`G.Rng`), so drawing never changes how the game plays. Same data, seed and typing
+  give the same game: `Simulator.Run` (the bot, no Godot) matches a headless `--autotype` run tick for tick
+  (`--trace` writes the state each tick, to compare runs).
 - **Game** (`game/scripts`): `G` (Core/G.cs) is the global access point: `G.Model` (the Core `Game`), `G.Ctrl`,
   `G.World`, `G.UI`, `G.Sound`, `G.Starfield`, `G.Shell`, and `G.Rand()` for presentation-only randomness.
   `GameControl._PhysicsProcess` calls `G.Model.Step()`, then `Presenter.Sync()` copies each entity's state into its

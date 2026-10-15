@@ -34,7 +34,11 @@ public partial class Main : Node2D
             return;
         }
 
-        G.Rng = args.TryGetValue("seed", out var seed) ? new Rng(ulong.Parse(seed)) : new Rng();
+        // The rules and the presentation have random numbers of their own, so how the game is drawn never changes
+        // how it plays: a seed gives the same game here as in the tests and the simulator.
+        ulong? seed = args.TryGetValue("seed", out var s) ? ulong.Parse(s) : null;
+        var rules = seed is { } rs ? new Rng(rs) : new Rng();
+        G.Rng = seed is { } fs ? new Rng(fs + 0x9E3779B97F4A7C15) : new Rng();
         bool bot = args.ContainsKey("autotype");
         // Bot runs don't touch the player's save unless given a profile of their own.
         if (args.TryGetValue("profile", out var profile)) SaveFile.Path = $"user://{profile}.json";
@@ -64,7 +68,7 @@ public partial class Main : Node2D
         AddChild(playfield);
 
         G.Starfield = new Starfield { Name = "Stars" };
-        G.Model = new Game(data, G.Rng, new ArtLibrary(Sprites.Mask), SaveFile.Load(), G.World);
+        G.Model = new Game(data, rules, new ArtLibrary(Sprites.Mask), SaveFile.Load(), G.World);
         if (args.TryGetValue("wpm", out var wpm)) G.Model.Wpm = int.Parse(wpm);
         G.UI = new GameUI { Name = "GameUI" };
         G.Starfield.Back.Size = new Vector2(G.StageSize, G.StageSize);

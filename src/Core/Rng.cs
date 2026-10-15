@@ -13,8 +13,8 @@ public sealed class Rng
 
     public Rng(ulong seed) => Seed(seed);
 
-    /// <summary>Seeded from the clock (an unseeded game).</summary>
-    public Rng() : this((ulong)DateTime.UtcNow.Ticks) { }
+    /// <summary>A random seed (an unseeded game).</summary>
+    public Rng() : this((ulong)Random.Shared.NextInt64()) { }
 
     public void Seed(ulong seed)
     {

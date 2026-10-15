@@ -22,7 +22,9 @@ ported, what's left, where the port deliberately differs from the original, and 
    build exactly the old C# scripts' events (every level, WPM 1–150, several seeds, same random draws; the test and
    the old scripts are in commit 8bdb8a9, deleted after), and 240
    headless bot runs (levels 0–11 x 5 difficulties x 3 seeds, plus a slow bot) give per-tick traces byte-identical
-   to the pre-refactor game. Editing: `--edit` (F5 reload, F6–F8 restart and jump, F9 grid and paths, F10
+   to the pre-refactor game. After that proof the presentation got random numbers of its own, so a given `--seed`
+   now plays out differently from before (same odds, different draws), and the same as in the Core-only simulator,
+   tick for tick. Editing: `--edit` (F5 reload, F6–F8 restart and jump, F9 grid and paths, F10
    invincible), `--from`, `--line`, `--check`; `ts 8`–`10`.
 5. **Difficulty review:** play every level at every difficulty (bot simulations plus Jeremy's playtests) and
    check each one demands roughly its target WPM (25/40/65/75/90). Retune where it doesn't.

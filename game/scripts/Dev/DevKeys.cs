@@ -4,7 +4,8 @@ namespace TypingShip;
 
 // Dev aid: "--keys=60:start,120:1,140:normal,900:{space}" plays scripted input, so windowed screenshot runs can
 // walk through the menus. Each item is tick:text, counting ticks (1/24 s of game time) from start-up. Letters and
-// digits are typed; {space}, {enter}, {esc} press those keys; {click:XxY} clicks at a stage position (x, y).
+// digits are typed; {space}, {enter}, {esc}, {backspace}, {f1}-{f12} press those keys; {click:XxY} clicks at a stage
+// position (x, y).
 public partial class DevKeys : Node
 {
     readonly List<(int Frame, string Text)> script = new();
@@ -53,6 +54,8 @@ public partial class DevKeys : Node
             case "space": Key(Godot.Key.Space, ' '); break;
             case "enter": Key(Godot.Key.Enter, '\0'); break;
             case "esc": Key(Godot.Key.Escape, '\0'); break;
+            case "backspace": Key(Godot.Key.Backspace, '\0'); break;
+            case ['f', .. var n] when int.TryParse(n, out int f) && f is >= 1 and <= 12: Key(Godot.Key.F1 + (f - 1), '\0'); break;
             default:
                 if (!s.StartsWith("click:")) throw new ArgumentException($"--keys: unknown {{{s}}}");
                 var xy = s["click:".Length..].Split('x').Select(float.Parse).ToArray();
