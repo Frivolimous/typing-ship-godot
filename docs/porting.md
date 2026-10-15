@@ -13,11 +13,10 @@ ported, what's left, where the port deliberately differs from the original, and 
    victory, credits, transitions, tutorial pop-ups, achievements, save data (best score per level, unlocks).~~ Done:
    every screen checked in windowed screenshot runs (`--keys` walks the menus), and the bot sims are unchanged.
    The menus can be driven by typing as well as the mouse (see Deviations).
-4. **Refactor and level editor:** rules move into a plain C# core with unit tests. Level scripts and tuning
+4. ~~**Refactor and level editor:** rules move into a plain C# core with unit tests. Level scripts and tuning
    numbers move into data files that Jeremy can edit without touching code. Add tools to make editing quick:
    reload a level without restarting, start from any point in a level, and show the 12x12 spawn grid and ship
-   paths in game.
-   *In progress.* The rules are in src/Core with xUnit tests (tests/Core.Tests); levels are data/levels/*.txt
+   paths in game.~~ Done. The rules are in src/Core with xUnit tests (tests/Core.Tests); levels are data/levels/*.txt
    (format: [level-format.md](level-format.md)) and the numbers data/tuning.txt. The level files were proven to
    build exactly the old C# scripts' events (every level, WPM 1–150, several seeds, same random draws; the test and
    the old scripts are in commit 8bdb8a9, deleted after), and 240
@@ -25,7 +24,8 @@ ported, what's left, where the port deliberately differs from the original, and 
    to the pre-refactor game. After that proof the presentation got random numbers of its own, so a given `--seed`
    now plays out differently from before (same odds, different draws), and the same as in the Core-only simulator,
    tick for tick. Editing: `--edit` (F5 reload, F6–F8 restart and jump, F9 grid and paths, F10
-   invincible), `--from`, `--line`, `--check`; `ts 8`–`10`.
+   invincible), `--from`, `--line`, `--check`; `ts 8`–`10`. Checked with windowed walk-throughs of every screen and of
+   the editing keys (including F5 after an edit, and F5 on a broken file). Level design itself is for Jeremy to try.
 5. **Difficulty review:** play every level at every difficulty (bot simulations plus Jeremy's playtests) and
    check each one demands roughly its target WPM (25/40/65/75/90). Retune where it doesn't.
 6. **New features and deeper game logic:** new mechanics, enemies, modes and systems beyond the original (the

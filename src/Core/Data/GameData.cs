@@ -16,7 +16,25 @@ public abstract class DataSource
         public override string? Read(string name)
         {
             var path = Path.Combine(directory, name);
-            return File.Exists(path) ? File.ReadAllText(path) : null;
+            if (!File.Exists(path)) return null;
+            // An editor may be saving the file at this very moment (F5 right after saving): try again briefly.
+            for (int attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                    using var reader = new StreamReader(stream);
+                    return reader.ReadToEnd();
+                }
+                catch (IOException) when (attempt < 10)
+                {
+                    Thread.Sleep(50);
+                }
+                catch (IOException e)
+                {
+                    throw new DataError(name, 0, $"Couldn't read the file ({e.Message}). Try again in a moment.");
+                }
+            }
         }
     }
 

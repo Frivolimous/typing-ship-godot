@@ -11,7 +11,7 @@ public partial class PopAchieve : Control
     public PopAchieve(int achieve, int tier)
     {
         // Top centre, except on the score screen, where that would cover the title: under "FINAL SCORE:" instead.
-        Position = G.Shell.ShowingScore ? new Vector2(30, 355) : new Vector2(175, 20);
+        Position = G.Shell.ShowingScore ? new Vector2(30, 365) : new Vector2(175, 20);
         Size = new Vector2(250, 100);
         MouseFilter = MouseFilterEnum.Ignore;
         Modulate = new Color(1, 1, 1, 0);
