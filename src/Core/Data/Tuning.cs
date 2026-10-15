@@ -12,6 +12,8 @@ public sealed class Tuning
     // [enemy ships]
     public int BasePoints = 5;
     public float BaseSpeed = 0.5f;
+    /// <summary>A ship's speed (BaseSpeed plus its letters') is multiplied by cps x this.</summary>
+    public double SpeedPerCps = 0.12;
     /// <summary>Size letter (1st of the ship code) to letters, points and speed.</summary>
     public Dictionary<char, SizeStats> Sizes = new()
     {
@@ -30,28 +32,29 @@ public sealed class Tuning
     };
 
     // [enemy weapons]
-    public float EnemyMissileSpeed = 0.008f;
+    public double EnemyMissileSpeed = 0.096;
     public int EnemyMissilePoints = 1;
-    public float FireRateWpm = 150, FireRateMin = 0.3f, FireRateMax = 1;
+    public double FireRateCps = 12.5;
+    public float FireRateMin = 0.3f, FireRateMax = 1;
     public float FireRateHealth2 = 1.5f, FireRateHealth3 = 2;
-    public int LaserCharge = 6000;
+    public double LaserCharge = 500;
     public float TurretRange = 100;
-    public float StealthFadeWpm = 30;
+    public double StealthFadeCps = 2.5;
 
     // [player]
     public int PlayerHealth = 5;
     public int TypingBar = 20;
     public int HealWordShortest = 8, HealWordLongest = 9;
     public int OverflowTicks = 30;
-    public float PlayerMissileSpeed = 0.1f;
+    public double PlayerMissileSpeed = 1.2;
     public float MissileHitRange = 30;
     public int EmpCharge = 5;
 
     // [level scripts]
     public float Jitter = 10;
     public float ArriveDistance = 20;
-    public float HaltScale = 400;
-    public double ShrinkFrom = 0.1, ShrinkWpm = 300, ShrinkLimit = 0.5;
+    public double HaltScale = 100 / 3.0;
+    public double ShrinkFrom = 0.1, ShrinkCps = 25, ShrinkLimit = 0.5;
     public double EndWait = 0.05;
 
     // [bosses]
@@ -59,7 +62,7 @@ public sealed class Tuning
     public int ScannerRing = 300, ScannerStep = 30, ScannerWord = 3, ScannerFinalWord = 10;
     public int BossFirstAttack = 6;
     public int Boss0Attack = 48, Boss1Attack = 23, Boss1AttackPerHealth = 3, Boss2Attack = 70;
-    public int Boss2BeamTime = 300;
+    public double Boss2BeamTime = 25;
     public int CounterWord = 11;
 
     public readonly record struct SizeStats(int Letters, int Points, float Speed);
@@ -72,7 +75,7 @@ public sealed class Tuning
 
     static Entry I(string s, string k, Action<Tuning, int> set) => new(s, k, (t, v) => set(t, int.Parse(v, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture)));
     static Entry F(string s, string k, Action<Tuning, float> set) => new(s, k, (t, v) => set(t, float.Parse(v, NumberStyles.Float, CultureInfo.InvariantCulture)));
-    static Entry D(string s, string k, Action<Tuning, double> set) => new(s, k, (t, v) => set(t, double.Parse(v, NumberStyles.Float, CultureInfo.InvariantCulture)));
+    static Entry D(string s, string k, Action<Tuning, double> set) => new(s, k, (t, v) => set(t, ToDouble(v)));
 
     const string Ships = "enemy ships", Size = "size", Weapon = "weapon", Defence = "defence", Health = "hull health",
         EnemyWeapons = "enemy weapons", Player = "player", Scripts = "level scripts", Bosses = "bosses";
@@ -81,6 +84,7 @@ public sealed class Tuning
     {
         I(Ships, "points", (t, v) => t.BasePoints = v),
         F(Ships, "speed", (t, v) => t.BaseSpeed = v),
+        D(Ships, "speed per cps", (t, v) => t.SpeedPerCps = v),
 
         I(Weapon, "laser extra letters", (t, v) => t.LaserExtraLetters = v),
         I(Weapon, "laser points", (t, v) => t.LaserPoints = v),
@@ -90,31 +94,31 @@ public sealed class Tuning
         F(Weapon, "suicide speed", (t, v) => t.SuicideSpeed = v),
         F(Weapon, "mine speed", (t, v) => t.MineSpeed = v),
 
-        F(EnemyWeapons, "missile speed", (t, v) => t.EnemyMissileSpeed = v),
+        D(EnemyWeapons, "missile speed", (t, v) => t.EnemyMissileSpeed = v),
         I(EnemyWeapons, "missile points", (t, v) => t.EnemyMissilePoints = v),
-        F(EnemyWeapons, "fire rate wpm", (t, v) => t.FireRateWpm = v),
+        D(EnemyWeapons, "fire rate cps", (t, v) => t.FireRateCps = v),
         F(EnemyWeapons, "fire rate min", (t, v) => t.FireRateMin = v),
         F(EnemyWeapons, "fire rate max", (t, v) => t.FireRateMax = v),
         F(EnemyWeapons, "fire rate health 2", (t, v) => t.FireRateHealth2 = v),
         F(EnemyWeapons, "fire rate health 3", (t, v) => t.FireRateHealth3 = v),
-        I(EnemyWeapons, "laser charge", (t, v) => t.LaserCharge = v),
+        D(EnemyWeapons, "laser charge", (t, v) => t.LaserCharge = v),
         F(EnemyWeapons, "turret range", (t, v) => t.TurretRange = v),
-        F(EnemyWeapons, "stealth fade wpm", (t, v) => t.StealthFadeWpm = v),
+        D(EnemyWeapons, "stealth fade cps", (t, v) => t.StealthFadeCps = v),
 
         I(Player, "health", (t, v) => t.PlayerHealth = v),
         I(Player, "typing bar", (t, v) => t.TypingBar = v),
         I(Player, "heal word shortest", (t, v) => t.HealWordShortest = v),
         I(Player, "heal word longest", (t, v) => t.HealWordLongest = v),
         I(Player, "overflow", (t, v) => t.OverflowTicks = v),
-        F(Player, "missile speed", (t, v) => t.PlayerMissileSpeed = v),
+        D(Player, "missile speed", (t, v) => t.PlayerMissileSpeed = v),
         F(Player, "missile hit range", (t, v) => t.MissileHitRange = v),
         I(Player, "emp charge", (t, v) => t.EmpCharge = v),
 
         F(Scripts, "jitter", (t, v) => t.Jitter = v),
         F(Scripts, "arrive distance", (t, v) => t.ArriveDistance = v),
-        F(Scripts, "halt scale", (t, v) => t.HaltScale = v),
+        D(Scripts, "halt scale", (t, v) => t.HaltScale = v),
         D(Scripts, "shrink from", (t, v) => t.ShrinkFrom = v),
-        D(Scripts, "shrink wpm", (t, v) => t.ShrinkWpm = v),
+        D(Scripts, "shrink cps", (t, v) => t.ShrinkCps = v),
         D(Scripts, "shrink limit", (t, v) => t.ShrinkLimit = v),
         D(Scripts, "end wait", (t, v) => t.EndWait = v),
 
@@ -129,7 +133,7 @@ public sealed class Tuning
         I(Bosses, "boss 2 attack", (t, v) => t.Boss1Attack = v),
         I(Bosses, "boss 2 attack per health", (t, v) => t.Boss1AttackPerHealth = v),
         I(Bosses, "boss 3 attack", (t, v) => t.Boss2Attack = v),
-        I(Bosses, "boss 3 beam", (t, v) => t.Boss2BeamTime = v),
+        D(Bosses, "boss 3 beam", (t, v) => t.Boss2BeamTime = v),
         I(Bosses, "counter word", (t, v) => t.CounterWord = v),
     };
 
@@ -239,4 +243,14 @@ public sealed class Tuning
 
     static int ToInt(string s) => int.Parse(s, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
     static float ToFloat(string s) => float.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
+
+    /// <summary>A number, or a fraction such as "100/3" for one that has no exact decimal.</summary>
+    static double ToDouble(string s)
+    {
+        int slash = s.IndexOf('/');
+        if (slash < 0) return double.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
+        double num = ToDouble(s[..slash].Trim()), den = ToDouble(s[(slash + 1)..].Trim());
+        if (den == 0) throw new FormatException();
+        return num / den;
+    }
 }

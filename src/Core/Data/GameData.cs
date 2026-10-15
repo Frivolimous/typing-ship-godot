@@ -93,9 +93,9 @@ public sealed class GameData
     /// it) show up at load rather than mid-game.</summary>
     void Check()
     {
-        foreach (int wpm in Difficulty.Wpm)
+        foreach (double cps in Difficulty.Cps)
         {
-            var c = new LevelContext(new Rng(1), Tuning, wpm);
+            var c = new LevelContext(new Rng(1), Tuning, cps);
             foreach (var level in Levels)
             {
                 var events = LevelBuilder.Build(level, c);

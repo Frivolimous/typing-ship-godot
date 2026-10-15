@@ -11,8 +11,8 @@ namespace TypingShip.Core;
 public sealed class AutoTyper
 {
     readonly Game game;
-    /// <summary>0 = type at the game's WPM.</summary>
-    public int BotWpm;
+    /// <summary>Characters per second; 0 = type at the game's speed.</summary>
+    public double BotCps;
     float charge;
     string? word;
     Entity? owner;
@@ -20,13 +20,13 @@ public sealed class AutoTyper
 
     const float Never = 100000;
 
-    public AutoTyper(Game game, int botWpm = 0)
+    public AutoTyper(Game game, double botCps = 0)
     {
         this.game = game;
-        BotWpm = botWpm;
+        BotCps = botCps;
     }
 
-    float Rate => (BotWpm > 0 ? BotWpm : game.Wpm) * 5f / 60f / Playfield.TickRate; // letters per tick
+    float Rate => (float)(BotCps > 0 ? BotCps : game.Cps) / Playfield.TickRate; // letters per tick
 
     /// <summary>Call once per tick, after the game's Step.</summary>
     public void Step()
@@ -108,7 +108,7 @@ public sealed class AutoTyper
             {
                 if (c.Remaining >= 0) return c.Remaining;
                 // Not charging yet: time to fly in and sit out the halts before the firing step, plus the charge.
-                float ticks = (float)m.Tuning.LaserCharge / m.Wpm, speed = Math.Max(s.A * 10, 0.1f);
+                float ticks = (float)(m.Tuning.LaserCharge / m.Cps), speed = Math.Max(s.A * 10, 0.1f);
                 var pos = s.Position;
                 foreach (var cmd in s.Commands)
                 {

@@ -3,7 +3,7 @@ using TypingShip.Core.Data;
 namespace TypingShip.Core.Levels;
 
 /// <summary>What building a level needs: the random numbers, the tuning, and the difficulty.</summary>
-public sealed record LevelContext(Rng Rng, Tuning Tuning, int Wpm);
+public sealed record LevelContext(Rng Rng, Tuning Tuning, double Cps);
 
 /// <summary>Something in a level that happens once the ship has travelled Distance.</summary>
 public abstract class LevelEvent
@@ -108,7 +108,7 @@ public sealed class SpawnEvent : LevelEvent
             case 't': HasTurret = true; break;
             case 'b': Shielded = true; HasTurret = true; break;
         }
-        A *= c.Wpm / 100f;
+        A *= (float)(c.Cps * tune.SpeedPerCps);
     }
 }
 
@@ -129,7 +129,7 @@ public sealed class ObjectCommand
         float j = c.Tuning.Jitter;
         X = x > 0 && x < Playfield.ViewWidth ? Math.Clamp(x + c.Rng.Rand() * (j * 2) - j, 0, Playfield.ViewWidth) : x;
         Y = y > 0 && y < Playfield.ViewHeight ? Math.Clamp(y + c.Rng.Rand() * (j * 2) - j, 0, Playfield.ViewHeight) : y;
-        Timer = (int)(timer * c.Tuning.HaltScale / c.Wpm);
+        Timer = Speed.FloorTicks(timer * c.Tuning.HaltScale / c.Cps);
         Move = move;
         Fire = fire;
     }
@@ -147,7 +147,8 @@ public sealed class ObjectCommand
         return false;
     }
 
-    int BaseTimer => (int)(Timer * c.Wpm / c.Tuning.HaltScale);
+    // Back to halt units, rounding down (so a copy can wait a tick less, as in the original).
+    int BaseTimer => Speed.FloorTicks(Timer * c.Cps / c.Tuning.HaltScale);
 
     public ObjectCommand Clone() => new(c, X, Y, BaseTimer, Move, Fire);
     public ObjectCommand Mirror() => new(c, Playfield.ViewWidth - X, Y, BaseTimer, Move, Fire);

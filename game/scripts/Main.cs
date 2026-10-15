@@ -1,3 +1,4 @@
+using System.Globalization;
 using Godot;
 using TypingShip.Core.Data;
 
@@ -69,7 +70,8 @@ public partial class Main : Node2D
 
         G.Starfield = new Starfield { Name = "Stars" };
         G.Model = new Game(data, rules, new ArtLibrary(Sprites.Mask), SaveFile.Load(), G.World);
-        if (args.TryGetValue("wpm", out var wpm)) G.Model.Wpm = int.Parse(wpm);
+        if (args.TryGetValue("wpm", out var wpm)) G.Model.Cps = Speed.FromWpm(double.Parse(wpm, CultureInfo.InvariantCulture));
+        if (args.TryGetValue("cps", out var cps)) G.Model.Cps = double.Parse(cps, CultureInfo.InvariantCulture);
         G.UI = new GameUI { Name = "GameUI" };
         G.Starfield.Back.Size = new Vector2(G.StageSize, G.StageSize);
         G.Starfield.SetBack(0); // behind the typing test before any level has been played
@@ -90,7 +92,9 @@ public partial class Main : Node2D
         if (args.ContainsKey("quit-on-end")) G.Ctrl.LevelOver += _ => GetTree().Quit();
         if (bot)
         {
-            AddChild(new DevAutoTyper { BotWpm = args.TryGetValue("botwpm", out var b) ? int.Parse(b) : 0 });
+            double botCps = args.TryGetValue("botcps", out var bc) ? double.Parse(bc, CultureInfo.InvariantCulture)
+                : args.TryGetValue("botwpm", out var b) ? Speed.FromWpm(double.Parse(b, CultureInfo.InvariantCulture)) : 0;
+            AddChild(new DevAutoTyper { BotCps = botCps });
             G.Model.TutOff(); // tutorial pop-ups would wait for Space
         }
 

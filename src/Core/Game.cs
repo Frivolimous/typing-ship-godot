@@ -21,7 +21,9 @@ public sealed partial class Game
     // ---- State (GameModel) ----
     public bool Running, CanType, BossMode, Perfect, Invincible;
     public double Distance, MaxDistance;
-    public int ScoreC, Level = -1, MissedShips, TotalShips, Wpm = Difficulty.Normal;
+    public int ScoreC, Level = -1, MissedShips, TotalShips;
+    /// <summary>The difficulty, as a typing speed in characters per second (see <see cref="Speed"/>).</summary>
+    public double Cps = Difficulty.Normal;
     public int Score;
     public List<LevelEvent> LevelData = new();
     public readonly List<Sprite> Objects = new();
@@ -60,13 +62,13 @@ public sealed partial class Game
         Player = new PlayerShip(this);
     }
 
-    public LevelContext Context => new(Rng, Tuning, Wpm);
+    public LevelContext Context => new(Rng, Tuning, Cps);
 
     /// <summary>Editing aid: use newly loaded data files from the next level start (or restart) on.</summary>
     public void Reload(GameData data) => Data = data;
 
     /// <summary>1 (easy) to 5 (insane).</summary>
-    public int Diff => Difficulty.Of(Wpm);
+    public int Diff => Difficulty.Of(Cps);
 
     public float HitRatio() => (TotalShips - MissedShips) / (float)TotalShips;
 
@@ -74,7 +76,7 @@ public sealed partial class Game
 
     public void TutReset()
     {
-        if (Wpm > 50) Array.Fill(TutFlags, true);
+        if (Cps > Speed.FromWpm(50)) Array.Fill(TutFlags, true);
     }
 
     public void TutOff() => Array.Fill(TutFlags, true);
@@ -86,7 +88,7 @@ public sealed partial class Game
     {
         while (Objects.Count > 0) Objects[0].Remove();
         Boss?.Remove();
-        MRate = Math.Clamp(Wpm / Tuning.FireRateWpm, Tuning.FireRateMin, Tuning.FireRateMax);
+        MRate = Math.Clamp((float)(Cps / Tuning.FireRateCps), Tuning.FireRateMin, Tuning.FireRateMax);
         TutReset();
         Score = 0;
         Level = level - 1;
@@ -162,7 +164,7 @@ public sealed partial class Game
             return;
         }
 
-        Distance += Wpm / (double)Playfield.TickRate / 3600;
+        Distance += Cps / 7200; // wpm / 24 / 3600 in the original
         Events.TickAdvanced();
 
         if (LevelData.Count > 0)

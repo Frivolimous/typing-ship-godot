@@ -206,8 +206,8 @@ public partial class MapUI : Control
         }
         for (int i = 0; i < Strings.Diffs.Length; i++)
         {
-            int wpm = Strings.DiffWpm[i];
-            nav.Add(Strings.Diffs[i], () => Diff.StartGame(wpm), () => Diff.IsVisibleInTree());
+            double cps = Difficulty.Cps[i];
+            nav.Add(Strings.Diffs[i], () => Diff.StartGame(cps), () => Diff.IsVisibleInTree());
         }
     }
 
@@ -386,7 +386,7 @@ public partial class DiffSelect : Control
         AddChild(highscore);
         for (int i = 0; i < Strings.Diffs.Length; i++)
         {
-            int wpm = Strings.DiffWpm[i];
+            double cps = Difficulty.Cps[i];
             var b = new Label
             {
                 Text = Strings.Diffs[i],
@@ -408,7 +408,7 @@ public partial class DiffSelect : Control
             {
                 if (e is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) return;
                 b.AcceptEvent();
-                StartGame(wpm);
+                StartGame(cps);
             };
             AddChild(b);
         }
@@ -436,10 +436,10 @@ public partial class DiffSelect : Control
         DrawColoredPolygon(new[] { new Vector2(66, y), new Vector2(69, y - 4), new Vector2(69, y + 4) }, Palette.Gold);
     }
 
-    public void StartGame(int wpm)
+    public void StartGame(double cps)
     {
         Visible = false;
         G.Sound.Sound(SoundControl.Click);
-        G.Shell.StartGame(level, wpm);
+        G.Shell.StartGame(level, cps);
     }
 }

@@ -11,7 +11,7 @@ public class SimulatorTests
     [MemberData(nameof(LevelsAndDifficulties))]
     public void Perfect_bot_clears_every_level_at_every_difficulty(int level, int wpm)
     {
-        var r = Simulator.Run(TestData.Data, TestData.Art, level, wpm, seed: 1);
+        var r = Simulator.Run(TestData.Data, TestData.Art, level, Speed.FromWpm(wpm), seed: 1);
         Assert.True(r.Cleared, r.Line);
     }
 
@@ -20,7 +20,7 @@ public class SimulatorTests
     [InlineData(10, 40)]
     public void Slow_bot_takes_damage(int level, int wpm)
     {
-        var r = Simulator.Run(TestData.Data, TestData.Art, level, wpm, seed: 1, botWpm: wpm * 6 / 10);
+        var r = Simulator.Run(TestData.Data, TestData.Art, level, Speed.FromWpm(wpm), seed: 1, botCps: Speed.FromWpm(wpm * 6 / 10));
         Assert.True(!r.Cleared || r.Game.Player.Injured, r.Line);
     }
 }

@@ -21,7 +21,7 @@ public sealed class LevelBuilder
     {
         this.c = c;
         var t = c.Tuning;
-        mult = Math.Max(1 - c.Wpm / t.ShrinkWpm, t.ShrinkLimit);
+        mult = Math.Max(1 - c.Cps / t.ShrinkCps, t.ShrinkLimit);
         dist = startDistance;
     }
 

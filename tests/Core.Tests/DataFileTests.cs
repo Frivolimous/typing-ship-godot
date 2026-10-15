@@ -31,9 +31,17 @@ public class TuningTests
     }
 
     [Fact]
+    public void Numbers_can_be_fractions()
+    {
+        Assert.Equal(100 / 3.0, Tuning.Parse(Real).HaltScale);
+        Assert.Equal(2.5, Tuning.Parse(Real.Replace("stealth fade cps = 2.5", "stealth fade cps = 5 / 2")).StealthFadeCps);
+        Assert.Contains("isn't a number", Fails(Real.Replace("stealth fade cps = 2.5", "stealth fade cps = 5/0")).Message);
+    }
+
+    [Fact]
     public void Missing_setting_is_an_error()
     {
-        var e = Fails(Real.Replace("laser charge = 6000", ""));
+        var e = Fails(Real.Replace("laser charge = 500", ""));
         Assert.Contains("[enemy weapons] laser charge", e.Message);
     }
 
@@ -80,7 +88,7 @@ public class LevelFormatTests
     static DataError ParseFails(string text) => Assert.Throws<DataError>(() => Parse(text));
 
     static List<LevelEvent> Build(string text, int wpm = 40, ulong seed = 1) =>
-        LevelBuilder.Build(Parse(text), new LevelContext(new Rng(seed), TestData.Tuning, wpm));
+        LevelBuilder.Build(Parse(text), new LevelContext(new Rng(seed), TestData.Tuning, Speed.FromWpm(wpm)));
 
     [Fact]
     public void Reads_the_original_helpers()

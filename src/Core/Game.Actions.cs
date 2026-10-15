@@ -8,22 +8,23 @@ public sealed partial class Game
         if (o == Player)
         {
             // One missile per point of the target's health, fanned out and staggered.
-            int w = Wpm;
+            // Each later missile waits n x 100 / wpm ticks (100 / 12 / cps).
+            int Stagger(int n) => Speed.CeilingTicks(n * 100 / 12.0 / Cps);
             switch (t.Health)
             {
                 case 4:
                     LaunchPlayerMissile(t, -MathF.PI * 5 / 6);
-                    LaunchPlayerMissile(t, -MathF.PI / 6, (int)Math.Ceiling(100.0 / w));
-                    LaunchPlayerMissile(t, MathF.PI * 3 / 4, (int)Math.Ceiling(200.0 / w));
-                    LaunchPlayerMissile(t, MathF.PI / 4, (int)Math.Ceiling(300.0 / w));
+                    LaunchPlayerMissile(t, -MathF.PI / 6, Stagger(1));
+                    LaunchPlayerMissile(t, MathF.PI * 3 / 4, Stagger(2));
+                    LaunchPlayerMissile(t, MathF.PI / 4, Stagger(3));
                     break;
                 case 3:
                     LaunchPlayerMissile(t, -MathF.PI / 2);
-                    LaunchPlayerMissile(t, MathF.PI * 3 / 4, (int)Math.Ceiling(200.0 / w));
-                    LaunchPlayerMissile(t, MathF.PI / 4, (int)Math.Ceiling(300.0 / w));
+                    LaunchPlayerMissile(t, MathF.PI * 3 / 4, Stagger(2));
+                    LaunchPlayerMissile(t, MathF.PI / 4, Stagger(3));
                     break;
                 case 2:
-                    LaunchPlayerMissile(t, -MathF.PI, (int)Math.Ceiling(100.0 / w));
+                    LaunchPlayerMissile(t, -MathF.PI, Stagger(1));
                     LaunchPlayerMissile(t, 0);
                     break;
                 case 1:

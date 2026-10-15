@@ -39,7 +39,7 @@ public sealed class Boss : Sprite
         this.c = c;
         var t = game.Tuning;
         Health = t.BossHealth;
-        five = t.Boss2BeamTime / game.Wpm;
+        five = Speed.FloorTicks(t.Boss2BeamTime / game.Cps);
         Index = i;
         WordSize = -1;
         Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 100));
@@ -189,7 +189,7 @@ public sealed class Boss : Sprite
         }
     }
 
-    /// <summary>Boss 3's beam, counted down from five*44 ticks (five = beam time / wpm).</summary>
+    /// <summary>Boss 3's beam, counted down from five*44 ticks (five = beam time / cps).</summary>
     void UpdateBeam()
     {
         if (delay < 0) return;

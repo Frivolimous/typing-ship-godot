@@ -81,7 +81,7 @@ Build with `dotnet build` and run `dotnet test` (both from the repo root). Rules
 tests/Core.Tests. The rest of the testing happens through the dev flags in docs/commands.md:
 
 - **Headless simulation** (fast, no window): `--headless --fixed-fps 24 --path game -- --autotype --quit-on-end
-  [--wpm=N] [--botwpm=N] [--level=N] [--seed=N]` prints a one-line result per level. A perfect bot should clear
+  [--wpm=N] [--botwpm=N] [--level=N] [--seed=N]` (or `--cps`, `--botcps`) prints a one-line result per level. A perfect bot should clear
   every level at every difficulty. A slow bot (`--botwpm` well below `--wpm`) should take damage.
 - **Screenshots** (needs a window): `--screenshot=path.png --at=600,1200` saves frames, then quits. Look at them.
   Save into the scratchpad or `screenshots/` (ignored).

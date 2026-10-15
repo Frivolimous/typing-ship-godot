@@ -109,14 +109,14 @@ public class WeaponTests
     }
 
     [Fact]
-    public void A_laser_charges_for_6000_over_wpm_ticks_then_hits()
+    public void A_laser_charges_for_500_over_cps_ticks_then_hits()
     {
         var g = TestData.WithLevel0("laser sn 0.01  6,0");
         g.NewGame(0);
         g.Until(() => g.Objects.Count == 1);
         var ship = g.OnlyShip();
         g.Until(() => ship.Charge!.Active);
-        Assert.Equal(6000 / 40 - 1, ship.Charge!.Remaining); // it starts charging the tick it fires
+        Assert.Equal(500 * 12 / 40 - 1, ship.Charge!.Remaining); // it starts charging the tick it fires
         g.Until(() => !ship.Charge.Active);
         Assert.Equal(g.Player.MaxHealth - 1, g.Player.Health);
         Assert.True(g.Player.Injured);
@@ -327,7 +327,7 @@ public class ScoringTests
     [Fact]
     public void Bonuses_multiply_and_count_up_in_about_72_steps()
     {
-        Assert.Equal(1.4f, Scoring.DifficultyBonus(40));
+        Assert.Equal(1.4f, Scoring.DifficultyBonus(Difficulty.Normal)); // 1 + 40 wpm / 100
         Assert.Equal((408, 1), Scoring.ApplyBonus(292, 1.4f));
         Assert.Equal((2000, 13), Scoring.ApplyBonus(1000, 2));
     }
@@ -365,7 +365,7 @@ public class DeterminismTests
     static string TraceOf(int level, int wpm, ulong seed, int botWpm = 0)
     {
         var sb = new StringWriter();
-        Simulator.Run(TestData.Data, TestData.Art, level, wpm, seed, botWpm, sb);
+        Simulator.Run(TestData.Data, TestData.Art, level, Speed.FromWpm(wpm), seed, Speed.FromWpm(botWpm), sb);
         return sb.ToString();
     }
 

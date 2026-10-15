@@ -25,9 +25,9 @@ var levels = opts.TryGetValue("level", out var l) ? new[] { int.Parse(l) } : Enu
 Directory.CreateDirectory(outDir);
 
 var inv = CultureInfo.InvariantCulture;
-var runs = levels.SelectMany(level => Difficulty.Wpm.Select(wpm => (level, wpm)))
+var runs = levels.SelectMany(level => Difficulty.Cps.Select(cps => (level, cps)))
     .AsParallel().AsOrdered()
-    .Select(x => Pacing.Measure(data, art, x.level, x.wpm, seed))
+    .Select(x => Pacing.Measure(data, art, x.level, x.cps, seed))
     .ToList();
 
 using (var csv = new StreamWriter(Path.Combine(outDir, "pacing.csv")))
@@ -35,16 +35,16 @@ using (var csv = new StreamWriter(Path.Combine(outDir, "pacing.csv")))
     csv.WriteLine("level,difficulty,wpm,second,progress,new_chars,demand_wpm,words_on_screen,chars_on_screen");
     foreach (var r in runs)
     foreach (var s in r.Samples)
-        csv.WriteLine(string.Join(",", r.Level + 1, Name(r.Wpm), r.Wpm, s.Second, s.Progress, s.NewChars,
-            s.DemandWpm.ToString("0.0", inv), s.WordsOnScreen, s.CharsOnScreen));
+        csv.WriteLine(string.Join(",", r.Level + 1, Difficulty.Name(r.Cps), Speed.ToWpm(r.Cps), s.Second, s.Progress, s.NewChars,
+            Speed.ToWpm(s.DemandCps).ToString("0.0", inv), s.WordsOnScreen, s.CharsOnScreen));
 }
 
 using (var csv = new StreamWriter(Path.Combine(outDir, "summary.csv")))
 {
     csv.WriteLine("level,difficulty,wpm,cleared,seconds,total_chars,average_demand_wpm,peak_demand_wpm,ships,missed");
     foreach (var r in runs)
-        csv.WriteLine(string.Join(",", r.Level + 1, Name(r.Wpm), r.Wpm, r.Cleared ? "yes" : "no", r.Seconds, r.TotalChars,
-            r.AverageWpm.ToString("0.0", inv), r.PeakWpm.ToString("0.0", inv), Field(r.Line, "ships"), Field(r.Line, "missed")));
+        csv.WriteLine(string.Join(",", r.Level + 1, Difficulty.Name(r.Cps), Speed.ToWpm(r.Cps), r.Cleared ? "yes" : "no", r.Seconds, r.TotalChars,
+            Speed.ToWpm(r.AverageCps).ToString("0.0", inv), Speed.ToWpm(r.PeakCps).ToString("0.0", inv), Field(r.Line, "ships"), Field(r.Line, "missed")));
 }
 
 // The chart page: src/Sim/pacing.html with the runs filled in.
@@ -55,9 +55,9 @@ var page = new
     window = Pacing.Window,
     runs = runs.Select(r => new
     {
-        level = r.Level + 1, diff = Name(r.Wpm), wpm = r.Wpm, cleared = r.Cleared, seconds = r.Seconds,
-        total = r.TotalChars, avg = Math.Round(r.AverageWpm, 1), peak = Math.Round(r.PeakWpm, 1),
-        d = r.Samples.Select(s => (int)Math.Round(s.DemandWpm)).ToArray(),
+        level = r.Level + 1, diff = Difficulty.Name(r.Cps), wpm = Speed.ToWpm(r.Cps), cleared = r.Cleared, seconds = r.Seconds,
+        total = r.TotalChars, avg = Math.Round(Speed.ToWpm(r.AverageCps), 1), peak = Math.Round(Speed.ToWpm(r.PeakCps), 1),
+        d = r.Samples.Select(s => (int)Math.Round(Speed.ToWpm(s.DemandCps))).ToArray(),
     }),
 };
 var template = File.ReadAllText(Path.Combine(root, "src", "Sim", "pacing.html"));
@@ -66,16 +66,11 @@ File.WriteAllText(Path.Combine(outDir, "pacing.html"),
 
 Console.WriteLine($"Level  Difficulty  Time    Avg WPM  Peak WPM  (demand; {Pacing.Window} s window)");
 foreach (var r in runs)
-    Console.WriteLine($"{r.Level + 1,5}  {Name(r.Wpm),-10}  {r.Seconds / 60}:{r.Seconds % 60:00}  {r.AverageWpm,7:0}  {r.PeakWpm,8:0}" +
+    Console.WriteLine($"{r.Level + 1,5}  {Difficulty.Name(r.Cps),-10}  {r.Seconds / 60}:{r.Seconds % 60:00}  {Speed.ToWpm(r.AverageCps),7:0}  {Speed.ToWpm(r.PeakCps),8:0}" +
                       (r.Cleared ? "" : "   NOT CLEARED"));
 Console.WriteLine($"Wrote pacing.csv, summary.csv and pacing.html (charts) in {outDir}");
 return 0;
 
-static string Name(int wpm) => wpm switch
-{
-    Difficulty.Easy => "Easy", Difficulty.Normal => "Normal", Difficulty.Hard => "Hard",
-    Difficulty.Extreme => "Extreme", Difficulty.Insane => "Insane", _ => wpm.ToString(),
-};
 
 // "Level 0 cleared: score 292, ships 56, missed 0, ..." -> the number after the word.
 static string Field(string line, string name)

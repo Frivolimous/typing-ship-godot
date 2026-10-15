@@ -82,7 +82,7 @@ public static class Achievement
 /// <summary>The score screen's bonuses and medals (ScoreUI's arithmetic).</summary>
 public static class Scoring
 {
-    public static float DifficultyBonus(int wpm) => 1 + wpm / 100f;
+    public static float DifficultyBonus(double cps) => 1 + (float)(cps * 0.12); // 1 + wpm / 100
 
     /// <summary>x2 untouched; otherwise up to x1.2 for the health left.</summary>
     public static float HealthBonus(bool injured, int health, int maxHealth) =>

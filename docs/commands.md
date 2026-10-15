@@ -18,7 +18,7 @@ whatever the `GODOT` environment variable is set to. Commands run from the repo 
 | Edit a level, with the editing keys and grid | 8 | `$GODOT --path game -- --edit --overlay --level=N [--from=50] [--line=40] [--autotype]` |
 | Check the level and tuning files | 9 | `$GODOT --headless --path game -- --check` |
 | Run the tests | 10 | `dotnet test` |
-| Level pacing report: typing demand (WPM) over time for every level and difficulty, as charts (`pacing/pacing.html`) and CSVs for spreadsheets (`pacing.csv`, `summary.csv`) | 11 | `dotnet run --project src/Sim -- pacing [--level=N] [--seed=N] [--out=folder]` |
+| Level pacing report: typing demand over time for every level and difficulty, as charts (`pacing/pacing.html`) and CSVs for spreadsheets (`pacing.csv`, `summary.csv`) | 11 | `dotnet run --project src/Sim -- pacing [--level=N] [--seed=N] [--out=folder]` |
 
 How to write levels, the editing keys, and what the checks report: [level-format.md](level-format.md).
 
@@ -29,10 +29,11 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 | Option | Effect |
 |---|---|
 | `--level=N` | Skip the menus and start at level N (0–11; bosses on 3, 7 and 11) |
-| `--wpm=N` | Difficulty as target words per minute: 25 Easy, 40 Normal (default), 65 Hard, 75 Extreme, 90 Insane. On the menus the difficulty box sets it instead |
+| `--wpm=N` | Difficulty as target words per minute: 25 Easy, 40 Normal (default), 65 Hard, 75 Extreme, 90 Insane. Any number works (the rules use it as characters per second, N x 5 / 60). On the menus the difficulty box sets it instead |
+| `--cps=N` | The same in characters per second, as the rules and tuning.txt count it (Normal is 3.33) |
 | `--seed=N` | Fix the random seed, for repeatable runs |
 | `--autotype` | A bot types for you, at the difficulty's WPM. Skips the menus (straight into level 0) unless `--menu` is given, turns tutorial pop-ups off, and doesn't save unless `--profile` is given |
-| `--botwpm=N` | With `--autotype`: the bot types at N WPM instead (lower = takes damage) |
+| `--botwpm=N` | With `--autotype`: the bot types at N WPM instead (lower = takes damage). `--botcps=N` is the same in characters per second |
 | `--quit-on-end` | Quit when the level is cleared or lost |
 | `--menu` | With `--autotype`: start on the title menu anyway (the bot plays once you start a level) |
 | `--map` | Start on the level map instead of the title |

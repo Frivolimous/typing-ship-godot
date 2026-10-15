@@ -39,10 +39,10 @@ public static class Simulator
 {
     public sealed record Result(bool Cleared, string Line, Game Game);
 
-    public static Result Run(GameData data, ArtLibrary art, int level, int wpm, ulong seed, int botWpm = 0,
+    public static Result Run(GameData data, ArtLibrary art, int level, double cps, ulong seed, double botCps = 0,
         TextWriter? trace = null, int maxTicks = 200_000, Action<Game>? onTick = null)
     {
-        var game = new Game(data, new Rng(seed), art) { Wpm = wpm, Trace = trace };
+        var game = new Game(data, new Rng(seed), art) { Cps = cps, Trace = trace };
         game.TutOff(); // tutorial pop-ups would wait for Space
         bool? cleared = null;
         string line = "";
@@ -52,7 +52,7 @@ public static class Simulator
             line = game.ResultLine(c);
         });
         game.Events = events;
-        var bot = new AutoTyper(game, botWpm);
+        var bot = new AutoTyper(game, botCps);
         game.NewGame(level);
         while (cleared == null && game.Ticks < maxTicks)
         {

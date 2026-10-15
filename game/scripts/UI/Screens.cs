@@ -334,7 +334,7 @@ public partial class ScoreUI : Screen
             case 1: // difficulty bonus
                 if (label.Text == "")
                 {
-                    cMult = Scoring.DifficultyBonus(M.Wpm);
+                    cMult = Scoring.DifficultyBonus(M.Cps);
                     label.Text = Strings.DiffBonus + cMult.ToString("F2");
                 }
                 else Count(value);

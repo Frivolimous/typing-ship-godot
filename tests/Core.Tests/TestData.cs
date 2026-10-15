@@ -25,9 +25,9 @@ static class TestData
     public static Tuning Tuning => Data.Tuning;
 
     /// <summary>A game on the real data, set up but not started.</summary>
-    public static Game NewGame(ulong seed = 1, int wpm = Difficulty.Normal, IGameEvents? events = null)
+    public static Game NewGame(ulong seed = 1, int wpm = 40, IGameEvents? events = null)
     {
-        var g = new Game(Data, new Rng(seed), Art, events: events) { Wpm = wpm };
+        var g = new Game(Data, new Rng(seed), Art, events: events) { Cps = Speed.FromWpm(wpm) };
         g.TutOff();
         return g;
     }
@@ -38,9 +38,9 @@ static class TestData
             files.FirstOrDefault(f => f.Name == name).Text ?? File.ReadAllText(Path.Combine(DataDir, name))));
 
     /// <summary>A game whose level 0 is the given script.</summary>
-    public static Game WithLevel0(string script, ulong seed = 1, int wpm = Difficulty.Normal, IGameEvents? events = null)
+    public static Game WithLevel0(string script, ulong seed = 1, int wpm = 40, IGameEvents? events = null)
     {
-        var g = new Game(With(("levels/level00.txt", script)), new Rng(seed), Art, events: events) { Wpm = wpm };
+        var g = new Game(With(("levels/level00.txt", script)), new Rng(seed), Art, events: events) { Cps = Speed.FromWpm(wpm) };
         g.TutOff();
         return g;
     }

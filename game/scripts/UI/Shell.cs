@@ -87,9 +87,9 @@ public partial class Shell : Control, IViewTicker
     }
 
     /// <summary>DiffSelect.startGame: the level starts at once and runs under the fade.</summary>
-    public void StartGame(int level, int wpm)
+    public void StartGame(int level, double cps)
     {
-        G.Model.Wpm = wpm;
+        G.Model.Cps = cps;
         G.Starfield.ClearParticles();
         G.Ctrl.NewGame(level);
         GoGame();

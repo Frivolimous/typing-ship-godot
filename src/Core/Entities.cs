@@ -176,7 +176,7 @@ public sealed class EnemyShip : Sprite
         File = e.File;
         Line = e.Line;
 
-        if (Fires == Weapons.Laser) Charge = new Charge(Game, Game.Tuning.LaserCharge / Game.Wpm, Weapons.Laser);
+        if (Fires == Weapons.Laser) Charge = new Charge(Game, Speed.FloorTicks(Game.Tuning.LaserCharge / Game.Cps), Weapons.Laser);
 
         Init(e.X, e.Y, MathF.Atan2(Commands[0].Y - e.Y, Commands[0].X - e.X), e.A, 1);
 
@@ -188,7 +188,7 @@ public sealed class EnemyShip : Sprite
         {
             Alpha = 0;
             StealthCounter = 0;
-            Game.AddTicker(new StealthFade(this, 1 + Game.Wpm / Game.Tuning.StealthFadeWpm));
+            Game.AddTicker(new StealthFade(this, 1 + (float)(Game.Cps / Game.Tuning.StealthFadeCps)));
         }
     }
 
@@ -362,7 +362,7 @@ public sealed class Missile : Sprite
         if (origin == Game.Player)
         {
             FromPlayer = true;
-            speed = t.PlayerMissileSpeed * Game.Wpm;
+            speed = Speed.Scaled(t.PlayerMissileSpeed, Game.Cps);
             WordSize = -1;
             heading = float.IsNaN(n) ? origin.Rotation : n;
         }
@@ -370,7 +370,7 @@ public sealed class Missile : Sprite
         {
             KillBy = Weapons.Laser;
             Value = Game.BossMode ? 0 : t.EnemyMissilePoints;
-            speed = t.EnemyMissileSpeed * Game.Wpm;
+            speed = Speed.Scaled(t.EnemyMissileSpeed, Game.Cps);
             WordSize = 3;
             heading = origin.Rotation;
         }

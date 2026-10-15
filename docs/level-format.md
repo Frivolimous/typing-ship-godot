@@ -47,7 +47,7 @@ screen, so no two flights are quite the same.
 
 Every ship line has a **distance**: how far the player travels after the previous line before this ship appears.
 `0` means at the same moment as the one before. The level's length is the sum. Distance passes at the difficulty's
-speed, so a 0.1 gap is about 9 seconds on Normal. Gaps of 0.1 or more are multiplied by `1 - wpm / 300` (never by
+speed, so a 0.1 gap is about 9 seconds on Normal. Gaps of 0.1 or more are multiplied by `1 - cps / 25` (never by
 less than a half; see `[level scripts]` in tuning.txt), so waves bunch up more the faster the difficulty.
 
 ## Ship types
@@ -79,7 +79,7 @@ Laser ships' words are a letter longer, and suicide ships always have 3 letters.
 | `ship lmt 0.1  3,0  move 3,3  halt 15  halt 10 fire  move 0,3` | Any ship with its own flight plan: start at 3,0, then the steps |
 | `boss 0.2 1` | Boss 1, 2 or 3 flies in. The level ends when it's dead |
 
-A `ship` line's steps: `move X,Y` flies to a point; `halt N` stays put for N x 400 / wpm ticks (on
+A `ship` line's steps: `move X,Y` flies to a point; `halt N` stays put for N x 33.3 / cps ticks (on
 Normal N x 10 ticks, about 0.4 seconds each); either can end with `fire`, which attacks as that step starts (a
 missile, a laser charge, or for suicide ships the dive); `attack` on its own attacks right away. The last step should take the
 ship off screen, or it's counted as escaping where it ends.

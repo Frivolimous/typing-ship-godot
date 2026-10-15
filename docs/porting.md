@@ -28,7 +28,12 @@ ported, what's left, where the port deliberately differs from the original, and 
    the editing keys (including F5 after an edit, and F5 on a broken file). Level design itself is for Jeremy to try.
 5. **CPS model, typing test and pacing rework** (replaces "difficulty review"):
    - **CPS in code, WPM for players.** The rules and tuning work in characters per second
-     (CPS = WPM × 5 / 60); every player-facing number stays WPM.
+     (CPS = WPM × 5 / 60); every player-facing number stays WPM. **Done:** `Game.Cps`, `Difficulty.Cps`, the
+     `Speed` helpers (src/Core/Playfield.cs) and tuning.txt in CPS units. The Classic levels play tick for tick as
+     before: `ClassicTraceTests` checks 180 bot runs (every level and difficulty, two seeds and a slow bot)
+     against hashes of their traces recorded before the change (tests/Core.Tests/classic-traces.txt), and headless
+     `--trace` runs give the same hashes. Where CPS arithmetic rounds differently from the original's whole-number
+     WPM arithmetic, `Speed` keeps the original's result (whole ticks, missile speeds); see its comments.
    - **Keep the original calibration.** The original pacing was balanced on what real people at a stated WPM
      could manage, in a sawtooth difficulty curve. The pacing report (`ts 11`) shows the Classic levels'
      average demand at about 55–65% of the stated WPM, with peaks up to about 1.9×. Whatever the rework does,
@@ -156,10 +161,12 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 
 ## Notes from the original worth knowing
 
-- Distance per tick is `wpm / 24 / 3600`. Level script steps of 0.1 or more are scaled by `max(1 - wpm/300, 0.5)`.
-- Enemies only actually fire a missile when an accumulator passes 1. The rate is `clamp(wpm/150, 0.3, 1)` per
-  fire command, so at low difficulty most fire commands do nothing.
-- Laser charge time is `6000 / wpm` ticks. At half charge the word turns red and the charge sound plays.
+- The original worked in WPM; the port's rules work in CPS (`cps = wpm / 12`), so its numbers are the original's
+  with the 12 folded in. Classic distance per tick is `cps / 7200` (`wpm / 24 / 3600`). Level script steps of 0.1
+  or more are scaled by `max(1 - cps/25, 0.5)` (`1 - wpm/300`).
+- Enemies only actually fire a missile when an accumulator passes 1. The rate is `clamp(cps/12.5, 0.3, 1)`
+  (`wpm/150`) per fire command, so at low difficulty most fire commands do nothing.
+- Laser charge time is `500 / cps` ticks (`6000 / wpm`). At half charge the word turns red and the charge sound plays.
 - The typed buffer holds 20 characters. Overflowing or pressing Backspace costs 1 point each.
 - A word whose ship leaves the screen stays typeable for 30 ticks (`Overflow`), so a half-typed word isn't wasted.
 - `WordList.Shift` never picks one of the last five words in a list, so returned words aren't reused immediately.
@@ -167,7 +174,7 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   Each 3-letter scanner word shrinks the ring 30 px; after nine, a 10-letter word appears, and typing it hits the
   boss. Three hits kill it (+100); it fades out over 200 ticks in explosions and the level ends. Until then
   `bossMode` is on: `bossLoop` keeps sending escorts, and kills score nothing. Attacks: boss 0 launches six suicide ships from its
-  hangar every 48x400/wpm ticks; boss 1 drops an invisible laser turret at one of six gun ports (shielded once the boss is
+  hangar every 48 x 400 / wpm ticks (48 x 33.3 / cps); boss 1 drops an invisible laser turret at one of six gun ports (shielded once the boss is
   on its last hit); boss 2 charges a beam that hits four times, and each of the four counter-words (8–10 letters)
   typed in time shields one hit.
 - **Some waves can't be cleared at exactly the set WPM.** Speeds and typing both scale with WPM, so this holds at
