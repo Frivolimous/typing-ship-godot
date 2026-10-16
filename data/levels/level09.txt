@@ -3,7 +3,7 @@
 
 pace hard
 duration 2:51
-density 37.5%/64.5%/100%/109.5%/129.5%
+density 39%/64.5%/100%/109.5%/129.5%
 
 hard+: missile ln 0.05  -1,-1 5,6 13,13
 normal+: mirror 0.01
@@ -56,7 +56,7 @@ missile mn 0.03  6,0 6,5 1,12
 
 
 extreme+: missile mn 0.14  6,0 6,4 6,0
-missile ms 0.09  2,0 2,6 6,4 10,12
+normal+: missile ms 0.09  2,0 2,6 6,4 10,12
 mirror 0.018
 missile mn 0.018  2,0 2,6 6,4 10,12
 repeat 0.018 5 1 mirrored

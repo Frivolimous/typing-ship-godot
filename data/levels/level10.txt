@@ -3,11 +3,11 @@
 
 pace hard
 duration 3:00
-density 38.5%/61%/100%/107%/137%
+density 46.5%/61%/100%/107%/137%
 
 missile lb 0.03  2,-1 2,13
-mirror
-missile lb 0.05  -1,2 13,2
+normal+: mirror
+normal+: missile lb 0.05  -1,2 13,2
 wait 0
 laser lb 0.05  0,5
 wait 0
@@ -52,7 +52,7 @@ clone 0.01 -2
 repeat 0.01 2 2
 clone 0.01 -2
 repeat 0.02 1
-laser lb 0.01  0,6
+normal+: laser lb 0.01  0,6
 wait 0.01
 stealth 0.05  5,5 5,0
 mirror 0.03
@@ -67,7 +67,7 @@ missile mn 0  2,0 2,5 1,12
 mirror
 missile mn 0.06  4,0 4,5 1,12
 mirror
-missile ln 0  13,5 6,7 -1,10
+normal+: missile ln 0  13,5 6,7 -1,10
 
 laser ms 0.19  4,0
 mirror 0.01

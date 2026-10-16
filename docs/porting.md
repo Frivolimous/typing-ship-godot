@@ -87,11 +87,20 @@ before they fade in, so they don't stop an empty screen.
 | 5 | 2:06 | 1:17 dip removed (a filler pair before the mines); lulls at 1:03 and 2:06 shortened; mines 28 → 21 and closer together (peak stays above 1.0P so the lull after them is earned); post-mine stream made pairs; stronger finish (four suicides). Easy/Normal get filler ships after the mines | 41.5/60/100/121/131 |
 | 6 | 2:15 | 1:31 gap filled with a medium pair (no empty screen at 1:35); 1:08 lull trimmed; opening and one inserted group cut so the first half stays under the (unchanged) ending; mines 32 → 24; fillers before the mines. Easy's last suicides are unshielded | 37/65/100/106.5/132.5 |
 | 7 | 2:24 | 0:41, 1:39 and 2:15 lulls shrunk (2:15 lull now ~4 s, no empty screen); opening 4 → 2 medium ships; one 0:33 laser dropped below Hard. Ending unchanged on Normal and up; Easy's final mines are unshielded, more of them and closer | 42.5/68/100/116.5/131.5 |
-| 9 | 2:42 | 1:30 hole filled; early peaks kept; the 1:22 stream denser (~1.25P); two new middle sections (a missile stream with lasers and suicides, then a missile-pair stretch); a short build into a laser-stack finale (~1.48P); medium fillers in the lulls | 39.5/64.5/100/105.5/130 |
-| 10 | 2:51 | 1:10 spike lowered (one ship dropped); 0:26 and 1:39 gaps filled; new section before the big climb (so its peak is in the second half) and a steadier stretch before the stealth finale; Extreme+ get a filler after the climb | 37.5/63/100/109.5/129.5 |
-| 11 | 3:00 | Opening cut (two large ships, a laser, two suicides) and split from the second wave; long stretches trimmed (~15% fewer words); lulls at 0:41, 1:05, 1:50 and 2:15 shortened; 2:02 peak ~1.37P with a clean drop after; finale raised with missile pairs and medium ships (~1.4P) | 38.5/61/100/107/133 |
+| 9 | 2:42 | 1:30 hole filled; early peaks kept; the 1:22 stream denser (~1.25P); two new middle sections (a missile stream with lasers and suicides, then a missile-pair stretch); a short build into a laser-stack finale (~1.48P); medium fillers in the lulls | 34.9/64.5/100/105.5/130 |
+| 10 | 2:51 | 1:10 spike lowered (one ship dropped); 0:26 and 1:39 gaps filled; new section before the big climb (so its peak is in the second half) and a steadier stretch before the stealth finale; Extreme+ get a filler after the climb | 39/64.5/100/109.5/129.5 |
+| 11 | 3:00 | Opening cut (two large ships, a laser, two suicides) and split from the second wave; long stretches trimmed (~15% fewer words); lulls at 0:41, 1:05, 1:50 and 2:15 shortened; 2:02 peak ~1.37P with a clean drop after; finale raised with missile pairs and medium ships (~1.4P) | 46.5/61/100/107/137 |
 
-Remaining rule failures and realistic-bot results are in the branch's hand-over (and `ts 13`).
+On levels 9–11 a few ships are tagged out of Normal and Easy (`hard+:`, `normal+:`) and one out of Insane on 11
+(`easy-extreme:`), found by trying each line in turn; tagging a line doesn't change the random draws, so the other
+difficulties play the same.
+
+**State of `ts 13`:** every rule passes at every difficulty except (1) the empty-screen rule, 70 hits of 4–9 s
+(mostly 4–5 s), nearly all where the perfect bot kills small ships before they finish fading in; (2) level 7 Easy,
+a dip to 0.29P after a 0.58P burst at 1:20 (floor 0.30P); (3) level 10 Easy lasts 2:45 (target 2:51 ± 3). Some
+averages sit outside the ± 0.03 target band (warnings only). The perfect bot clears everything. The realistic bot
+(80% speed, 3.5% mistakes) loses level 5 Extreme (the mines, 1:23), level 7 Hard/Extreme/Insane (the unchanged
+ending's shielded mines, ~2:20), level 9 and 10 Insane (the finales) and level 11 Hard/Extreme/Insane.
 6. **New features and deeper game logic:** new mechanics, enemies, modes and systems beyond the original (the
    old TODO list in Facade.as is a starting point: dodging, tractor beam, mega bomb, boss AI, space mines).
    This comes before the visual overhaul so the final art covers the new content too. Decided so far:
