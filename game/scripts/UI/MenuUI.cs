@@ -91,12 +91,11 @@ public partial class MenuUI : Screen
 
     public override bool OnKey(InputEventKey key)
     {
-        if (key.Keycode == Key.Escape && Map.Diff.Visible)
-        {
-            Map.Diff.Visible = false;
-            return true;
-        }
-        return false;
+        if (key.Keycode != Key.Escape) return false;
+        // Escape closes the difficulty box, or else asks whether to quit.
+        if (Map.Diff.Visible) Map.Diff.Visible = false;
+        else G.Shell.AskQuit();
+        return true;
     }
 
     /// <summary>The first time: the title fades down into place, the ship rises from below, the buttons slide in.</summary>

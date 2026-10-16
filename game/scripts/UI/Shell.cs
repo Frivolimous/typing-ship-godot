@@ -18,12 +18,12 @@ public partial class Shell : Control, IViewTicker
     public TypingTest Test = null!;
     public OptionsUI Options = null!;
     public readonly PauseUI Pause = new();
-    public readonly PauseButton PauseB = new() { Position = new Vector2(435, 522), Scale = new Vector2(0.8f, 0.8f), Visible = false };
-    // In a level only: on the menus, the options screen sets the volumes.
-    public readonly MuteButton MuteB = new() { Position = new Vector2(505, 522), Scale = new Vector2(0.8f, 0.8f), Visible = false };
+    // In a level: a big PAUSE button in the cockpit's button screen.
+    public readonly PauseButton PauseB = new() { Visible = false };
 
     readonly Control screens = new() { MouseFilter = MouseFilterEnum.Ignore };
     readonly Control popups = new() { MouseFilter = MouseFilterEnum.Ignore };
+    readonly ConfirmBox confirm = new();
     readonly ColorRect fade = new() { Size = new Vector2(G.StageSize, G.StageSize), Visible = false, MouseFilter = MouseFilterEnum.Stop };
     // What's been typed on a menu screen, at the top: the words act like clicking a button.
     readonly Label typed = new()
@@ -65,10 +65,10 @@ public partial class Shell : Control, IViewTicker
         AddChild(screens);
         AddChild(Pause);
         AddChild(PauseB);
-        AddChild(MuteB);
         AddChild(typed);
         AddChild(fade);
         AddChild(popups);
+        AddChild(confirm);
         G.Ctrl.AddTicker(this);
         G.Ctrl.LevelOver += OnLevelOver;
     }
@@ -87,7 +87,7 @@ public partial class Shell : Control, IViewTicker
     {
         current = null;
         G.UI.Visible = true;
-        PauseB.Visible = MuteB.Visible = true;
+        PauseB.Visible = true;
         G.Ctrl.NewGame(level);
     }
 
@@ -156,7 +156,7 @@ public partial class Shell : Control, IViewTicker
     {
         if (current != null) current.Visible = false;
         G.UI.Visible = toGame;
-        PauseB.Visible = MuteB.Visible = toGame;
+        PauseB.Visible = toGame;
         if (toGame) current = null;
         else
         {
@@ -191,6 +191,9 @@ public partial class Shell : Control, IViewTicker
 
     public void AddPopup(Control c) => popups.AddChild(c);
 
+    /// <summary>"Exit the game?": quits on yes.</summary>
+    public void AskQuit() => confirm.Ask("EXIT THE GAME?", () => GetTree().Quit());
+
     public override void _UnhandledInput(InputEvent e)
     {
         if (e is not InputEventKey { Pressed: true, Echo: false } key) return;
@@ -206,6 +209,12 @@ public partial class Shell : Control, IViewTicker
             return;
         }
 
+        if (confirm.Visible)
+        {
+            confirm.OnKey(key);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
         if (InGame || current == null) return;
         GetViewport().SetInputAsHandled();
         if (Transitioning || current.OnKey(key)) return;
@@ -218,17 +227,21 @@ public partial class Shell : Control, IViewTicker
     }
 }
 
-// PauseB: pause and resume the game with the mouse (Escape and typing "pause" still work).
+// PauseB: pause and resume the game with the mouse (Escape and typing "pause" still work). A slanted chip filling
+// the cockpit's button screen, reading PAUSE, or RESUME while paused; it lights under the mouse.
 public partial class PauseButton : Control
 {
-    bool paused;
+    bool paused, hover;
 
     public PauseButton()
     {
-        Size = new Vector2(30, 30);
-        PivotOffset = Vector2.Zero;
+        var screen = Cockpit.ButtonScreen;
+        Position = screen.Position + new Vector2(5, 4);
+        Size = screen.Size - new Vector2(10, 8);
         MouseFilter = MouseFilterEnum.Stop;
         MouseDefaultCursorShape = CursorShape.PointingHand;
+        MouseEntered += () => { hover = true; QueueRedraw(); };
+        MouseExited += () => { hover = false; QueueRedraw(); };
     }
 
     public void SetPaused(bool b)
@@ -237,22 +250,17 @@ public partial class PauseButton : Control
         QueueRedraw();
     }
 
-    // Placeholder art (the original was a vector MovieClip): pause bars, or a play arrow while paused.
     public override void _Draw()
     {
-        var r = new Rect2(-15, -15, 30, 30);
-        var c = Cockpit.Rim;
-        DrawRect(r, new Color(0.015f, 0.03f, 0.06f, 0.95f));
-        DrawRect(r, new Color(c, 0.6f), false, 1.5f);
-        if (paused) DrawColoredPolygon(new[] { new Vector2(-6, -9), new Vector2(9, 0), new Vector2(-6, 9) }, c);
-        else
-        {
-            DrawRect(new Rect2(-7, -9, 5, 18), c);
-            DrawRect(new Rect2(2, -9, 5, 18), c);
-        }
+        var box = Kit.ButtonBox(hover || paused);
+        box.ShadowSize = 0; // no glow spilling out of the cockpit's screen
+        box.Draw(GetCanvasItem(), new Rect2(Vector2.Zero, Size));
+        var font = Fonts.HudBold;
+        const int size = 13;
+        float h = font.GetAscent(size) - font.GetDescent(size);
+        DrawString(font, new Vector2(0, (Size.Y + h) / 2 - 1), paused ? "RESUME" : "PAUSE", HorizontalAlignment.Center, Size.X, size,
+            hover ? Colors.White : Kit.Ink);
     }
-
-    public override bool _HasPoint(Vector2 p) => new Rect2(-15, -15, 30, 30).HasPoint(p);
 
     public override void _GuiInput(InputEvent e)
     {
@@ -261,47 +269,5 @@ public partial class PauseButton : Control
         G.Sound.Sound(SoundControl.Click);
         if (!G.Model.CanType || G.Model.LevelEnded) return;
         G.Ctrl.PauseGame(!paused);
-    }
-}
-
-// MuteB: the left half toggles the music, the right half the sound effects.
-public partial class MuteButton : Control
-{
-    public MuteButton()
-    {
-        MouseFilter = MouseFilterEnum.Stop;
-        MouseDefaultCursorShape = CursorShape.PointingHand;
-    }
-
-    public override bool _HasPoint(Vector2 p) => new Rect2(-30, -15, 60, 30).HasPoint(p);
-
-    public override void _Process(double delta) => QueueRedraw(); // typing "mute" changes it too
-
-    // Placeholder art: a note for music and a speaker for sound, crossed out when muted.
-    public override void _Draw()
-    {
-        var back = new Color(0.015f, 0.03f, 0.06f, 0.95f);
-        var c = Cockpit.Rim;
-        DrawRect(new Rect2(-30, -15, 60, 30), back);
-        DrawRect(new Rect2(-30, -15, 60, 30), new Color(c, 0.6f), false, 1.5f);
-        DrawLine(new Vector2(0, -15), new Vector2(0, 15), new Color(c, 0.4f), 1);
-        // note
-        DrawCircle(new Vector2(-18, 6), 4, c);
-        DrawLine(new Vector2(-14.5f, 6), new Vector2(-14.5f, -9), c, 2);
-        DrawLine(new Vector2(-14.5f, -9), new Vector2(-9, -6), c, 2);
-        // speaker
-        DrawColoredPolygon(new[] { new Vector2(8, -4), new Vector2(12, -4), new Vector2(18, -9), new Vector2(18, 9), new Vector2(12, 4), new Vector2(8, 4) }, c);
-        DrawArc(new Vector2(18, 0), 6, -0.9f, 0.9f, 8, c, 1.5f);
-        var red = new Color(0xff5555ff);
-        if (G.Sound.MuteMusic) DrawLine(new Vector2(-26, 11), new Vector2(-4, -11), red, 3);
-        if (G.Sound.MuteSound) DrawLine(new Vector2(4, 11), new Vector2(26, -11), red, 3);
-    }
-
-    public override void _GuiInput(InputEvent e)
-    {
-        if (e is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left } mb) return;
-        AcceptEvent();
-        if (mb.Position.X > 0) G.Sound.MuteSound = !G.Sound.MuteSound;
-        else G.Sound.MuteMusic = !G.Sound.MuteMusic;
     }
 }

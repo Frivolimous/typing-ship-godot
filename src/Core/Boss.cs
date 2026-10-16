@@ -67,6 +67,11 @@ public sealed class Boss : Sprite
         Init(Playfield.ViewWidth / 2, -50, MathF.PI / 2, 0.1f, 0, true);
     }
 
+    /// <summary>
+    /// Boss 3's charge before the beam fires, 0-1 (0 while it isn't charging, 1 from when the beam fires until it stops).
+    /// </summary>
+    public float ChargeProgress => Index != 2 || delay <= 0 ? 0 : delay > five * 20 ? 1 - (delay - five * 20) / (five * 24f) : 1;
+
     /// <summary>Ticks until the last hit of boss 3's beam (until then a counter-word still blocks one), or -1.</summary>
     public int BeamTicksLeft => Index == 2 && delay > 0 ? delay : -1;
 
@@ -194,10 +199,12 @@ public sealed class Boss : Sprite
     {
         if (delay < 0) return;
         var player = Game.Player;
-        if (delay == five * 43) MakeCounter(30, 20);
-        else if (delay == five * 42) MakeCounter(-75, 20);
-        else if (delay == five * 41) MakeCounter(30, -20);
-        else if (delay == five * 40) MakeCounter(-75, -20);
+        // The four counter-words appear in a row above the player, left to right, clear of the cockpit and with a gap
+        // in the middle for the beam.
+        if (delay == five * 43) MakeCounter(-190, -80);
+        else if (delay == five * 42) MakeCounter(-70, -80);
+        else if (delay == five * 41) MakeCounter(70, -80);
+        else if (delay == five * 40) MakeCounter(190, -80);
         else if (delay == five * 36)
         {
             ChargeStage = 2;
@@ -257,7 +264,7 @@ public sealed class Boss : Sprite
     {
         var counter = new Counter(Game);
         var p = Game.Player.Position;
-        counter.Init(p.X + x - 5, p.Y + y, 0, 0, 2);
+        counter.Init(p.X + x, p.Y + y, 0, 0, 2);
         counter.WordSize = 0;
         counter.KillBy = Weapons.Instant;
         counter.AddWord(Game.Tuning.CounterWord - Health);

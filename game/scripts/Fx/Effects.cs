@@ -19,10 +19,10 @@ public abstract partial class BeamFx : Node2D, IViewTicker
 
     protected BeamFx() { }
 
-    protected BeamFx(Vec2 from, Vec2 to, int life)
+    protected BeamFx(Vector2 from, Vec2 to, int life)
     {
         this.life = life;
-        Position = G.V(from);
+        Position = from;
         To = G.V(to) - Position;
         Material = Additive;
         G.UI.AddToGameViewBack(this);
@@ -30,8 +30,8 @@ public abstract partial class BeamFx : Node2D, IViewTicker
         G.Ctrl.AddTicker(this);
     }
 
-    /// <summary>The beam for a laser or EMP shot.</summary>
-    public static BeamFx Make(Vec2 from, Vec2 to, BeamKind kind) => kind == BeamKind.Emp
+    /// <summary>The beam for a laser or EMP shot, from a point in the game view (the gun's muzzle).</summary>
+    public static BeamFx Make(Vector2 from, Vec2 to, BeamKind kind) => kind == BeamKind.Emp
         ? new EmpEffect(from, to)
         : new LaserEffect(from, to, kind == BeamKind.PlayerLaser);
 
@@ -64,7 +64,7 @@ public partial class LaserEffect : BeamFx
 
     public LaserEffect() { }
 
-    public LaserEffect(Vec2 from, Vec2 to, bool player) : base(from, to, 10)
+    public LaserEffect(Vector2 from, Vec2 to, bool player) : base(from, to, 10)
     {
         (glow, beam) = player
             ? (new Color(1, 0.15f, 0.25f), new Color(1, 0.45f, 0.5f))
@@ -100,7 +100,7 @@ public partial class EmpEffect : BeamFx
 
     public EmpEffect() { }
 
-    public EmpEffect(Vec2 from, Vec2 to) : base(from, to, 9) => OnTick();
+    public EmpEffect(Vector2 from, Vec2 to) : base(from, to, 9) => OnTick();
 
     protected override void OnTick()
     {

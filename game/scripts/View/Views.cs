@@ -490,6 +490,7 @@ public partial class BossView : SpriteView
         };
         glow = Mathf.MoveToward(glow, target, d * 6);
         glowMaterial.SetShaderParameter("glow", glow);
+        if (boss.Index == 2) ChargePips(d);
         if (doors != null)
         {
             open = Mathf.MoveToward(open, boss.DoorsOpen ? 1 : 0, d * 3);
@@ -503,6 +504,37 @@ public partial class BossView : SpriteView
         Visible = false;
         if (doors != null) doors.Visible = false;
         if (beam != null) beam.Visible = false;
+    }
+
+    // Boss 3's four cannon lights, in the order they light: the top pair, then the pair by the muzzle (texture pixels).
+    static readonly Vector3[] Pips = { new(368, 172, 19), new(569, 172, 19), new(388, 257, 19), new(550, 257, 19) };
+    // Its cannon: the glass tube down to the muzzle ring (texture pixels: left, top, right, bottom).
+    static readonly Vector4 Cannon = new(415, 30, 523, 376);
+    readonly float[] pipLit = new float[4], pipFlare = new float[4];
+    float cannonPower;
+
+    /// <summary>
+    /// The cannon's glass and its four lights go dark between attacks. As it charges, the lights come on one by one
+    /// (the last as it fires) and the glass brightens with the charge.
+    /// </summary>
+    void ChargePips(float d)
+    {
+        float progress = boss.ChargeProgress;
+        cannonPower = progress > cannonPower ? Mathf.MoveToward(cannonPower, progress, d * 2) : Mathf.MoveToward(cannonPower, progress, d);
+        glowMaterial.SetShaderParameter("cannon", Cannon);
+        glowMaterial.SetShaderParameter("cannon_power", cannonPower);
+        for (int i = 0; i < 4; i++)
+        {
+            float target = Mathf.Clamp(progress * 4 - i, 0, 1);
+            bool lights = target >= 1 && pipLit[i] < 1;
+            pipLit[i] = target > pipLit[i] ? Mathf.MoveToward(pipLit[i], target, d * 8) : target;
+            if (lights && pipLit[i] >= 1) pipFlare[i] = 1;
+            pipFlare[i] = Mathf.Max(0, pipFlare[i] - d * 3);
+        }
+        glowMaterial.SetShaderParameter("pip_count", 4);
+        glowMaterial.SetShaderParameter("pips", Pips);
+        glowMaterial.SetShaderParameter("lit", pipLit);
+        glowMaterial.SetShaderParameter("flare", pipFlare);
     }
 
     public override void Detach()
@@ -551,17 +583,37 @@ public partial class BossBeam : Node2D
 
 static class BossShaders
 {
-    /// <summary>Brightens the art's cyan parts (cores, tubes, gun rings) by <c>glow</c>.</summary>
+    /// <summary>
+    /// Brightens the art's cyan parts (cores, tubes, gun rings) by <c>glow</c>. Up to four round lights (<c>pips</c>:
+    /// centre and radius in texture pixels) can be blacked out, coming back as their <c>lit</c> rises to 1 (with an
+    /// extra <c>flare</c>): boss 3's charge.
+    /// </summary>
     public static readonly Shader Glow = new()
     {
         Code = """
             shader_type canvas_item;
             uniform float glow = 0.0;
+            uniform int pip_count = 0;
+            uniform vec3 pips[4];
+            uniform float lit[4];
+            uniform float flare[4];
+            // A region (texture pixels: left, top, right, bottom) whose cyan dims to a fifth at power 0.
+            uniform vec4 cannon = vec4(0.0);
+            uniform float cannon_power = 1.0;
             void fragment() {
                 vec4 c = COLOR;
                 // Only the bright, saturated cyan lights: boss 2's teal hull stays put.
                 float cyan = smoothstep(0.35, 0.6, min(c.g, c.b) - c.r);
+                vec2 px = UV / TEXTURE_PIXEL_SIZE;
+                bool inCannon = px.x >= cannon.x && px.x <= cannon.z && px.y >= cannon.y && px.y <= cannon.w;
+                if (inCannon) c.rgb = mix(c.rgb, c.rgb * mix(0.2, 1.0, cannon_power), cyan);
                 c.rgb += glow * cyan * vec3(0.45, 0.85, 1.0);
+                for (int i = 0; i < pip_count; i++) {
+                    float inside = 1.0 - smoothstep(pips[i].z - 2.0, pips[i].z, distance(px, pips[i].xy));
+                    // Dark until lit; when it lights, it flares white-cyan for a moment.
+                    vec3 on = c.rgb + flare[i] * vec3(0.6, 0.95, 1.0);
+                    c.rgb = mix(c.rgb, mix(c.rgb * 0.1, on, lit[i]), inside);
+                }
                 COLOR = c;
             }
             """,

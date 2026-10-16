@@ -193,14 +193,19 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   test (a miss flashes the passage's frame instead of a big red cross) and the message box. The fades between
   screens are dark rather than white or black, except the white flash into a level.
 - **RETRY on the game-over screen** (new): the same level again, at the same difficulty.
-- **Options screen** (new; OPTIONS on the title and map, where the menus' mute buttons were, which now show in a
-  level only): fullscreen, music and sound volumes, glow, screen shake, screen flashes (off skips full-screen flashes
-  and dims a hit's), tutorials. Saved in user://settings.json (UI/Options.cs, Core/Settings.cs). Escape on a tutorial
-  now turns the tutorials off for good, as the TUTORIALS switch.
-- The score screen's count-up runs at 60 steps a second (the original's 10 ms timer, which Flash capped at about
-  that).
-- **The "New Achievement" pop-up** shows under "FINAL SCORE:" on the score screen, where the original's top-centre
-  spot would cover the "Level N Complete!" title. Elsewhere it's at the top centre as before.
+- **Boss 3's counter-words** appear in one row above the player (left to right, a gap in the middle for the beam),
+  in Classic too, instead of the original's 2 x 2 around the ship, whose lower row the cockpit now covers. Its cannon
+  and the four lights around it are dark between attacks and light up as it charges.
+- **Lasers and EMPs leave from the ship's nose gun** (its charge point) rather than its centre.
+- **Quitting:** Escape on the title or map, or QUIT GAME on the options, asks "EXIT THE GAME?".
+- **Options screen** (new; OPTIONS on the title and map, where the mute buttons were; they're gone, and a level has
+  just a big PAUSE button, while typing "mute" or "unmute" still works): fullscreen, music and sound volumes, glow,
+  screen shake, screen flashes (off skips full-screen flashes and dims a hit's), tutorials. Saved in
+  user://settings.json (UI/Options.cs, Core/Settings.cs). Escape on a tutorial now turns the tutorials off for good,
+  as the TUTORIALS switch.
+- The score screen's count-up runs at 60 steps a second (the original's 10 ms timer, which Flash capped at about that).
+- **The "New Achievement" pop-up** is a toast that slides in from the right: above the cockpit in a level, low down on
+  the menus, and under the final score on the score screen (the original's was a box at the top centre).
 - **"superman" ends.** The cheat's hero is removed once it has flown off the top. The original kept it in the object
   list forever, so a level could never end after typing "superman" (unless you then typed "kamikaze").
 - **Turret explosions** happen at the turret. The original used the turret's position inside its ship, so the

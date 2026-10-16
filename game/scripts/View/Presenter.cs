@@ -117,7 +117,18 @@ public sealed class Presenter : IGameEvents
 
     public void Explosion(Vec2 at, int size) => G.Starfield.Explosion(at.X, at.Y, size);
 
-    public void Beam(Vec2 from, Vec2 to, BeamKind kind) => BeamFx.Make(from, to, kind);
+    public void Beam(Vec2 from, Vec2 to, BeamKind kind) => BeamFx.Make(Muzzle(from), to, kind);
+
+    /// <summary>
+    /// Where a shot from a ship at <paramref name="at"/> leaves it: the gun on its nose (its charge point in
+    /// data/mounts.txt), or its centre if it has none.
+    /// </summary>
+    Vector2 Muzzle(Vec2 at)
+    {
+        ChargeGlow? gun = G.Model.Player.P == at ? Player.Glow
+            : views.Values.OfType<EnemyShipView>().FirstOrDefault(v => v.Model.P == at)?.Glow;
+        return gun != null && gun.IsInsideTree() ? G.UI.GameView.ToLocal(gun.GlobalPosition) : G.V(at);
+    }
 
     public void ScorePopup(Vec2 at, int amount, bool inGameView)
     {

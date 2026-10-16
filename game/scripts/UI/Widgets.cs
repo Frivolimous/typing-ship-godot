@@ -245,3 +245,66 @@ public partial class MenuBox : Control
         Closed?.Invoke();
     }
 }
+
+// A yes-or-no question over the whole stage ("EXIT THE GAME?"): YES or NO by click or by typing the word; Escape is
+// no.
+public partial class ConfirmBox : Control
+{
+    static readonly Rect2 Box = new(160, 196, 230, 138);
+    readonly Label question;
+    readonly TypeNav nav = new();
+    Action? yes;
+
+    public ConfirmBox()
+    {
+        Size = new Vector2(G.StageSize, G.StageSize);
+        MouseFilter = MouseFilterEnum.Stop;
+        Visible = false;
+        question = Kit.Label(this, "", Kit.Title(16), Box.Position.X, Box.Position.Y + 24, Box.Size.X, HorizontalAlignment.Center);
+        var yesB = new TextButton(Strings.Yes, () => Answer(true), 13, boxed: true, colour: Kit.Bad, width: 90)
+        {
+            Position = new Vector2(Box.Position.X + 14, Box.Position.Y + 78),
+        };
+        var noB = new TextButton(Strings.No, () => Answer(false), 13, boxed: true, width: 90)
+        {
+            Position = new Vector2(Box.End.X - 104, Box.Position.Y + 78),
+        };
+        AddChild(yesB);
+        AddChild(noB);
+        nav.Add(yesB);
+        nav.Add(noB);
+    }
+
+    /// <summary>Asks the question; <paramref name="onYes"/> runs if the answer is yes.</summary>
+    public void Ask(string text, Action onYes)
+    {
+        question.Text = text;
+        yes = onYes;
+        nav.Clear();
+        Visible = true;
+    }
+
+    void Answer(bool answer)
+    {
+        Visible = false;
+        if (answer) yes?.Invoke();
+    }
+
+    /// <summary>A key while the question is up: Escape is no, letters spell YES or NO.</summary>
+    public void OnKey(InputEventKey key)
+    {
+        if (key.Keycode == Key.Escape)
+        {
+            Answer(false);
+            return;
+        }
+        char c = char.ToLowerInvariant((char)key.Unicode);
+        if (c is >= 'a' and <= 'z') nav.Type(c);
+    }
+
+    public override void _Draw()
+    {
+        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0.01f, 0.03f, 0.6f));
+        Kit.Panel(this, Box, Kit.Bad);
+    }
+}
