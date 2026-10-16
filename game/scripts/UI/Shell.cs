@@ -254,13 +254,14 @@ public partial class PauseButton : Control
     public override void _Draw()
     {
         var r = new Rect2(-15, -15, 30, 30);
-        DrawRect(r, new Color(Palette.MenuBlue, 0.8f));
-        DrawRect(r, Palette.BorderBlue, false, 2);
-        if (paused) DrawColoredPolygon(new[] { new Vector2(-6, -9), new Vector2(9, 0), new Vector2(-6, 9) }, Palette.BorderBlue);
+        var c = Cockpit.Rim;
+        DrawRect(r, new Color(0.015f, 0.03f, 0.06f, 0.95f));
+        DrawRect(r, new Color(c, 0.6f), false, 1.5f);
+        if (paused) DrawColoredPolygon(new[] { new Vector2(-6, -9), new Vector2(9, 0), new Vector2(-6, 9) }, c);
         else
         {
-            DrawRect(new Rect2(-7, -9, 5, 18), Palette.BorderBlue);
-            DrawRect(new Rect2(2, -9, 5, 18), Palette.BorderBlue);
+            DrawRect(new Rect2(-7, -9, 5, 18), c);
+            DrawRect(new Rect2(2, -9, 5, 18), c);
         }
     }
 
@@ -292,11 +293,11 @@ public partial class MuteButton : Control
     // Placeholder art: a note for music and a speaker for sound, crossed out when muted.
     public override void _Draw()
     {
-        var back = new Color(Palette.MenuBlue, 0.8f);
-        var c = Palette.BorderBlue;
+        var back = new Color(0.015f, 0.03f, 0.06f, 0.95f);
+        var c = Cockpit.Rim;
         DrawRect(new Rect2(-30, -15, 60, 30), back);
-        DrawRect(new Rect2(-30, -15, 60, 30), c, false, 2);
-        DrawLine(new Vector2(0, -15), new Vector2(0, 15), c, 1);
+        DrawRect(new Rect2(-30, -15, 60, 30), new Color(c, 0.6f), false, 1.5f);
+        DrawLine(new Vector2(0, -15), new Vector2(0, 15), new Color(c, 0.4f), 1);
         // note
         DrawCircle(new Vector2(-18, 6), 4, c);
         DrawLine(new Vector2(-14.5f, 6), new Vector2(-14.5f, -9), c, 2);

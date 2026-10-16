@@ -38,6 +38,7 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 | `--autotype` | A bot types for you, at the difficulty's WPM. Skips the menus (straight into level 0) unless `--menu` is given, turns tutorial pop-ups off, and doesn't save unless `--profile` is given |
 | `--botwpm=N` | With `--autotype`: the bot types at N WPM instead (lower = takes damage). `--botcps=N` is the same in characters per second |
 | `--quit-on-end` | Quit when the level is cleared or lost |
+| `--noglow` | Turn the glow (bloom) off, to compare |
 | `--menu` | With `--autotype`: start on the title menu anyway (the bot plays once you start a level) |
 | `--map` | Start on the level map instead of the title |
 | `--profile=NAME` | Use the save file `user://NAME.json` instead of `user://save.json` (keeps test runs out of your save) |

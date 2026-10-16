@@ -77,7 +77,7 @@ public partial class LaserEffect : BeamFx
         float w = (t < 0.15f ? 1.5f : 1) * Mathf.Pow(fade, 0.7f);
         DrawLine(Vector2.Zero, To, new Color(glow, 0.3f), 12 * w, true);
         DrawLine(Vector2.Zero, To, new Color(beam, 0.8f), 4.5f * w, true);
-        DrawLine(Vector2.Zero, To, new Color(1, 1, 1, fade), 1.6f * w, true);
+        DrawLine(Vector2.Zero, To, new Color(1.6f, 1.6f, 1.6f, fade), 1.6f * w, true); // overbright: it blooms
 
         for (int k = 0; k < 3; k++)
         {
@@ -145,30 +145,46 @@ public partial class EmpEffect : BeamFx
     }
 }
 
-// Floating "+5" / "-1" where points were won or lost.
+// Floating "+5" / "-1" where points were won or lost: it pops in big, settles, then rises and fades. Bigger scores
+// get bigger numbers.
 public partial class PopScore : Node2D, IViewTicker
 {
+    static readonly Color Gain = new(0.45f, 1, 0.65f), Loss = new(1, 0.35f, 0.3f);
     readonly float rate;
+    float pop = 1;
 
     public PopScore() { }
 
     /// <param name="inGameView">True when the position is in game-view space (a ship), false for HUD space.</param>
     public PopScore(Vector2 pos, int s, bool inGameView = true)
     {
+        int size = (int)Mathf.Clamp(12 + s / 8f, 11, 26);
         var label = new Label
         {
             Text = (s > 0 ? "+" : "") + s,
-            LabelSettings = Fonts.Settings(Fonts.Game, (int)(14 + s / 20f), s > 0 ? new Color(0x00ff00ff) : new Color(0xff0000ff),
-                outline: 5, outlineColor: new Color(0, 0, 0, 0.9f)),
+            LabelSettings = Fonts.Settings(Fonts.HudBold, size, s > 0 ? Gain : Loss, outline: 5,
+                outlineColor: new Color(0, 0, 0, 0.85f)),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Size = new Vector2(120, size * 2),
+            Position = new Vector2(-60, -size),
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
         AddChild(label);
-        rate = 1 - s / 120f;
+        rate = 1 - Mathf.Min(s, 100) / 120f;
         Position = pos;
+        Scale = Vector2.One * 1.6f;
         if (inGameView) G.UI.GameView.AddChild(this);
         else G.UI.AddChild(this);
         ResetPhysicsInterpolation();
         G.Ctrl.AddTicker(this);
+    }
+
+    public override void _Process(double delta)
+    {
+        // Settle from the pop-in size, smoothly between ticks.
+        pop = Mathf.Max(0, pop - (float)delta * 6);
+        Scale = Vector2.One * (1 + 0.6f * pop * pop);
     }
 
     public bool Tick()
@@ -179,7 +195,7 @@ public partial class PopScore : Node2D, IViewTicker
             QueueFree();
             return false;
         }
-        m.A -= 0.02f * rate;
+        if (pop <= 0) m.A -= 0.025f * rate;
         Modulate = m;
         Position += new Vector2(0, -0.6f * rate);
         return true;
@@ -265,6 +281,48 @@ public partial class StealthEffect : Node2D, IViewTicker
         if (counter < 100) return true;
         toSpawn.View.Material = null;
         QueueFree();
+        return false;
+    }
+}
+
+/// <summary>
+/// The player's ship dying: small explosions burst across it as it flickers red and the shake builds, then one big
+/// blast (a hot flash, a shockwave, the full shake) and the ship is gone. About a second, well inside the rules'
+/// 100 ticks before the level ends.
+/// </summary>
+public sealed class DeathSequence(PlayerView view, Action gone) : IViewTicker
+{
+    const int BlastTick = 24;
+    static readonly Color Burning = new(1, 0.4f, 0.35f);
+    int tick;
+
+    public bool Tick()
+    {
+        if (!GodotObject.IsInstanceValid(view)) return false;
+        var at = G.V(G.Model.Player.Position);
+        var size = view.View.Texture != null ? view.View.Texture.GetSize() * view.View.Scale : new Vector2(40, 40);
+        if (tick < BlastTick)
+        {
+            if (tick % 3 == 0)
+            {
+                var p = at + new Vector2((G.Rand() - 0.5f) * size.X, (G.Rand() - 0.5f) * size.Y);
+                G.Starfield.Explosion(p.X, p.Y, 15 + tick / 2);
+                G.Camera.Shake(0.12f + tick * 0.01f);
+            }
+            view.View.Modulate = tick % 4 < 2 ? Burning : Colors.White;
+            tick++;
+            return true;
+        }
+        G.Starfield.Explosion(at.X, at.Y, 150);
+        for (int i = 0; i < 5; i++)
+        {
+            var p = at + Vector2.FromAngle(G.Rand() * Mathf.Tau) * (10 + G.Rand() * 25);
+            G.Starfield.Explosion(p.X, p.Y, 50);
+        }
+        G.Starfield.Shockwave(at, 320, 18);
+        G.Flash.Flash(new Color(1, 0.55f, 0.35f), 1, 1.2f, edgesOnly: false);
+        G.Camera.Shake(1);
+        gone();
         return false;
     }
 }

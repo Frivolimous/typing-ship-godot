@@ -21,9 +21,7 @@ public partial class GameControl : Node
 
     public override void _PhysicsProcess(double delta)
     {
-        bool running = G.Model.Running;
         G.Model.Step();
-        if (running) G.UI.PopWarning.Update();
         G.World.Sync();
         for (int i = 0; i < tickers.Count;)
         {

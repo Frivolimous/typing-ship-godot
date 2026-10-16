@@ -82,6 +82,7 @@ public partial class Main : Node2D
         playfield.AddChild(G.Starfield.NebulaLayer);
         playfield.AddChild(G.Starfield);
         playfield.AddChild(G.UI);
+        if (!args.ContainsKey("noglow")) playfield.AddChild(new Bloom { Name = "Bloom" });
         G.Flash = new ScreenFlash { Name = "Flash" };
         playfield.AddChild(G.Flash);
         G.UI.Init();

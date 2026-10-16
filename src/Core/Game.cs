@@ -196,6 +196,7 @@ public sealed partial class Game
             else
             {
                 LevelData.Add(new MarkerEvent(Time + Tuning.EndWait, MarkerEvent.Kind.Wait, Tuning.EndWait));
+                if (!finalDelay) Events.LevelClearing();
                 finalDelay = true;
             }
         }
@@ -265,6 +266,7 @@ public sealed partial class Game
         Delay = 200;
         toRun = EndLevel; // finalBoss
         bossDying = true;
+        Events.LevelClearing();
         // Conqueror: one tier per boss, in order.
         if ((Save.Achieve[Achievement.Conqueror], Level) is (0, 3) or (1, 7) or (2, 11))
             Award(Achievement.Conqueror, Save.Achieve[Achievement.Conqueror] + 1);
@@ -283,7 +285,7 @@ public sealed partial class Game
         CanType = false;
         Delay = 100;
         Player.Destroyed = true;
-        Events.Explosion(Player.Position, 100);
+        Events.PlayerDestroyed();
         toRun = FinalDeath;
         TutOff();
     }

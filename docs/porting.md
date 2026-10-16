@@ -105,7 +105,12 @@ ported, what's left, where the port deliberately differs from the original, and 
    shake), and UI polish. Make it look as good as possible. **Started:** AI-generated placeholder art for the
    player, the enemies, the missiles and the three bosses (game/assets/sprites/ai/; the bosses are animated in code:
    hangar doors, gun glow, cannon charge, beam); engine flames and laser charge points placed by data/mounts.txt; new explosions (flash,
-   shockwave, fireballs, sparks, smoke) and a three-layer starfield.
+   shockwave, fireballs, sparks, smoke) and a three-layer starfield. The cockpit frame is now drawn in code in the
+   original's shape, with screens for the score (counting up), typed text, hull pips and progress, in bundled OFL fonts.
+   Also restyled to match: the pause screen, tutorial briefings, the achievement pop-up (a toast above the cockpit)
+   and the score pop-ups; banners mark a level's start, a boss's arrival and a cleared level; the player's death is a
+   short sequence of explosions ending in one big blast; and a bloom (HDR 2D, Fx/ScreenFx.cs) makes overbright light
+   glow. The "Low Health!" text is gone: the cockpit rim and the hull pips show it.
 8. **Placeholder cleanup:** replace the Flash-portal leftovers ("submit high score", "display high score", the
    sponsor link and "More games") with real features or remove them. Done just before Steam, because
    leaderboards are the likely replacement for submitting high scores.
@@ -134,7 +139,7 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 | Starfield, Star, Particle, Nebula | | Fx/Starfield.cs (stars, nebulae), Fx/Explosions.cs (the particles); engine flames in Fx/EngineFlames.cs, placed by Fx/Mounts.cs + data/mounts.txt |
 | LaserEffect, EMPEffect | | Fx/Effects.cs (LaserEffect, EmpEffect) |
 | PopScore, Overflow | Entities.cs (Overflow); the score itself in Game | Fx/Effects.cs (PopScore) |
-| GameUI, ShipSystem, PopWarning | Entities.cs (Hull: the repair word) | UI/GameUI.cs (HUD, HullBar) |
+| GameUI, ShipSystem, PopWarning | Entities.cs (Hull: the repair word) | UI/GameUI.cs (HUD, HullBar), UI/Cockpit.cs (the cockpit frame, typed text) |
 | SoundControl | | Audio/SoundControl.cs |
 | SpriteSheets | ArtMask.cs (which pixels of the boss art are visible: scanner placement is a rule) | Core/Sprites.cs; `recolour` (chameleon) is a shader |
 | WordList | WordList.cs + data/words.txt | |
@@ -191,6 +196,7 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   explosion went off near the top-left corner of the game view.
 - **Boss 2's beam** starts from its plain frame each time. The original could keep showing a shield-hit frame from
   the previous beam if that one ended with counter-words left over.
+- **Typing "pause" on the pause screen resumes** (as Escape does). The original only offered MENU there.
 - **Typing feedback** (new, in Classic too): on every word that the typing bar ends with the start of, the typed
   letters light up, and a typed word pops as it fires. The original showed nothing until a whole word matched.
 - **The bosses' new art moves where things happen**, in Classic too (Jeremy's call: the old positions aren't kept,

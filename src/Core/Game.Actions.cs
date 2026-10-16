@@ -164,7 +164,7 @@ public sealed partial class Game
         if (t == Player)
         {
             DamagePlayer();
-            ShowTutorial(8, new Vec2(420, 530), PointerDir.Right);
+            ShowTutorial(8, new Vec2(300, 528), PointerDir.Down); // the hull screen in the middle of the cockpit
             return;
         }
         if (t.ShieldOn && s == Weapons.Emp)

@@ -36,7 +36,6 @@ public static class Sprites
     public static readonly Texture2D Turret = T("ai/turret");
     public static readonly Vector2 TurretPivot = new(18, 18);
     public static readonly Texture2D[] Nebula = { T("Nebula0"), T("Nebula1"), T("Nebula2") };
-    public static readonly Texture2D[] Dash = { T("Dash0"), T("Dash1"), T("Dash2"), T("Dash3"), T("Dash4"), T("Dash5") };
     public static readonly Texture2D[] Back = { T("StarBack0"), T("StarBack1"), T("StarBack2") };
 
     static readonly Dictionary<string, Texture2D> named = new();
@@ -90,8 +89,6 @@ public static class Sprites
     }
 
     public static readonly Texture2D Superman = T("Superman");
-    public static readonly Texture2D HealthFull = T("HealthFull");
-    public static readonly Texture2D HealthBase = T("HealthBase");
 
     // Menu art. Each full-stage bitmap is 550x550 and drawn at the stage origin.
     public static readonly Texture2D MenuBack = T("MenuB"), MapBack = T("MapB"), ScoreBack = T("ScoreB"), LoseBack = T("LoseB"),

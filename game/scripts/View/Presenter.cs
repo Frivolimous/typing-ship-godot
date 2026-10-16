@@ -26,7 +26,8 @@ public sealed class Presenter : IGameEvents
     /// <summary>Copies every sprite's state into its node (once per tick).</summary>
     public void Sync()
     {
-        if (G.Model.Player.Destroyed) Player.GetParent()?.RemoveChild(Player);
+        // The death sequence takes the ship away itself, at its big blast.
+        if (G.Model.Player.Destroyed && !playerDying) Player.GetParent()?.RemoveChild(Player);
         Player.Sync();
         foreach (var v in views.Values) v.Sync();
         foreach (var s in scanners.Values) s.Sync();
@@ -63,6 +64,7 @@ public sealed class Presenter : IGameEvents
         }
         view.ResetPhysicsInterpolation();
         if (s is EnemyShip { Hull: "xm" } && view is EnemyShipView ev) new StealthEffect(ev);
+        if (s is Boss) new Banner("WARNING", "BOSS APPROACHING", new Color(1, 0.3f, 0.25f), 1.8f);
     }
 
     public void Removed(Entity e)
@@ -98,6 +100,19 @@ public sealed class Presenter : IGameEvents
         };
         if (label != null) label.Pop();
         else if (e == G.Model.Hull) G.UI.Hull.PopWord();
+    }
+
+    bool playerDying;
+
+    public void PlayerDestroyed()
+    {
+        playerDying = true;
+        G.Ctrl.AddTicker(new DeathSequence(Player, () =>
+        {
+            playerDying = false;
+            Player.View.Modulate = Colors.White;
+            Player.GetParent()?.RemoveChild(Player);
+        }));
     }
 
     public void Explosion(Vec2 at, int size) => G.Starfield.Explosion(at.X, at.Y, size);
@@ -151,12 +166,21 @@ public sealed class Presenter : IGameEvents
 
     public void LevelStarted()
     {
+        G.UI.SnapScore();
+        new Banner(Banner.LevelName(G.Model.Level), Difficulty.Names[Difficulty.Of(G.Model.Cps) - 1].ToUpperInvariant(),
+            Cockpit.Rim);
         G.Starfield.SetBack(G.Model.Level);
         var gameView = G.UI.GameView;
         if (Player.GetParent() == null) gameView.AddChild(Player);
         else gameView.MoveChild(Player, -1);
         Player.Sync();
         Player.ResetPhysicsInterpolation();
+    }
+
+    public void LevelClearing()
+    {
+        if (G.Model.Boss != null) new Banner("BOSS DESTROYED", "MISSION COMPLETE", new Color(0.45f, 1, 0.65f), 2.2f, delay: 1.6f);
+        else new Banner("MISSION COMPLETE", "ALL TARGETS DOWN", new Color(0.45f, 1, 0.65f), 1.6f);
     }
 
     public void LevelOver(bool cleared) => LevelFinished?.Invoke(cleared);

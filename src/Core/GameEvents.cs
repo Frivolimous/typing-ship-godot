@@ -23,6 +23,8 @@ public interface IGameEvents
     void WordTyped(Entity e) { }
 
     void Explosion(Vec2 at, int size) { }
+    /// <summary>The player's ship was destroyed: the presentation plays its death (the level ends 100 ticks later).</summary>
+    void PlayerDestroyed() { }
     void Beam(Vec2 from, Vec2 to, BeamKind kind) { }
     /// <summary>The score changed by amount: a floating number at a point in the game view, or by the typing bar.</summary>
     void ScorePopup(Vec2 at, int amount, bool inGameView) { }
@@ -40,6 +42,8 @@ public interface IGameEvents
     /// <summary>A level started (after NewGame or NextLevel set it up).</summary>
     void LevelStarted() { }
     void LevelOver(bool cleared) { }
+    /// <summary>The level is won and about to end: the last ship is gone (or the boss is dying).</summary>
+    void LevelClearing() { }
 
     // Ticks the presentation keeps in step with: the backdrop scrolls at the start of a tick, and the HUD and
     // sprite animations advance once the ship has moved on.

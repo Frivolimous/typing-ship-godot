@@ -2,20 +2,21 @@ using Godot;
 
 namespace TypingShip;
 
-// In-game HUD over the 550x550 playfield: the game view, cockpit frame, hull bar, typed text, score, progress.
+// In-game HUD over the 550x550 playfield: the game view, and the cockpit along the bottom with its screens (score,
+// typed text, hull, progress).
 public partial class GameUI : Control
 {
     public readonly Node2D GameView = new() { Position = new Vector2(-25, -25) };
     public readonly Node2D BossView = new() { Position = new Vector2(-25, -25) };
     readonly Node2D effectsBack = new();
-    readonly TextureRect dash = new() { MouseFilter = MouseFilterEnum.Ignore };
-    readonly Label diffText = new(), scoreText = new(), typeText = new();
-    public readonly PopWarning PopWarning = new();
+    readonly Cockpit cockpit = new() { Name = "Cockpit" };
+    readonly ScoreReadout score = new() { Name = "Score" };
+    readonly ProgressReadout progress = new() { Name = "Progress" };
+    readonly TypedDisplay typed = new() { Name = "Typed" };
     public PopBox? TutBox;
-    int dashC;
 
     /// <summary>Where the typing bar is (for its "-1" pop-ups).</summary>
-    public Vector2 TypedPosition => typeText.Position;
+    public Vector2 TypedPosition => typed.Position;
 
     /// <summary>The hull bar and its repair word.</summary>
     public readonly HullBar Hull = new() { Name = "Hull" };
@@ -28,46 +29,23 @@ public partial class GameUI : Control
 
     public void Init()
     {
-        dash.Texture = Sprites.Dash[0];
-        float dashScale = G.StageSize / Sprites.Dash[0].GetWidth(); // the original stretched it to the stage width
-        dash.Scale = new Vector2(dashScale, dashScale);
-
-        var green = new Color(0x55ff55ff);
-        diffText.LabelSettings = Fonts.Settings(Fonts.GameBold, 15, Colors.White, 3, new Color(green, 0.6f));
-        scoreText.LabelSettings = Fonts.Settings(Fonts.GameBold, 18, Colors.White, 3, new Color(green, 0.6f));
-        typeText.LabelSettings = Fonts.Settings(Fonts.GameBold, 15, Colors.White, 3, new Color(0xff5555aa));
-
-        typeText.Position = new Vector2(4, G.UiHeight + 21);
-        diffText.Position = new Vector2(G.UiWidth - 111, G.UiHeight - 17);
-        diffText.Size = new Vector2(100, 20);
-        diffText.HorizontalAlignment = HorizontalAlignment.Right;
-        scoreText.Position = new Vector2(-40, G.UiHeight - 12);
-        scoreText.Size = new Vector2(100, 22);
-        scoreText.HorizontalAlignment = HorizontalAlignment.Right;
-
-        var scoreCaption = new Label
-        {
-            Text = "SCORE:",
-            Position = new Vector2(17, G.UiHeight - 22),
-            LabelSettings = Fonts.Settings(Fonts.GameBold, 9, Colors.White, 3, new Color(green, 0.6f)),
-        };
-
-        Hull.Position = new Vector2(169, G.UiHeight + 25);
-        PopWarning.Position = new Vector2(G.UiWidth / 2, G.UiHeight - 20);
+        score.Position = Cockpit.ScoreAnchor;
+        progress.Position = Cockpit.ProgressAnchor;
+        typed.Position = Cockpit.TypedScreen.Position + new Vector2(7, 9);
+        Hull.Position = Cockpit.HullScreen.Position;
 
         GameView.AddChild(effectsBack);
         AddChild(BossView);
         AddChild(GameView);
-        AddChild(dash);
+        AddChild(cockpit);
         AddChild(Hull);
-        AddChild(diffText);
-        AddChild(typeText);
-        AddChild(scoreText);
-        AddChild(scoreCaption);
-        AddChild(PopWarning);
-        foreach (var l in new[] { diffText, scoreText, typeText, scoreCaption })
-            l.MouseFilter = MouseFilterEnum.Ignore;
+        AddChild(score);
+        AddChild(progress);
+        AddChild(typed);
     }
+
+    /// <summary>A new level: the score shows its value at once rather than counting to it.</summary>
+    public void SnapScore() => score.Snap();
 
     /// <summary>Particle layer sits at the very back of the game view.</summary>
     public void SetParticleLayer(Node2D layer)
@@ -83,30 +61,101 @@ public partial class GameUI : Control
         GameView.MoveChild(node, effectsBack.GetIndex() + 1);
     }
 
-    /// <summary>The typing bar, score and hull follow the rules every frame.</summary>
-    public override void _Process(double delta)
+    /// <summary>The hull follows the rules every frame (the typed text and score do so themselves).</summary>
+    public override void _Process(double delta) => Hull.Sync();
+
+    public void OnTick() =>
+        progress.Set(G.Model.MaxTime > 0 ? Math.Min(1, (float)(G.Model.Time / G.Model.MaxTime)) : 0);
+}
+
+/// <summary>The score screen: the score counts up to its value, and pulses green as points come in (red as they go).</summary>
+public partial class ScoreReadout : Node2D
+{
+    static readonly Color Gain = new(0.45f, 1, 0.65f), Loss = new(1, 0.35f, 0.3f);
+    readonly Label caption = new()
     {
-        if (typeText.Text != G.Model.Typed) typeText.Text = G.Model.Typed;
-        var score = G.Model.Score.ToString();
-        if (scoreText.Text != score) scoreText.Text = score;
-        Hull.Sync();
+        Text = "SCORE",
+        Position = new Vector2(8, 8),
+        LabelSettings = Fonts.Settings(Fonts.Hud, 8, new Color(Cockpit.Rim, 0.75f)),
+        MouseFilter = Control.MouseFilterEnum.Ignore,
+    };
+    readonly Label number = new()
+    {
+        Position = new Vector2(8, 18),
+        Size = new Vector2(112, 30),
+        LabelSettings = Fonts.Settings(Fonts.HudBold, 20, Colors.White, 3, new Color(0, 0, 0, 0.6f)),
+        PivotOffset = new Vector2(0, 15),
+        MouseFilter = Control.MouseFilterEnum.Ignore,
+    };
+    float shown, pulse;
+    Color flash = Gain;
+
+    public ScoreReadout()
+    {
+        AddChild(caption);
+        AddChild(number);
     }
 
-    public void OnTick()
-    {
-        int per = G.Model.MaxTime > 0 ? (int)(G.Model.Time / G.Model.MaxTime * 100) : 0;
-        diffText.Text = per > 100 ? "100%" : $"{per}%";
+    public void Snap() => shown = G.Model.Score;
 
-        if (dashC == 0)
+    public override void _Process(double delta)
+    {
+        float d = (float)delta, target = G.Model.Score;
+        if (target != Mathf.Round(shown))
         {
-            if (G.Rand() < 0.01f) dashC = (int)Mathf.Ceil(G.Rand() * 5) * 5;
+            if (target > shown) flash = Gain;
+            else if (target < shown) flash = Loss;
+            pulse = 1;
         }
-        else
-        {
-            dashC--;
-            if (dashC == 0) dash.Texture = Sprites.Dash[0];
-            else if (dashC % 3 == 0) dash.Texture = Sprites.Dash[(int)Mathf.Ceil(G.Rand() * 5)];
-        }
+        // Count towards the score: fast for big jumps, never slower than 30 a second.
+        float step = Mathf.Max(30, Mathf.Abs(target - shown) * 8) * d;
+        shown = Mathf.Abs(target - shown) <= step ? target : shown + Mathf.Sign(target - shown) * step;
+        pulse = Mathf.Max(0, pulse - d * 3);
+
+        number.Text = ((int)Mathf.Round(shown)).ToString();
+        number.Scale = Vector2.One * (1 + 0.15f * pulse);
+        number.Modulate = Colors.White.Lerp(flash, pulse);
+    }
+}
+
+/// <summary>The progress screen: how far through the level, as a percentage and a bar.</summary>
+public partial class ProgressReadout : Node2D
+{
+    readonly Label caption = new()
+    {
+        Text = "MISSION",
+        Position = new Vector2(10, 22),
+        LabelSettings = Fonts.Settings(Fonts.Hud, 8, new Color(Cockpit.Rim, 0.75f)),
+        MouseFilter = Control.MouseFilterEnum.Ignore,
+    };
+    readonly Label percent = new()
+    {
+        Position = new Vector2(8, 15),
+        Size = new Vector2(116, 24),
+        HorizontalAlignment = HorizontalAlignment.Right,
+        LabelSettings = Fonts.Settings(Fonts.HudBold, 15, Colors.White, 3, new Color(0, 0, 0, 0.6f)),
+        MouseFilter = Control.MouseFilterEnum.Ignore,
+    };
+    float fraction;
+
+    public ProgressReadout()
+    {
+        AddChild(caption);
+        AddChild(percent);
+    }
+
+    public void Set(float f)
+    {
+        fraction = f;
+        percent.Text = $"{(int)(f * 100)}%";
+        QueueRedraw();
+    }
+
+    public override void _Draw()
+    {
+        var bar = new Rect2(8, 40, 116, 4);
+        DrawRect(bar, new Color(Cockpit.Rim, 0.15f));
+        DrawRect(new Rect2(bar.Position, new Vector2(bar.Size.X * fraction, bar.Size.Y)), new Color(Cockpit.Rim, 0.85f));
     }
 }
 
@@ -114,20 +163,25 @@ public partial class GameUI : Control
 public partial class HullBar : Node2D
 {
     const float FlickerTime = 0.6f;
+    const float Width = 226, PipTop = 28, PipHeight = 9, Gap = 5, Margin = 10;
+    static readonly Color Full = new(0.4f, 1, 0.7f), Worn = new(1, 0.75f, 0.2f), Critical = new(1, 0.25f, 0.2f);
     static readonly Color Hurt = new(1, 0.35f, 0.35f);
 
-    readonly Sprite2D bar = new() { Texture = Sprites.HealthFull, Centered = false, RegionEnabled = true };
-    // The piece of hull just lost, burning off white.
-    readonly Sprite2D lost = new() { Texture = Sprites.HealthFull, Centered = false, RegionEnabled = true, Visible = false };
-    readonly WordLabel word = new() { Position = new Vector2(180, 0) };
-    int health = -1;
-    float flicker;
+    // The repair word, shown above the pips while the hull is damaged.
+    readonly WordLabel word = new() { Position = new Vector2(Width / 2, 6) };
+    readonly Label caption = new()
+    {
+        Text = "HULL",
+        Position = new Vector2(Margin, 7),
+        LabelSettings = Fonts.Settings(Fonts.Hud, 8, new Color(Cockpit.Rim, 0.75f)),
+        MouseFilter = Control.MouseFilterEnum.Ignore,
+    };
+    int health = -1, lost = -1;
+    float flicker, time;
 
     public HullBar()
     {
-        AddChild(new Sprite2D { Texture = Sprites.HealthBase, Centered = false });
-        AddChild(bar);
-        AddChild(lost);
+        AddChild(caption);
         AddChild(word);
     }
 
@@ -136,85 +190,62 @@ public partial class HullBar : Node2D
         var player = G.Model.Player;
         if (player.Health != health)
         {
-            var size = Sprites.HealthFull.GetSize();
-            float Width(int h) => size.X * h / player.MaxHealth;
-            if (health > 0 && player.Health < health) Hit(Width(player.Health), Width(health), size.Y);
+            if (health > 0 && player.Health < health) Hit(player.Health);
             health = player.Health;
-            bar.RegionRect = new Rect2(0, 0, Width(health), size.Y);
         }
         word.Set(G.Model.Hull.Word, G.Model.Hull.Priority);
+        caption.Visible = G.Model.Hull.Word == null; // the repair word takes its place
     }
 
-    /// <summary>The player took damage: shake, red at the screen edges, and the bar flickers as the lost piece burns off.</summary>
-    void Hit(float from, float to, float height)
+    /// <summary>The player took damage: shake, red at the screen edges, and the pips flicker as the lost one burns off.</summary>
+    void Hit(int now)
     {
         G.Camera.Shake(0.45f);
         G.Flash.Flash(new Color(1, 0.1f, 0.05f, 0.75f), 1, 0.45f, edgesOnly: true);
-        lost.RegionRect = new Rect2(from, 0, to - from, height);
-        lost.Position = new Vector2(from, 0);
-        lost.Visible = true;
+        lost = now;
         flicker = FlickerTime;
     }
 
     public override void _Process(double delta)
     {
-        if (flicker <= 0) return;
-        flicker -= (float)delta;
+        time += (float)delta;
+        if (flicker > 0) flicker -= (float)delta;
+        QueueRedraw();
+    }
+
+    public override void _Draw()
+    {
+        if (G.Model == null) return;
+        int max = G.Model.Player.MaxHealth;
+        float pip = (Width - 2 * Margin - Gap * (max - 1)) / max;
+        var colour = health <= 1 ? Critical : health <= 2 ? Worn : Full;
+        if (health == 1) colour = colour.Lerp(Colors.White, 0.25f * (0.5f + 0.5f * Mathf.Sin(time * 8)));
         float t = 1 - Mathf.Max(flicker, 0) / FlickerTime;
-        bool on = (int)(t * 6) % 2 == 0; // three blinks
-        bar.Modulate = flicker > 0 && on ? Hurt : Colors.White;
-        lost.Modulate = new Color(3, 3, 3, 1 - t); // overbright white, fading
-        if (flicker <= 0) lost.Visible = false;
+        bool blinkOff = flicker > 0 && (int)(t * 6) % 2 == 1; // three blinks
+        for (int i = 0; i < max; i++)
+        {
+            float x = Margin + i * (pip + Gap);
+            // Slanted pips, like the rest of the cockpit.
+            var pts = new[]
+            {
+                new Vector2(x + 3, PipTop), new Vector2(x + pip, PipTop),
+                new Vector2(x + pip - 3, PipTop + PipHeight), new Vector2(x, PipTop + PipHeight),
+            };
+            if (i < health)
+            {
+                var c = blinkOff ? Hurt : colour;
+                DrawColoredPolygon(pts, new Color(c, 0.25f));
+                DrawColoredPolygon(pts.Select(p => p.Lerp(new Vector2(x + pip / 2, PipTop + PipHeight / 2), 0.25f)).ToArray(), c);
+            }
+            else if (flicker > 0 && i == lost)
+            {
+                DrawColoredPolygon(pts, new Color(1, 1, 1, 1 - t)); // the lost pip burns off white
+            }
+            DrawPolyline(pts.Append(pts[0]).ToArray(), new Color(Cockpit.Rim, i < health ? 0.5f : 0.2f), 1, true);
+        }
     }
 
     public void ShowWord(bool b) => word.ShowWord(b);
 
     public void PopWord() => word.Pop();
-}
-
-// Flashing "Low Health!" while the hull is down to its last point.
-public partial class PopWarning : Node2D
-{
-    readonly Label text = new()
-    {
-        Text = "Low Health!",
-        HorizontalAlignment = HorizontalAlignment.Center,
-        Position = new Vector2(-200, 0),
-        Size = new Vector2(400, 20),
-        MouseFilter = Control.MouseFilterEnum.Ignore,
-    };
-    readonly LabelSettings red = Fonts.Settings(Fonts.Game, 14, new Color(0xff0000ff), 2);
-    readonly LabelSettings white = Fonts.Settings(Fonts.Game, 14, Colors.White, 2);
-    int textSwitch, textChange;
-    bool isRed;
-
-    public PopWarning()
-    {
-        text.LabelSettings = red;
-        AddChild(text);
-        Visible = false;
-    }
-
-    void Add()
-    {
-        Visible = true;
-        textChange = 40;
-    }
-
-    public void Update()
-    {
-        if (textChange == 0)
-        {
-            if (G.Model.Player.Health < 2) Add();
-            else Visible = false;
-            return;
-        }
-        textChange--;
-        if (++textSwitch > 2)
-        {
-            isRed = !isRed;
-            text.LabelSettings = isRed ? red : white;
-            textSwitch = 0;
-        }
-    }
 }

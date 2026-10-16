@@ -113,6 +113,21 @@ public partial class TextButton : Label
         MouseExited += () => LabelSettings = normal;
     }
 
+    /// <summary>A button in the in-game HUD's style: Orbitron, lit cyan under the mouse.</summary>
+    public TextButton(string text, Action f, int size, string? word = null)
+    {
+        Text = text;
+        Word = word ?? text.Split(' ')[0].ToLowerInvariant();
+        output = f;
+        normal = Fonts.Settings(Fonts.HudBold, size, new Color(0.8f, 0.92f, 1), 4, new Color(0, 0, 0, 0.7f));
+        over = Fonts.Settings(Fonts.HudBold, size, Colors.White, 6, new Color(Cockpit.Rim, 0.7f));
+        LabelSettings = normal;
+        MouseFilter = MouseFilterEnum.Stop;
+        MouseDefaultCursorShape = CursorShape.PointingHand;
+        MouseEntered += () => LabelSettings = over;
+        MouseExited += () => LabelSettings = normal;
+    }
+
     public override void _GuiInput(InputEvent e)
     {
         if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })

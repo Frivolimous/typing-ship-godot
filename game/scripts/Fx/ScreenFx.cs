@@ -79,3 +79,46 @@ public partial class ScreenFlash : ColorRect
         material.SetShaderParameter("strength", strength);
     }
 }
+
+/// <summary>
+/// A soft bloom over the playfield. The 2D canvas is HDR (rendering/viewport/hdr_2d), so light brighter than white
+/// survives: this blurs only that excess and adds it back. Additive effects that pile up (lasers, flames, explosions,
+/// charges) and parts drawn overbright (the cockpit rim) glow; words and the HUD, at most plain white, stay crisp.
+/// It reads the screen, so it sits above everything else in the playfield. --noglow leaves it out.
+/// </summary>
+public partial class Bloom : ColorRect
+{
+    static readonly Shader BloomShader = new()
+    {
+        Code = """
+            shader_type canvas_item;
+            render_mode blend_add;
+            uniform sampler2D screen : hint_screen_texture, filter_linear;
+            uniform float intensity = 1.1;
+            uniform float spread = 6.0; // the blur's sigma, in screen pixels
+            vec3 excess(vec2 uv) { return max(texture(screen, uv).rgb - vec3(1.0), vec3(0.0)); }
+            void fragment() {
+                // A Gaussian blur of the excess: five rings of twelve taps, each ring turned so the taps don't line up.
+                vec3 sum = excess(SCREEN_UV);
+                float total = 1.0;
+                for (int ring = 1; ring <= 5; ring++) {
+                    float r = float(ring) * spread * 0.55;
+                    float w = exp(-r * r / (2.0 * spread * spread));
+                    for (int k = 0; k < 12; k++) {
+                        float a = float(k) * 0.5235988 + float(ring) * 0.2618;
+                        sum += excess(SCREEN_UV + vec2(cos(a), sin(a)) * r * SCREEN_PIXEL_SIZE) * w;
+                        total += w;
+                    }
+                }
+                COLOR = vec4(sum / total * intensity, 1.0);
+            }
+            """,
+    };
+
+    public Bloom()
+    {
+        Material = new ShaderMaterial { Shader = BloomShader };
+        MouseFilter = MouseFilterEnum.Ignore;
+        Size = new Vector2(G.StageSize, G.StageSize);
+    }
+}

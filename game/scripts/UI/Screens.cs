@@ -540,11 +540,13 @@ public partial class VictoryUI : Screen
     }
 }
 
-// The pause screen over the game: MENU asks to confirm; YES ends the level as a loss, NO resumes.
+// The pause screen over the game: the playfield dims under a cockpit-style panel. MENU asks to confirm; YES ends the
+// level as a loss, NO resumes.
 public partial class PauseUI : Control
 {
+    static readonly Rect2 Panel = new(135, 170, 280, 170);
     public readonly TypeNav Nav = new();
-    readonly Control confirm = new() { Position = new Vector2(0, 290), MouseFilter = MouseFilterEnum.Ignore, Visible = false };
+    readonly Control confirm = new() { Position = new Vector2(0, 288), MouseFilter = MouseFilterEnum.Ignore, Visible = false };
 
     public PauseUI()
     {
@@ -553,24 +555,53 @@ public partial class PauseUI : Control
         Visible = false;
         AddChild(new Label
         {
-            Text = Strings.Paused,
-            Position = new Vector2(125, 200),
-            LabelSettings = Fonts.Settings(Fonts.Title, 50, Colors.White, 8, Palette.Gold),
+            Text = "PAUSED",
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Position = new Vector2(Panel.Position.X, 188),
+            Size = new Vector2(Panel.Size.X, 40),
+            LabelSettings = Fonts.Settings(new FontVariation { BaseFont = Fonts.HudBold, SpacingGlyph = 5 }, 28, Colors.White, 5,
+                new Color(Cockpit.Rim, 0.35f)),
             MouseFilter = MouseFilterEnum.Ignore,
         });
-        var menu = new TextButton(Strings.Menu, GoMenu, Palette.Gold, Palette.GoldOver, true) { Position = new Vector2(230, 270) };
+        AddChild(new Label
+        {
+            Text = "ESC OR TYPE \"PAUSE\" TO RESUME",
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Position = new Vector2(Panel.Position.X, 228),
+            Size = new Vector2(Panel.Size.X, 14),
+            LabelSettings = Fonts.Settings(Fonts.Hud, 8, new Color(Cockpit.Rim, 0.8f)),
+            MouseFilter = MouseFilterEnum.Ignore,
+        });
+        var menu = new TextButton(Strings.Menu, GoMenu, 15) { Position = new Vector2(244, 252) };
         AddChild(menu);
         AddChild(confirm);
-        var yes = new TextButton(Strings.Yes, MenuYes, Palette.Gold, Palette.GoldOver, true) { Position = new Vector2(200, 0) };
-        var no = new TextButton(Strings.No, MenuNo, Palette.Gold, Palette.GoldOver, true) { Position = new Vector2(275, 0) };
+        confirm.AddChild(new Label
+        {
+            Text = "QUIT TO THE MENU?",
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Position = new Vector2(Panel.Position.X, -14),
+            Size = new Vector2(Panel.Size.X, 14),
+            LabelSettings = Fonts.Settings(Fonts.Hud, 8, new Color(1, 0.6f, 0.5f)),
+            MouseFilter = MouseFilterEnum.Ignore,
+        });
+        var yes = new TextButton(Strings.Yes, MenuYes, 13) { Position = new Vector2(214, 0) };
+        var no = new TextButton(Strings.No, MenuNo, 13) { Position = new Vector2(300, 0) };
         confirm.AddChild(yes);
         confirm.AddChild(no);
         Nav.Add(menu);
         Nav.Add(yes);
         Nav.Add(no);
+        Nav.Add("pause", MenuNo); // typing it again resumes, as Escape does
     }
 
-    public override void _Draw() => DrawRect(new Rect2(0, 0, G.StageSize, G.StageSize), new Color(0, 0, 0, 0.3f));
+    public override void _Draw()
+    {
+        DrawRect(new Rect2(0, 0, G.StageSize, G.StageSize), new Color(0, 0.01f, 0.03f, 0.55f));
+        DrawRect(Panel.Grow(3), new Color(0, 0, 0, 0.5f));
+        DrawRect(Panel, new Color(0.015f, 0.03f, 0.06f, 0.92f));
+        DrawRect(Panel, new Color(Cockpit.Rim, 0.5f), false, 1.5f);
+        DrawLine(Panel.Position + new Vector2(3, 3), new Vector2(Panel.End.X - 3, Panel.Position.Y + 3), new Color(Cockpit.Rim, 0.15f), 2);
+    }
 
     public void Show(bool b)
     {
