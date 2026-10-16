@@ -48,6 +48,9 @@ public partial class Main : Node2D
 
         G.Sound = new SoundControl { Name = "Sound" };
         AddChild(G.Sound);
+        if (bot) Settings.Path = null;
+        Settings.Load();
+        Settings.Apply();
         G.World = new Presenter();
         G.Ctrl = new GameControl { Name = "GameControl" };
         AddChild(G.Ctrl);

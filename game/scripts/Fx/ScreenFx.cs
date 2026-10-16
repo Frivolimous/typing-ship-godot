@@ -9,7 +9,10 @@ public partial class ShakeCamera : Camera2D
     float time;
 
     /// <summary>Adds a shake: 0.2 is a knock, 0.5 a hit, 1 the biggest there is.</summary>
-    public void Shake(float amount) => trauma = Mathf.Min(1, trauma + amount);
+    public void Shake(float amount)
+    {
+        if (Settings.Shake) trauma = Mathf.Min(1, trauma + amount);
+    }
 
     public override void _Process(double delta)
     {
@@ -59,6 +62,12 @@ public partial class ScreenFlash : ColorRect
     /// <summary>Flashes the screen edges (or all of it) in a colour, fading over <paramref name="seconds"/>.</summary>
     public void Flash(Color tint, float strength, float seconds, bool edgesOnly)
     {
+        // With flashes off, a hit's edge glow stays (faintly); full-screen flashes are skipped.
+        if (!Settings.Flashes)
+        {
+            if (!edgesOnly) return;
+            strength *= 0.4f;
+        }
         if (strength < this.strength) return; // a weaker flash doesn't cut a stronger one short
         this.strength = strength;
         fadeRate = strength / seconds;
@@ -121,4 +130,6 @@ public partial class Bloom : ColorRect
         MouseFilter = MouseFilterEnum.Ignore;
         Size = new Vector2(G.StageSize, G.StageSize);
     }
+
+    public override void _Process(double delta) => Visible = Settings.Glow;
 }

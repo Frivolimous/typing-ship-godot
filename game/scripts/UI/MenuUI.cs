@@ -57,8 +57,16 @@ public partial class MenuUI : Screen
             Nav.Add(b);
         }
 
-        best = Kit.Label(this, "", Kit.Body(12), 300, 516, 162, HorizontalAlignment.Right);
-        Kit.Label(this, "BEST TOTAL", Kit.Caption(7), 300, 506, 162, HorizontalAlignment.Right);
+        // Bottom right, on the title and the map: the options.
+        var options = new TextButton("OPTIONS", () => G.Shell.Go(G.Shell.Options, Shell.Dark), 13, boxed: true, width: 126)
+        {
+            Position = new Vector2(412, 506),
+        };
+        AddChild(options);
+        Nav.Add(options);
+
+        best = Kit.Label(this, "", Kit.Body(12), 376, 22, 162, HorizontalAlignment.Right);
+        Kit.Label(this, "BEST TOTAL", Kit.Caption(7), 376, 12, 162, HorizontalAlignment.Right);
 
         Map.AddWords(Nav);
     }

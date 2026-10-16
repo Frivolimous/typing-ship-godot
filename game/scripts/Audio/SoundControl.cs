@@ -24,14 +24,26 @@ public partial class SoundControl : Node
     float volume;
     bool fading, fadeIn, muteM, muteS;
 
+    const string MusicBus = "Music", SoundBus = "Sound";
+
     public override void _Ready()
     {
+        // Music and effects each go through a bus of their own, so the options can set their volumes.
+        foreach (var bus in new[] { MusicBus, SoundBus })
+        {
+            if (AudioServer.GetBusIndex(bus) >= 0) continue;
+            AudioServer.AddBus();
+            int index = AudioServer.BusCount - 1;
+            AudioServer.SetBusName(index, bus);
+            AudioServer.SetBusSend(index, "Master");
+        }
         for (int i = 0; i < Voices; i++)
         {
-            var p = new AudioStreamPlayer();
+            var p = new AudioStreamPlayer { Bus = SoundBus };
             AddChild(p);
             voices.Add(p);
         }
+        musicPlayer.Bus = MusicBus;
         AddChild(musicPlayer);
         musicPlayer.Finished += () => musicPlayer.Play(); // loop
     }
@@ -127,6 +139,26 @@ public partial class SoundControl : Node
         musicPlayer.Stream = stream;
         musicPlayer.VolumeDb = Mathf.LinearToDb(0.01f);
         musicPlayer.Play();
+    }
+
+    /// <summary>The options' music volume, 0-1 (the mute buttons work on top of it).</summary>
+    public float MusicVolume
+    {
+        set => SetBusVolume(MusicBus, value);
+    }
+
+    /// <summary>The options' sound effects volume, 0-1.</summary>
+    public float SoundVolume
+    {
+        set => SetBusVolume(SoundBus, value);
+    }
+
+    static void SetBusVolume(string bus, float v)
+    {
+        int index = AudioServer.GetBusIndex(bus);
+        if (index < 0) return;
+        AudioServer.SetBusMute(index, v <= 0);
+        AudioServer.SetBusVolumeDb(index, Mathf.LinearToDb(Mathf.Max(v, 0.0001f)));
     }
 
     /// <summary>The mute button's music half: stops the music, or brings back the last track.</summary>

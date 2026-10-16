@@ -193,6 +193,10 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   test (a miss flashes the passage's frame instead of a big red cross) and the message box. The fades between
   screens are dark rather than white or black, except the white flash into a level.
 - **RETRY on the game-over screen** (new): the same level again, at the same difficulty.
+- **Options screen** (new; OPTIONS on the title and map, where the menus' mute buttons were, which now show in a
+  level only): fullscreen, music and sound volumes, glow, screen shake, screen flashes (off skips full-screen flashes
+  and dims a hit's), tutorials. Saved in user://settings.json (UI/Options.cs, Core/Settings.cs). Escape on a tutorial
+  now turns the tutorials off for good, as the TUTORIALS switch.
 - The score screen's count-up runs at 60 steps a second (the original's 10 ms timer, which Flash capped at about
   that).
 - **The "New Achievement" pop-up** shows under "FINAL SCORE:" on the score screen, where the original's top-centre

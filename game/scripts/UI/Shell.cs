@@ -16,9 +16,11 @@ public partial class Shell : Control, IViewTicker
     public AchieveUI Achievements = null!;
     public CreditsUI Credits = null!;
     public TypingTest Test = null!;
+    public OptionsUI Options = null!;
     public readonly PauseUI Pause = new();
     public readonly PauseButton PauseB = new() { Position = new Vector2(435, 522), Scale = new Vector2(0.8f, 0.8f), Visible = false };
-    public readonly MuteButton MuteB = new() { Position = new Vector2(505, 522), Scale = new Vector2(0.8f, 0.8f) };
+    // In a level only: on the menus, the options screen sets the volumes.
+    public readonly MuteButton MuteB = new() { Position = new Vector2(505, 522), Scale = new Vector2(0.8f, 0.8f), Visible = false };
 
     readonly Control screens = new() { MouseFilter = MouseFilterEnum.Ignore };
     readonly Control popups = new() { MouseFilter = MouseFilterEnum.Ignore };
@@ -58,7 +60,8 @@ public partial class Shell : Control, IViewTicker
         Achievements = new AchieveUI();
         Credits = new CreditsUI();
         Test = new TypingTest();
-        foreach (var s in new Screen[] { Menu, Score, GameOver, Victory, Achievements, Credits, Test }) screens.AddChild(s);
+        Options = new OptionsUI();
+        foreach (var s in new Screen[] { Menu, Score, GameOver, Victory, Achievements, Credits, Test, Options }) screens.AddChild(s);
         AddChild(screens);
         AddChild(Pause);
         AddChild(PauseB);
@@ -84,7 +87,7 @@ public partial class Shell : Control, IViewTicker
     {
         current = null;
         G.UI.Visible = true;
-        PauseB.Visible = true;
+        PauseB.Visible = MuteB.Visible = true;
         G.Ctrl.NewGame(level);
     }
 
@@ -153,7 +156,7 @@ public partial class Shell : Control, IViewTicker
     {
         if (current != null) current.Visible = false;
         G.UI.Visible = toGame;
-        PauseB.Visible = toGame;
+        PauseB.Visible = MuteB.Visible = toGame;
         if (toGame) current = null;
         else
         {

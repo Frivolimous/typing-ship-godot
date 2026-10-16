@@ -17,7 +17,11 @@ public partial class GameControl : Node
 
     public void AddTicker(IViewTicker t) => tickers.Add(t);
 
-    public void NewGame(int level) => G.Model.NewGame(level);
+    public void NewGame(int level)
+    {
+        G.Model.NewGame(level);
+        if (!Settings.Tutorials) G.Model.TutOff();
+    }
 
     public override void _PhysicsProcess(double delta)
     {

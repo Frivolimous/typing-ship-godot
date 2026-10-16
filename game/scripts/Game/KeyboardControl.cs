@@ -27,7 +27,13 @@ public partial class KeyboardControl : Node
             if (key.Keycode is Key.Space or Key.Escape)
             {
                 tut.Remove();
-                if (key.Keycode == Key.Escape) M.TutOff();
+                if (key.Keycode == Key.Escape)
+                {
+                    // "Disable tutorial": for good, as the options' TUTORIALS switch.
+                    M.TutOff();
+                    Settings.Tutorials = false;
+                    Settings.Save();
+                }
             }
             GetViewport().SetInputAsHandled();
             return;
