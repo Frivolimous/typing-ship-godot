@@ -78,7 +78,7 @@ wait 0
 suicide mn 0.04  0,0 3,4
 repeat 0.01 1
 
-missile mn 0.1  4,0 5,4 12,7
+hard+: missile mn 0.1  4,0 5,4 12,7
 mirror
 laser ls 0.05  2,0
 offset 0.01  2,0

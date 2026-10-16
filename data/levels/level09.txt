@@ -3,9 +3,9 @@
 
 pace hard
 duration 2:51
-density 37.5%/63%/100%/109.5%/129.5%
+density 37.5%/64.5%/100%/109.5%/129.5%
 
-missile ln 0.05  -1,-1 5,6 13,13
+hard+: missile ln 0.05  -1,-1 5,6 13,13
 normal+: mirror 0.01
 
 missile mn 0.1  0,1 9,3 0,6
@@ -24,7 +24,7 @@ missile ln 0.04  -1,1 6,3 9,13
 normal+: mirror
 laser lt 0.04  0,5
 normal+: mirror
-missile mn 0.14  0,1 5,5 12,1
+hard+: missile mn 0.14  0,1 5,5 12,1
 missile mn 0  0,9 6,6 0,3
 missile mn 0  12,9 7,5 0,9
 missile mn 0  12,1 6,4 12,10
@@ -33,7 +33,7 @@ missile ss 0.14  2,12 2,3 9,2.5 10,12
 repeat 0.01 7
 missile ls 0.07  -1,6 8,6 13,6
 offset 0  0,2
-laser lb 0.05  0,7
+hard+: laser lb 0.05  0,7
 
 # Added for the longer level: a second wave before the big climb.
 missile mn 0.12  0,3 9,4 0,8

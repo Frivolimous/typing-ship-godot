@@ -3,7 +3,7 @@
 
 pace hard
 duration 3:00
-density 38.5%/61%/100%/107%/133%
+density 38.5%/61%/100%/107%/137%
 
 missile lb 0.03  2,-1 2,13
 mirror
@@ -11,7 +11,7 @@ missile lb 0.05  -1,2 13,2
 wait 0
 laser lb 0.05  0,5
 wait 0
-missile ss 0.03  6,0 6,5 1,0
+easy-extreme: missile ss 0.03  6,0 6,5 1,0
 repeat 0.03 2 1 mirrored
 
 missile sn 0.22  2,12 2,3 8,4 10,12

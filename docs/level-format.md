@@ -14,7 +14,8 @@ word lengths, health) are in `data/tuning.txt`. Edit them in any text editor; no
 **Classic levels.** `data/levels/classic/` holds the original 12 levels and their bosses.txt exactly as the original
 game had them: a baseline to compare against while the game's own levels are reworked (play them with `--classic`,
 see [commands.md](commands.md)). They're removed before release. A test checks they still play exactly as recorded,
-so leave them alone; edit the ones in `data/levels/`. For now those are still copies of the Classic ones.
+so leave them alone; edit the ones in `data/levels/`. The regular levels there are reworked to the pacing rules
+(each has a `pace hard`, a `duration` and a `density` line); the boss levels are still copies of the Classic ones.
 
 The lines are the original game's LevelData helpers, one per line, so the old scripts read almost the same:
 
@@ -124,6 +125,11 @@ last the same time at every difficulty and get harder through more (or faster) s
 | `repeat 0.05 0/1/2/2/3` | Five numbers separated by `/` are one per difficulty, Easy to Insane. Works anywhere a number goes, e.g. a gap `0.1/0.08/0.06/0.05/0.05` (with a pace line, a gap that differs changes the level's length) |
 | `density 40%/65%/100%/150%/200%` | How many waves each difficulty gets, as a share of the file's (one value for all, or five; 1% to 300%). Ships arriving at the same moment are one wave. Below 100% waves are left out, spread evenly (40%: the 1st, 3rd, 6th, 8th...). Above 100% waves get copies that follow one "copy gap" (tuning, 0.01) after the wave, flying the same path: 150% copies every other wave, 200% every wave, 250% every wave once and every other wave twice. These are the "fatter waves" of [pacing-rules.md](pacing-rules.md) |
 | `duration 2:15` | The level lasts this long at every difficulty: its clock is set so the last event comes at the duration minus the tuning's "duration tail" (5 s). Needs a `pace` line, which keeps the waves' timing the same at every difficulty. [pacing-rules.md](pacing-rules.md) gives each level's target (`90 + 9 x (level - 1)` seconds) |
+
+The pacing rules count a level's length to its last *word*, and some ships show words a while after they come in
+(shields go first, and ships keep firing missiles). A `wait` as the file's last line makes the last event come
+after the last ship, so `duration` brings those late words in on time; give it one number per difficulty when the
+slower ones need longer (level 7 ends with `wait 0/0.12/0.12/0.12/0.12`).
 
 Leaving ships out never shortens the level: the gaps stay where they were. Copies follow their ship: a `mirror`
 or `clone` of a `hard+` ship is `hard+` too. The boss escorts in bosses.txt can be tagged, and they follow their

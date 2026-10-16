@@ -51,7 +51,8 @@ ported, what's left, where the port deliberately differs from the original, and 
      sustained intensity, peaks and the level arc. Boss levels are exempt from all of them; level 3 from the arc rule
      for now. **Done:** the checker (`ts 13`, `pacing --check`, numbers in data/pacing-rules.txt), a realistic bot
      (80% speed, 3.5% mistakes) in the report, and the level-format lines the rework needs: `duration` and `density`
-     above 100%. **Next:** the timestamped level edits in the spec, then converting the levels.
+     above 100%. **Done (branch level-pacing-rework, for Jeremy to playtest):** the spec's timestamped edits and
+     the conversion of every regular level; see "Level pacing rework" below.
    - **Pacing rework:** levels last the same time at every difficulty (time-based pacing; durations above). Difficulty comes from
      more and/or faster enemies, not from level length. The 12 original levels are the baseline: Jeremy picks
      the best-tuned difficulty (probably Hard) as the template and tunes the others around it. **Mechanism
@@ -66,7 +67,31 @@ ported, what's left, where the port deliberately differs from the original, and 
      take longer to leave and the level runs about 20% longer there.
    - **Classic:** the original 12 levels stay available as a baseline and check during development, and are
      removed before release. **Done:** data/levels/classic/ (`--classic`, `ts 12`); data/levels/ is the game's
-     own set, for now unchanged copies.
+     own set (regular levels reworked, boss levels still copies).
+
+#### Level pacing rework
+
+Every regular level now starts with `pace hard`, `duration` (the spec's target) and a `density` line. Method: the
+Hard layout was edited until its natural last spawn sat near the target (so `duration` barely rescales it), then
+each difficulty's density was searched on its own (density only affects its own difficulty), with a few tagged
+lines where thinning left holes or lumps. Gaps of 0.1 or more shrink by 1 - 5.42 / 25 at Hard pace, which matters
+when splitting a gap. Levels whose last ships show words late (shields, stealth ships firing) end with a `wait` so
+those words land on the duration. Fillers in lulls are medium ships (`mn`): small ones die to the perfect bot
+before they fade in, so they don't stop an empty screen.
+
+| Level | Duration | What changed (Hard) | Density (Ea/No/Ha/Ex/In) |
+|---|---|---|---|
+| 1 | 1:30 | First wave at 0:05; 0:15–0:22 dip filled; gaps at 0:27, 0:38, 0:44 filled; new closing wave (last peak 1.37P) | 40/61/100/109/133 |
+| 2 | 1:39 | Compressed from 2:09: long gaps shortened, suicide and missile repeats trimmed; trickle waves made pairs; dips at 0:18, 0:30, 0:44, 1:02 filled; denser finish. Easy's opening is 2 ships, not 4 | 38/67/100/104/127 |
+| 3 | 1:48 | Compressed from 2:33: gaps shortened, repeats trimmed; the 1:47–2:16 section rewritten as tighter repeated blocks; final suicides unshielded (`mn`) so their words don't arrive after the end; Easy-only fillers at 0:30 and 0:36 | 39/61/100/104/123 |
+| 5 | 2:06 | 1:17 dip removed (a filler pair before the mines); lulls at 1:03 and 2:06 shortened; mines 28 → 21 and closer together (peak stays above 1.0P so the lull after them is earned); post-mine stream made pairs; stronger finish (four suicides). Easy/Normal get filler ships after the mines | 41.5/60/100/121/131 |
+| 6 | 2:15 | 1:31 gap filled with a medium pair (no empty screen at 1:35); 1:08 lull trimmed; opening and one inserted group cut so the first half stays under the (unchanged) ending; mines 32 → 24; fillers before the mines. Easy's last suicides are unshielded | 37/65/100/106.5/132.5 |
+| 7 | 2:24 | 0:41, 1:39 and 2:15 lulls shrunk (2:15 lull now ~4 s, no empty screen); opening 4 → 2 medium ships; one 0:33 laser dropped below Hard. Ending unchanged on Normal and up; Easy's final mines are unshielded, more of them and closer | 42.5/68/100/116.5/131.5 |
+| 9 | 2:42 | 1:30 hole filled; early peaks kept; the 1:22 stream denser (~1.25P); two new middle sections (a missile stream with lasers and suicides, then a missile-pair stretch); a short build into a laser-stack finale (~1.48P); medium fillers in the lulls | 39.5/64.5/100/105.5/130 |
+| 10 | 2:51 | 1:10 spike lowered (one ship dropped); 0:26 and 1:39 gaps filled; new section before the big climb (so its peak is in the second half) and a steadier stretch before the stealth finale; Extreme+ get a filler after the climb | 37.5/63/100/109.5/129.5 |
+| 11 | 3:00 | Opening cut (two large ships, a laser, two suicides) and split from the second wave; long stretches trimmed (~15% fewer words); lulls at 0:41, 1:05, 1:50 and 2:15 shortened; 2:02 peak ~1.37P with a clean drop after; finale raised with missile pairs and medium ships (~1.4P) | 38.5/61/100/107/133 |
+
+Remaining rule failures and realistic-bot results are in the branch's hand-over (and `ts 13`).
 6. **New features and deeper game logic:** new mechanics, enemies, modes and systems beyond the original (the
    old TODO list in Facade.as is a starting point: dodging, tractor beam, mega bomb, boss AI, space mines).
    This comes before the visual overhaul so the final art covers the new content too. Decided so far:
