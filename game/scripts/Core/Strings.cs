@@ -45,13 +45,11 @@ public static class Strings
     /// <summary>The credits screen: each role and who did it (from the original's credits picture).</summary>
     public static readonly (string Heading, string Names)[] Credits =
     {
-        ("PROGRAMMING AND DESIGN", "YERMIYAH HORNICK"),
-        ("ART", "AVI KENTRIDGE"),
-        ("MUSIC", "BINYAMIN HORNICK"),
-        ("DESIGN CONSULTANT", "XELU"),
+        ("PROGRAMMING AND DESIGN", "JEREMY MOSHE, CLAUDE CODE"),
+        ("ART", "GEMINI"),
+        ("MUSIC", "BINYAMIN BAIR-MOSHE"),
         ("FONTS", "ORBITRON BY THE ORBITRON PROJECT AUTHORS, JETBRAINS MONO BY JETBRAINS (SIL OPEN FONT LICENSE)"),
-        ("SPECIAL THANKS", "GOD, MOM, A. WALKER, DAVEY KOFSKY, DAMON KENTRIDGE, MICHELLE KENTRIDGE, GABRIEL MENRIX, MAX JACKEL, " +
-            "EDWARD GEIN, KUROSAI, AND YOU!"),
+        ("SPECIAL THANKS", "GOD, MOM, AVI KENTRIDGE, XELU, KUROSAI, AND YOU!"),
     };
 
     public const string FinalCredits =

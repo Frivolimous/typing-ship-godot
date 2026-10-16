@@ -395,13 +395,33 @@ public partial class LevelButton : Control
         }
         healthT.Position = new Vector2(-64, y + 6);
         targetT.Position = new Vector2(4, y + 6);
+
+        // Hovered: three stars under each label, as many filled as the medal's tier.
+        if (hover && Unlocked)
+        {
+            Stars(new Vector2(-44, y + 24), healthMedal);
+            Stars(new Vector2(10, y + 24), targetMedal);
+        }
+    }
+
+    /// <summary>Three stars from <paramref name="left"/>: the first <paramref name="tier"/> filled in that tier's metal.</summary>
+    void Stars(Vector2 left, int tier)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            var at = left + new Vector2(i * 10, 0);
+            var pts = new Vector2[10];
+            for (int k = 0; k < 10; k++)
+                pts[k] = at + Vector2.FromAngle(-Mathf.Pi / 2 + k * Mathf.Pi / 5) * (k % 2 == 0 ? 4.5f : 2);
+            if (i < tier) DrawColoredPolygon(pts, Kit.TierColours[tier]);
+            else DrawPolyline(pts.Append(pts[0]).ToArray(), new Color(Kit.Ink, 0.35f), 1, true);
+        }
     }
 
     void Over(bool b)
     {
         hover = b;
-        healthT.Visible = b && healthMedal > 0;
-        targetT.Visible = b && targetMedal > 0;
+        healthT.Visible = targetT.Visible = b && Unlocked;
     }
 
     public override bool _HasPoint(Vector2 point) => point.Length() <= Radius + 6;
