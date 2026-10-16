@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cey6innscu33l"
-path="res://.godot/imported/Achieve0.png-60922b8748c4a32b7ddb065323fe1d5e.ctex"
+uid="uid://bxxi60ef2ugao"
+path="res://.godot/imported/medal_bronze.png-ba0fe5ef5061a06869d97af5a4017e98.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/Achieve0.png"
-dest_files=["res://.godot/imported/Achieve0.png-60922b8748c4a32b7ddb065323fe1d5e.ctex"]
+source_file="res://assets/sprites/ai/medal_bronze.png"
+dest_files=["res://.godot/imported/medal_bronze.png-ba0fe5ef5061a06869d97af5a4017e98.ctex"]
 
 [params]
 

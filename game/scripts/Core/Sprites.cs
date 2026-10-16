@@ -101,7 +101,8 @@ public static class Sprites
     // Medals under the map's level buttons, by tier; tier 0 has none.
     public static readonly Texture2D?[] Health = { null, T("Health1"), T("Health2"), T("Health3") };
     public static readonly Texture2D?[] Target = { null, T("Target1"), T("Target2"), T("Target3") };
-    // Trophies by tier (0 = not earned), and the achievements screen's bronze/silver/gold stars, off and on.
-    public static readonly Texture2D[] Achieve = { T("Achieve0"), T("Achieve1"), T("Achieve2"), T("Achieve3") };
+    // Medals by tier (0 = not earned yet: a dark, locked medal), and the achievements screen's bronze/silver/gold
+    // stars, off and on. The medals are portrait art at twice their on-screen size; where they show, they are fitted to a box.
+    public static readonly Texture2D[] Achieve = { T("ai/medal_locked"), T("ai/medal_bronze"), T("ai/medal_silver"), T("ai/medal_gold") };
     public static readonly Texture2D[] Star = { T("Star00"), T("Star01"), T("Star10"), T("Star11"), T("Star20"), T("Star21") };
 }

@@ -45,7 +45,9 @@ public partial class AchieveUI : Screen
                 MouseFilter = MouseFilterEnum.Stop,
                 MouseDefaultCursorShape = CursorShape.PointingHand,
             };
-            trophies[i] = Picture(award, Sprites.Achieve[0]);
+            // The medal at half size (its art is drawn at twice that), centred above its name.
+            var medal = Sprites.Achieve[0].GetSize() / 2;
+            trophies[i] = Picture(award, Sprites.Achieve[0], (160 - medal.X) / 2, 0, 0.5f);
             Text(award, Strings.AchieveNames[i], Fonts.Title, 17, Colors.White, 10, 92, outline: 4, outlineColor: Palette.Gold);
             award.MouseEntered += () => PopText(index);
             award.MouseExited += () => PopText(-1);

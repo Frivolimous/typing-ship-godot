@@ -22,18 +22,16 @@ public partial class PopAchieve : Control
         MouseFilter = MouseFilterEnum.Ignore;
         if (G.Shell.ShowingScore) Modulate = new Color(1, 1, 1, 0);
 
-        // The trophy, small, in a clipped window at the left (the art has empty margins).
-        var clip = new Control { Position = new Vector2(14, 5), Size = new Vector2(44, H - 10), ClipContents = true, MouseFilter = MouseFilterEnum.Ignore };
-        clip.AddChild(new TextureRect
+        // The medal at the left, scaled to the panel's height.
+        var art = Sprites.Achieve[tier];
+        float scale = (H - 6) / art.GetHeight();
+        AddChild(new TextureRect
         {
-            Texture = Sprites.Achieve[tier],
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-            Size = new Vector2(64, 40),
-            Position = new Vector2(-10, -2),
+            Texture = art,
+            Scale = new Vector2(scale, scale),
+            Position = new Vector2(36 - art.GetWidth() * scale / 2, 3),
             MouseFilter = MouseFilterEnum.Ignore,
         });
-        AddChild(clip);
         AddChild(new Label
         {
             Text = Strings.NewAchieve.ToUpperInvariant(),

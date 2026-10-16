@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dculvukcpyhxy"
-path="res://.godot/imported/Achieve3.png-7cc6ffb0543e4a9e845ceb34b4f10b59.ctex"
+uid="uid://cur8f2mi6xtoj"
+path="res://.godot/imported/medal_locked.png-30bdf568ff33a6757cfda72333f0adef.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/Achieve3.png"
-dest_files=["res://.godot/imported/Achieve3.png-7cc6ffb0543e4a9e845ceb34b4f10b59.ctex"]
+source_file="res://assets/sprites/ai/medal_locked.png"
+dest_files=["res://.godot/imported/medal_locked.png-30bdf568ff33a6757cfda72333f0adef.ctex"]
 
 [params]
 
