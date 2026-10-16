@@ -11,20 +11,39 @@ word lengths, health) are in `data/tuning.txt`. Edit them in any text editor; no
 | level02 | 3 | | level06 | 6 | | level10 | 9 |
 | level03 | B1 | | level07 | B2 | | level11 | B3 |
 
-**Classic levels.** `data/levels/classic/` holds the original 12 levels and their bosses.txt exactly as the original
-game had them: a baseline to compare against while the game's own levels are reworked (play them with `--classic`,
-see [commands.md](commands.md)). They're removed before release. A test checks they still play exactly as recorded,
-so leave them alone; edit the ones in `data/levels/`. For now those are still copies of the Classic ones.
+**Classic levels.** `data/levels/classic/` holds the original 12 levels and their bosses.txt, converted to this
+format at Hard's timing: a baseline to compare against while the game's own levels are tuned (play them with
+`--classic`, see [commands.md](commands.md)). They're removed before release. A test checks they still play as
+recorded, so leave them alone; edit the ones in `data/levels/`. For now those are still copies of the Classic ones.
 
-The lines are the original game's LevelData helpers, one per line, so the old scripts read almost the same:
+## Time
+
+**Every time in a level file is in seconds, as the level plays on Hard, and the timing is the same at every
+difficulty.** Hard is the reference: levels are written and tuned for Hard first; the other difficulties are worked
+out from Hard later.
+
+A level is a list of **waves**. Each wave starts with an absolute time, `@m:ss`, and the lines in it use gaps:
 
 ```
-missile sn 0.05  5,0 5,6 4,12
-mirror
+@0:09.28 missile sn  0,3 7,3 12,3      # at 9.28 s into the level
++0.55 missile sn  12,6 5,6 0,6         # 0.55 s after the line above
+mirror                                 # no time: the same moment as the line above
+repeat 0.55 3 2                        # three more copies of the last two ships, 0.55 s apart
+
+@0:17.49 laser sn  6,0                 # the next wave
 ```
 
-is the original's `missile("sn", 0.05, 5,0, 5,6, 4,12); mirror();`. Anything after `#` (or `//`) is a note and is
-ignored. Blank lines are fine, and so is any amount of space between things.
+- `@m:ss` is minutes and seconds from the start of the level, with decimals if you like: `@0:07`, `@1:37.5`.
+  The `@` times must go in order; the game refuses a file where one is earlier than the one before.
+- `+0.6` is a gap in seconds after the line above (any line with a time of its own).
+- No prefix means the same moment as the line above.
+
+The level lasts until its last wave is over: there is no length to set and nothing is rescaled. The progress meter
+in the game counts up to the last ship.
+
+Times are seconds on Hard, but they're the same at every difficulty, so on Hard a level's timing is exactly what
+the file says. What does change with the difficulty is how fast ships fly, charge and fire, and how long a `halt`
+lasts (see Commands).
 
 ## Trying a change
 
@@ -33,27 +52,25 @@ on. Edit the file, save, and press **F5** in the game: it reloads the files and 
 
 | Key | |
 |---|---|
-| F5 | Reload the files and restart the level from the same point. If a file has a mistake, the message says which line, and the old version keeps running |
+| F5 | Reload the files and restart the level from the same time. If a file has a mistake, the message says which line, and the old version keeps running |
 | F6 | Restart from your start point |
-| F7 / F8 | Jump back / ahead 10% |
-| F9 | Show or hide the grid and the ships' flight paths. Each ship is labelled with its line in the file (`L23`) |
+| F7 / F8 | Jump back / ahead 10 seconds |
+| F9 | Show or hide the grid and the ships' flight paths. Each ship is labelled with its line in the file and the time it came in (`L23 1:37.4`) |
 | F10 | Invincible on or off, to watch a whole level |
 
-The start point can be a percentage of the level (`50`, as on the in-game progress meter) or a line of the file
-(`L40` starts with the first ship that line makes). `ts 9` checks every file without starting the game, and the
-game itself refuses to start with a broken file, saying where the mistake is.
+The start point can be a time (`1:37`), a percentage of the level (`50`, as on the in-game progress meter) or a
+line of the file (`L40` starts with the first ship that line makes). The banner shows the level's time and the
+next line to come in. `ts 9` checks every file without starting the game, and the game itself refuses to start
+with a broken file, saying where the mistake is.
 
-## The grid and distance
+The pacing report (`ts 11`) writes `pacing/lines.csv`: the time each line of each level happens, like `L42 -> 1:37.1`.
+
+## The grid
 
 Positions are `x,y` on a **12 x 12 grid** over the play area: `0,0` is the top-left corner, `12,12` the bottom-right,
 `6,0` the middle of the top edge. Fractions are fine (`1.5,0`), and so are points off the edge (`-1,5`, `13,8`) for
 ships that start or leave out of sight. Ships aim for a random spot up to 10 pixels around each point inside the
 screen, so no two flights are quite the same.
-
-Every ship line has a **distance**: how far the player travels after the previous line before this ship appears.
-`0` means at the same moment as the one before. The level's length is the sum. Distance passes at the difficulty's
-speed, so a 0.1 gap is about 9 seconds on Normal. Gaps of 0.1 or more are multiplied by `1 - cps / 25` (never by
-less than a half; see `[level scripts]` in tuning.txt), so waves bunch up more the faster the difficulty.
 
 ## Ship types
 
@@ -73,79 +90,81 @@ Laser ships' words are a letter longer, and suicide ships always have 3 letters.
 
 ## Commands
 
+Every command below can start with a time (`@m:ss` or `+gap`) except `repeat` and `insert`.
+
 **Ships**
 
 | Line | What it does |
 |---|---|
-| `missile sn 0.05  5,0 5,6 4,12` | A missile ship: starts at 5,0, flies to 5,6 and on to 4,12. Up to three points after the start. It fires as it sets off for its last point. (With only one point after the start it then leaves through the top-left corner, as in the original.) |
-| `laser sn 0.1  6,0` | A laser ship. It must start on an edge (x 0 or 12, or y 0 or 12): it moves 2 squares in, stops, charges, fires at the player and backs out. An optional number after the point makes it stop that much less |
-| `suicide mn 0.14  3,0 3,3` | A suicide ship: flies to 3,3, then dives at the player. Small ones (`sn`) are slow mines |
-| `stealth 0.05  6,7 6,0` | A stealth ship appears at 6,7, fires five missiles, then leaves for 6,0. Add `shield` at the end for a shielded one |
-| `ship lmt 0.1  3,0  move 3,3  halt 15  halt 10 fire  move 0,3` | Any ship with its own flight plan: start at 3,0, then the steps |
-| `boss 0.2 1` | Boss 1, 2 or 3 flies in. The level ends when it's dead |
+| `missile sn  5,0 5,6 4,12` | A missile ship: starts at 5,0, flies to 5,6 and on to 4,12. Up to three points after the start. It fires as it sets off for its last point. (With only one point after the start it then leaves through the top-left corner, as in the original.) |
+| `laser sn  6,0` | A laser ship. It must start on an edge (x 0 or 12, or y 0 or 12): it moves 2 squares in, stops, charges, fires at the player and backs out. An optional number after the point makes it stop for less (in the original's halt units) |
+| `suicide mn  3,0 3,3` | A suicide ship: flies to 3,3, then dives at the player. Small ones (`sn`) are slow mines |
+| `stealth  6,7 6,0` | A stealth ship appears at 6,7, fires five missiles, then leaves for 6,0. Add `shield` at the end for a shielded one |
+| `ship lmt  3,0  move 3,3  halt 3.8  halt 2.5 fire  move 0,3` | Any ship with its own flight plan: start at 3,0, then the steps |
+| `boss 1` | Boss 1, 2 or 3 flies in. The level ends when it's dead |
 
-A `ship` line's steps: `move X,Y` flies to a point; `halt N` stays put for N x 33.3 / cps ticks (on
-Normal N x 10 ticks, about 0.4 seconds each); either can end with `fire`, which attacks as that step starts (a
-missile, a laser charge, or for suicide ships the dive); `attack` on its own attacks right away. The last step should take the
-ship off screen, or it's counted as escaping where it ends.
+A `ship` line's steps: `move X,Y` flies to a point; `halt S` stays put for S seconds on Hard (longer on easier
+difficulties and shorter on harder ones, in step with the ships' speed); either can end with `fire`, which attacks
+as that step starts (a missile, a laser charge, or for suicide ships the dive); `attack` on its own attacks right
+away. The last step should take the ship off screen, or it's counted as escaping where it ends.
 
 **Copies.** These copy ship lines above them, which is how most waves are made.
 
 | Line | What it does |
 |---|---|
 | `mirror` | The ship above, flipped left to right (5,0 becomes 7,0), at the same moment |
-| `mirror 0.01` | ...after a gap of 0.01 |
-| `clone 0.01` | The ship above again, 0.01 later, same path |
-| `clone 0.01 -2` | The ship two lines up (`-1` is the one just above, the default; this also works for `mirror` and `offset`) |
-| `offset 0.015  0,-2` | The ship above again, moved by 0,-2 (path and all), 0.015 later |
-| `repeat 0.01 3 2` | The last 2 ships, again 3 times. Each copy comes 0.01 after the one before, keeping the gap between the 2 |
-| `repeat 0.01 7 1 mirrored` | The last ship 7 more times, mirrored each time, so they alternate sides |
+| `+0.55 mirror` | ...0.55 s later |
+| `+0.55 clone` | The ship above again, 0.55 s later, same path |
+| `clone -2` | The ship two lines up (`-1` is the one just above, the default; this also works for `mirror` and `offset`) |
+| `+0.8 offset  0,-2` | The ship above again, moved by 0,-2 (path and all), 0.8 s later |
+| `repeat 0.55 3 2` | The last 2 ships, again 3 times. Each pair comes 0.55 s after the one before, keeping the gap between the 2 |
+| `repeat 0.55 7 1 mirrored` | The last ship 7 more times, mirrored each time, so they alternate sides |
 | `insert -4` | Moves the ship above earlier: it now arrives together with, and just before, the ship at -4 (counting the moved one as -1, as the copy commands count) |
 
-`repeat` is `repeat DISTANCE [TIMES [SHIPS [mirrored]]]`: times and ships default to 1. Copies count as ships for
-the copy commands after them, so `mirror` after a `repeat` mirrors the last copy.
+`repeat` is `repeat GAP [TIMES [SHIPS [mirrored]]]`, with the gap in seconds; times and ships default to 1. Copies
+count as ships for the copy commands after them, so `mirror` after a `repeat` mirrors the last copy.
 
-**Timing.** `wait 0.1` adds a pause with no ship. (`jump` and `loop` exist from the original but no level uses them.)
+**Other.** `@1:30 wait` marks a moment with no ship (rarely needed now that waves have times). `jump` and `loop`
+exist from the original but no level uses them.
 
 **Random numbers.** Anywhere a number goes, `3~6` means any number from 3 to 6, and `0|12` means 0 or 12, picked
-afresh each time the level starts. The boss escorts use these: `stealth 0.3  2~10,5~7 0|12,5`.
+afresh each time the level starts. The boss escorts use these: `stealth  2~10,5~7 0|12,5`.
 
-## Pacing and difficulty
+## The header: named numbers
 
-In the Classic levels the difficulty sets how fast the level goes by: everything, including the player's travel,
-runs at the difficulty's speed, so the same level takes 3:27 on Easy and 0:51 on Insane. These lines let a level
-last the same time at every difficulty and get harder through more (or faster) ships instead.
+The top of a file, before the first command, can name numbers to use anywhere a number goes:
 
-| Line | What it does |
-|---|---|
-| `pace hard` | The level's clock runs at Hard's speed on every difficulty (one line, anywhere in the file; `easy` to `insane`). On Hard it plays exactly as without the line; on the others it lasts the same time as on Hard. Ships still fly, halt, charge and fire at the chosen difficulty's speed, so they're slower on Easy |
-| `hard+: missile sn 0.05  5,0 5,6` | A tag before a line: this ship only comes on Hard and up. `hard` is only Hard, `normal-` Normal and below, `normal-extreme` the three in between, `all` every difficulty |
-| `only extreme+` | Every line below is tagged until `only all` (or the end of the file or section). A tagged line inside a block needs both to allow it |
-| `repeat 0.05 0/1/2/2/3` | Five numbers separated by `/` are one per difficulty, Easy to Insane. Works anywhere a number goes, e.g. a gap `0.1/0.08/0.06/0.05/0.05` (with a pace line, a gap that differs changes the level's length) |
-| `density 40%/65%/100%/150%/200%` | How many waves each difficulty gets, as a share of the file's (one value for all, or five; 1% to 300%). Ships arriving at the same moment are one wave. Below 100% waves are left out, spread evenly (40%: the 1st, 3rd, 6th, 8th...). Above 100% waves get copies that follow one "copy gap" (tuning, 0.01) after the wave, flying the same path: 150% copies every other wave, 200% every wave, 250% every wave once and every other wave twice. These are the "fatter waves" of [pacing-rules.md](pacing-rules.md) |
-| `duration 2:15` | The level lasts this long at every difficulty: its clock is set so the last event comes at the duration minus the tuning's "duration tail" (5 s). Needs a `pace` line, which keeps the waves' timing the same at every difficulty. [pacing-rules.md](pacing-rules.md) gives each level's target (`90 + 9 x (level - 1)` seconds) |
+```
+HOVER = 3.8
+SWARM_GAP = 0.9/0.9/0.7/0.6/0.5
 
-Leaving ships out never shortens the level: the gaps stay where they were. Copies follow their ship: a `mirror`
-or `clone` of a `hard+` ship is `hard+` too. The boss escorts in bosses.txt can be tagged, and they follow their
-level's pace and density; boss 1's hangar is never thinned.
+@0:05 ship lmn  4,0  move 4,3  halt HOVER  move 0,3
++SWARM_GAP clone
+repeat SWARM_GAP 4
+```
 
-The pacing report (`ts 11`) shows how much typing each level asks for, Classic and reworked side by side, as a
-share of the difficulty's speed (see [commands.md](commands.md)). The Classic levels ask on average for about 70%
-of it, with 10-second peaks well above it on the low difficulties.
-
-A quick way to start reworking a level: put `pace hard` at the top. It then plays on Hard exactly like Classic Hard.
-Add `duration` for its target length, thin it for Easy and Normal and fatten it for Extreme and Insane with `density`
-(the report suggests values), or use tags. Then run the rule check, `ts 13` (`pacing --check`), which lists every
-rule of [pacing-rules.md](pacing-rules.md) the level breaks, with the time it happens.
+- A name is letters, digits and `_` (capitals are the convention). Set each once.
+- One value (`HOVER = 3.8`) works the same at every difficulty. A range or choice (`2~4`, `0|12`) is rolled where
+  it's used.
+- **Five values separated by `/` (Easy to Insane) are allowed only in the header**, as a deliberate exception:
+  that's the one way a number can differ by difficulty. A line can't have `1/2/3/3/4` written in it directly.
 
 ## bosses.txt
 
 Four sections, each a list of ship lines like a level:
 
 - `[boss 1 escorts]`, `[boss 2 escorts]`, `[boss 3 escorts]`: ships that come in during the boss fight. When the
-  list runs out it starts again from where the player is, until the boss dies.
+  list runs out it starts again from the current moment, until the boss dies. Their `@` times count from when the
+  batch starts, not from the start of the level.
 - `[boss 1 hangar]`: the six suicide ships boss 1 launches each attack. Their points are measured from the boss
   art's top-left corner rather than the screen's.
+
+## Removed
+
+These were part of the format before times moved to seconds, and the game now refuses them with a message saying
+what to do: `pace`, `duration`, `density`, difficulty tags (`hard+:`), `only` blocks, and `/` values in a line
+(use a header constant). Thinning ships within each wave for the easier difficulties will come with the difficulty
+pass, after the Hard levels are tuned.
 
 ## Mistakes
 
@@ -155,10 +174,17 @@ example:
 ```
 levels/level04.txt, line 4: "misile" isn't a command. Did you mean "missile"?
 levels/level02.txt, line 30: A laser ship has to start on the edge of the grid (x 0 or 12, or y 0 or 12), not at 5,5.
-levels/level07.txt, line 12: mirror copies the ship 1 back, but there are only 0 events above this line.
+levels/level07.txt, line 12: @0:40 is earlier than the @ time on line 9. @ times must be in order.
 ```
 
 The same goes for tuning.txt: a misspelt or missing setting stops the game with the line to fix.
+
+## How the old files were converted
+
+The levels were converted from the old distance-based format by the engine itself, at Hard: each gap became the
+seconds it took on Hard (the old 0.1-and-over gap shrink included), rounded to hundredths. Every ship arrives within
+one tick (1/24 s) of when it did before, and 82% on exactly the same tick. Halts were converted so they last
+exactly as many ticks as before at every difficulty, and ships' paths and random numbers are unchanged.
 
 ## The typing test
 

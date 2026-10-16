@@ -15,10 +15,10 @@ whatever the `GODOT` environment variable is set to. Commands run from the repo 
 | Open the Godot editor | 2 | `$GODOT --path game --editor` |
 | Build the C# (rules, tests and game) | 3 | `dotnet build` |
 | Re-import assets (after adding or changing files in game/assets/) | 4 | `$GODOT --headless --path game --import` |
-| Edit a level, with the editing keys and grid | 8 | `$GODOT --path game -- --edit --overlay --level=N [--from=50] [--line=40] [--autotype]` |
+| Edit a level, with the editing keys and grid | 8 | `$GODOT --path game -- --edit --overlay --level=N [--from=50 or --from=1:37] [--line=40] [--autotype]` |
 | Check the level and tuning files | 9 | `$GODOT --headless --path game -- --check` |
 | Run the tests | 10 | `dotnet test` |
-| Level pacing report: typing demand over time for every level and difficulty, the game's levels and the Classic ones side by side, as a share of the difficulty's speed (average and 10-second peak), with a `density` to try where a level's average differs from Classic's. Charts (`pacing/pacing.html`) and CSVs for spreadsheets (`pacing.csv`, `summary.csv`, plus `violations.csv` for the pacing rules and `realistic.csv` for a bot at 80% speed with typing mistakes) | 11 | `dotnet run --project src/Sim -- pacing [--level=N] [--seed=N] [--out=folder] [--bot-speed=80%] [--errors=3.5%]` |
+| Level pacing report: typing demand over time for every level and difficulty, the game's levels and the Classic ones side by side, as a share of the difficulty's speed (average and 10-second peak), with each level's last spawn and the words on screen each second. Charts (`pacing/pacing.html`) and CSVs for spreadsheets (`pacing.csv`, `summary.csv`, `lines.csv` with the time each line of a level file happens, like `L42 -> 1:37.1`, plus `violations.csv` for the pacing rules and `realistic.csv` for a bot at 80% speed with typing mistakes) | 11 | `dotnet run --project src/Sim -- pacing [--level=N] [--seed=N] [--out=folder] [--bot-speed=80%] [--errors=3.5%]` |
 | Check the pacing rules ([pacing-rules.md](pacing-rules.md), numbers in `data/pacing-rules.txt`): lists every rule each regular game level breaks at each difficulty, with the time, the measured value and the limit; then a count per level and how the realistic bot did. Exits with 1 if anything fails (warnings don't count), so it works as a check after every level edit | 13 | `dotnet run --project src/Sim -- pacing --check [--level=N]` |
 | Play the Classic levels (the original 12 as they were), with a save file of their own | 12 | `$GODOT --path game -- --classic --profile=classic` |
 
@@ -45,9 +45,9 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 | `--screenshot=path.png` | Save a screenshot after 10 ticks and quit (`--frames=N` for a different tick) |
 | `--at=a,b,c` | With `--screenshot`: save `path_a.png`, `path_b.png`, ... at those ticks, then quit |
 | `--speed=N` | Run N times faster (windowed runs; capped by frame rate) |
-| `--edit` | The level-editing keys (F5 reload, F6 restart, F7/F8 back/ahead, F9 grid, F10 invincible) and a banner with the file, progress and next line. Starts level 0 unless `--level` is given |
+| `--edit` | The level-editing keys (F5 reload, F6 restart, F7/F8 back/ahead 10 s, F9 grid with each ship's line and time, F10 invincible) and a banner with the file, the level's time and the next line. Starts level 0 unless `--level` is given |
 | `--overlay` | With `--edit`: start with the grid and flight paths showing (F9 toggles them) |
-| `--from=N` | Start the level N% of the way in (the in-game progress meter's number). Works with or without `--edit` |
+| `--from=N` | Start the level N% of the way in (the in-game progress meter's number), or `--from=1:37` at that time. Works with or without `--edit` |
 | `--line=N` | Start the level at line N of its file (the first ship that line or a later one makes) |
 | `--check` | Load and check every data file, print "Data OK" or the first mistake, and quit |
 | `--trace=file.txt` | Write one line of game state per tick (positions, words, score), to compare two runs exactly |

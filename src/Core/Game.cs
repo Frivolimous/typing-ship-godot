@@ -20,9 +20,12 @@ public sealed partial class Game
 
     // ---- State (GameModel) ----
     public bool Running, CanType, BossMode, Perfect, Invincible;
-    public double Distance, MaxDistance;
-    /// <summary>Distance the ship travels each tick in the current level (see ClockFor).</summary>
-    public double Clock;
+    /// <summary>Ticks since the level started. Level time is these over 24: the same at every difficulty.</summary>
+    public long LevelTicks;
+    /// <summary>Seconds since the level started.</summary>
+    public double Time => LevelTicks / (double)Playfield.TickRate;
+    /// <summary>The time of the level's last event (its length, give or take the ships still flying).</summary>
+    public double MaxTime;
     public int ScoreC, Level = -1, MissedShips, TotalShips;
     /// <summary>The difficulty, as a typing speed in characters per second (see <see cref="Speed"/>).</summary>
     public double Cps = Difficulty.Normal;
@@ -107,7 +110,7 @@ public sealed partial class Game
         var ship = Player;
         ship.RemoveShield();
         Level++;
-        Distance = 0;
+        LevelTicks = 0;
         TotalShips = MissedShips = 0;
         Perfect = true;
         ship.Injured = false;
@@ -119,8 +122,7 @@ public sealed partial class Game
         CanType = true;
         BossMode = false;
         LevelData = Set.BuildLevel(Level, Context);
-        MaxDistance = LevelData[^1].Distance;
-        Clock = ClockFor(Set.Levels[Level], MaxDistance);
+        MaxTime = LevelData.Count > 0 ? LevelData.Max(e => e.Time) : 0;
         ship.Destroyed = false;
         Delay = 0;
         finalDelay = false;
@@ -131,28 +133,16 @@ public sealed partial class Game
     }
 
     /// <summary>
-    /// How far the ship travels each tick. Classic: at the difficulty's speed (wpm / 24 / 3600 in the original); with
-    /// a pace line, at that pace whatever the difficulty, so the level lasts the same time on all of them. With a
-    /// duration line as well, at whatever speed brings the level's last event in at the duration minus the tail.
+    /// Editing aid: skip ahead to a time in the current level (seconds), as if the events before it had been left
+    /// out. Ships already on screen are cleared.
     /// </summary>
-    double ClockFor(Levels.LevelScript script, double lastEvent)
-    {
-        if (script.Duration is { } seconds && lastEvent > 0)
-            return lastEvent / (Math.Max(1, seconds - Tuning.DurationTail) * Playfield.TickRate);
-        return (script.Pace ?? Cps) / 7200;
-    }
-
-    /// <summary>
-    /// Editing aid: skip ahead to a distance in the current level, as if the events before it had been left out.
-    /// Ships already on screen are cleared.
-    /// </summary>
-    public void SkipTo(double distance)
+    public void SkipTo(double time)
     {
         while (Objects.Count > 0) Objects[0].Remove();
         Boss?.Remove();
         BossMode = false;
-        LevelData.RemoveAll(e => e.Distance < distance);
-        Distance = distance;
+        LevelData.RemoveAll(e => e.Time < time);
+        LevelTicks = (long)Math.Floor(time * Playfield.TickRate);
     }
 
     /// <summary>One 24 Hz tick (GameControl's physics step): the game if it's running, then the tickers.</summary>
@@ -184,12 +174,12 @@ public sealed partial class Game
             return;
         }
 
-        Distance += Clock;
+        LevelTicks++;
         Events.TickAdvanced();
 
         if (LevelData.Count > 0)
         {
-            while (LevelData.Count > 0 && Distance > LevelData[0].Distance)
+            while (LevelData.Count > 0 && Time > LevelData[0].Time)
             {
                 var e = LevelData[0];
                 LevelData.RemoveAt(0);
@@ -198,14 +188,14 @@ public sealed partial class Game
         }
         else if (BossMode)
         {
-            LevelData = Set.BuildBossLoop(Boss!.Index, Context, Distance);
+            LevelData = Set.BuildBossLoop(Boss!.Index, Context, Time);
         }
         else if (Boss == null && Objects.Count == 0)
         {
             if (Delay == 0 && finalDelay) EndLevel();
             else
             {
-                LevelData.Add(new MarkerEvent(Distance + Tuning.EndWait, MarkerEvent.Kind.Wait, Tuning.EndWait));
+                LevelData.Add(new MarkerEvent(Time + Tuning.EndWait, MarkerEvent.Kind.Wait, Tuning.EndWait));
                 finalDelay = true;
             }
         }
@@ -236,12 +226,12 @@ public sealed partial class Game
             case MarkerEvent { Type: MarkerEvent.Kind.Loop } m:
                 foreach (var ev in Set.BuildLevel(Level, Context).Skip((int)m.Index))
                 {
-                    ev.Distance += m.Distance;
+                    ev.Time += m.Time;
                     LevelData.Add(ev);
                 }
                 break;
             case MarkerEvent { Type: MarkerEvent.Kind.Jump } m:
-                Distance += m.Index;
+                LevelTicks += (long)Math.Round(m.Index * Playfield.TickRate);
                 break;
         }
     }

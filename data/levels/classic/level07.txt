@@ -1,32 +1,33 @@
 # Level 7 (boss 2, B2 on the map).
-# How to write these: docs/level-format.md. The game reads this file when the level starts.
+# How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
-suicide sn 0.1  1.5,0 1.5,6
-offset 0  3,0
-offset 0  3,0
-offset 0  3,0
-laser ms 0.04  3,0
+@0:04.34 suicide sn  1.5,0 1.5,6
+offset  3,0
+offset  3,0
+offset  3,0
+
+@0:06.55 laser ms  3,0
 mirror
 
-suicide sn 0.09  1.5,0 1.5,6
-offset 0  3,0
-offset 0  3,0
-offset 0  3,0
-missile mn 0.02  0,2 6,2 12,2
-missile mn 0.02  12,4 6,4 0,4
+@0:11.54 suicide sn  1.5,0 1.5,6
+offset  3,0
+offset  3,0
+offset  3,0
++1.11 missile mn  0,2 6,2 12,2
++1.11 missile mn  12,4 6,4 0,4
 
-suicide sn 0.09  1.5,0 1.5,6
-offset 0  3,0
-offset 0  3,0
-offset 0  3,0
-missile ss 0.02  3,0 3,6 2,12
-mirror 0.02
+@0:18.74 suicide sn  1.5,0 1.5,6
+offset  3,0
+offset  3,0
+offset  3,0
++1.11 missile ss  3,0 3,6 2,12
++1.11 mirror
 
-suicide ss 0.09  1.5,0 1.5,6
-offset 0  3,0
-offset 0  3,0
-offset 0  3,0
-missile ms 0.02  0,2 3,6 0,9
-mirror 0.02
+@0:25.94 suicide ss  1.5,0 1.5,6
+offset  3,0
+offset  3,0
+offset  3,0
++1.11 missile ms  0,2 3,6 0,9
++1.11 mirror
 
-boss 0.2 2
+@0:36.83 boss 2

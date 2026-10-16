@@ -60,6 +60,7 @@ public sealed class PacingRules
         ("duration base", (r, v) => r.DurationBase = v),
         ("duration per level", (r, v) => r.DurationPerLevel = v),
         ("duration tolerance", (r, v) => r.DurationTolerance = v),
+        ("duration tail", (r, v) => r.TailSeconds = v),
         ("average min", (r, v) => r.AverageMin = v),
         ("average max", (r, v) => r.AverageMax = v),
         ("average target base", (r, v) => r.AverageTargetBase = v),
@@ -180,11 +181,10 @@ public sealed class PacingRules
         // 1. Duration
         double target = TargetDuration(mapLevel);
         if (Math.Abs(duration - target) > DurationTolerance)
-            Add("duration", 0, $"lasts {Time(duration)} (last spawn {Time(lastSpawn)} + {TailSeconds:0} s); target {Time((int)target)} ± {DurationTolerance:0} s");
+            Add("duration", 0, $"lasts {Time(duration)} (last spawn {Time(Math.Max(0, lastSpawn - 1))} + {TailSeconds:0} s); target {Time((int)target)} ± {DurationTolerance:0} s");
 
         // 2. Average load over the whole level (start to last spawn + tail)
-        int avgEnd = Math.Min(n, duration);
-        double avg = Enumerable.Range(1, avgEnd).Average(L);
+        double avg = (run with { Tail = TailSeconds }).AverageRatio; // the report's definition: letters, start to last spawn + tail
         if (avg < AverageMin - 1e-9 || avg > AverageMax + 1e-9)
             Add("average", 0, $"average load {P(avg)}; allowed {P(AverageMin)}–{P(AverageMax)} (target {P(TargetAverage(mapLevel))})");
         else if (Math.Abs(avg - TargetAverage(mapLevel)) > AverageTargetTolerance + 1e-9)
@@ -285,6 +285,6 @@ public sealed class PacingRules
         return found;
     }
 
-    /// <summary>Set from the tuning's "duration tail" when the rules are loaded with the game data.</summary>
+    /// <summary>"duration tail": seconds after the last spawn that still count as the level.</summary>
     public double TailSeconds = 5;
 }

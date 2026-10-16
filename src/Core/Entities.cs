@@ -159,6 +159,8 @@ public sealed class EnemyShip : Sprite
     /// <summary>Where it came from in the level files (for the editing overlay).</summary>
     public string File = "";
     public int Line;
+    /// <summary>When the ship joined: its event's time in the level (seconds, as on Hard), for the editing overlay.</summary>
+    public double SpawnTime;
     /// <summary>Stealth ships fade in; this counts to 100 (StealthEffect), then they're solid.</summary>
     public float StealthCounter = -1;
 
@@ -175,6 +177,7 @@ public sealed class EnemyShip : Sprite
         Health = e.Health;
         File = e.File;
         Line = e.Line;
+        SpawnTime = e.Time;
 
         if (Fires == Weapons.Laser) Charge = new Charge(Game, Speed.FloorTicks(Game.Tuning.LaserCharge / Game.Cps), Weapons.Laser);
 

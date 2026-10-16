@@ -1,53 +1,66 @@
 # Level 9 (8 on the map).
-# How to write these: docs/level-format.md. The game reads this file when the level starts.
+# How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
-missile ln 0.05  -1,-1 5,6 13,13
-mirror 0.01
+@0:02.77 missile ln  -1,-1 5,6 13,13
++0.55 mirror
 
-missile mn 0.1  0,1 9,3 0,6
-missile mn 0.013  12,8 3,6 12,3
-repeat 0.013 3 2
-missile ln 0.03  -1,3 6,5 13,3
-missile ln 0  13,5 6,3 -1,4
-laser lb 0.06  4.5,0
-laser lb 0.01  7.5,0
+@0:07.66 missile mn  0,1 9,3 0,6
++0.72 missile mn  12,8 3,6 12,3
+repeat 0.72 3 2
 
-missile ln 0.3  3,-1 3,5 3,13
-mirror
-missile ln 0.04  -1,1 6,3 9,13
-mirror
-laser lt 0.04  0,5
-mirror
-missile mn 0.14  0,1 5,5 12,1
-missile mn 0  0,9 6,6 0,3
-missile mn 0  12,9 7,5 0,9
-missile mn 0  12,1 6,4 12,10
+@0:14.36 missile ln  -1,3 6,5 13,3
+missile ln  13,5 6,3 -1,4
 
-missile ss 0.14  2,12 2,3 9,2.5 10,12
-repeat 0.01 7
-missile ls 0.07  -1,6 8,6 13,6
-offset 0  0,2
-laser lb 0.05  0,7
+@0:17.69 laser lb  4.5,0
++0.55 laser lb  7.5,0
 
-ship lmt 0.1  3,0  move 3,3  halt 15  halt 10 fire  move 0,3
-mirror
-ship lmt 0.05  5,0  move 5,3  halt 15  halt 10 fire  move 0,3
-mirror
-missile mn 0.06  0,12 4,7 4,0
-mirror
-missile mn 0.03  6,0 6,5 1,12
+@0:31.26 missile ln  3,-1 3,5 3,13
 mirror
 
-missile ms 0.23  2,0 2,6 6,4 10,12
-mirror 0.018
-missile mn 0.018  2,0 2,6 6,4 10,12
-repeat 0.018 5 1 mirrored
-missile ln 0.04  -1,-1 2,3 -1,13
+@0:33.47 missile ln  -1,1 6,3 9,13
 mirror
-laser lb 0.05  6,0
 
-laser lb 0.35  4,0
+@0:35.69 laser lt  0,5
 mirror
-stealth 0.05  3,5 0,12
-mirror 0.01
-stealth 0.01  6,4 6,0
+
+@0:41.76 missile mn  0,1 5,5 12,1
+missile mn  0,9 6,6 0,3
+missile mn  12,9 7,5 0,9
+missile mn  12,1 6,4 12,10
+
+@0:47.83 missile ss  2,12 2,3 9,2.5 10,12
+repeat 0.55 7
+
+@0:55.59 missile ls  -1,6 8,6 13,6
+offset  0,2
+
+@0:58.36 laser lb  0,7
+
+@1:02.7 ship lmt  3,0  move 3,3  halt 3.85  halt 2.57 fire  move 0,3
+mirror
+
+@1:05.46 ship lmt  5,0  move 5,3  halt 3.85  halt 2.57 fire  move 0,3
+mirror
+
+@1:08.79 missile mn  0,12 4,7 4,0
+mirror
+
+@1:10.45 missile mn  6,0 6,5 1,12
+mirror
+
+@1:20.43 missile ms  2,0 2,6 6,4 10,12
++1 mirror
++1 missile mn  2,0 2,6 6,4 10,12
+repeat 1 5 1 mirrored
+
+@1:29.62 missile ln  -1,-1 2,3 -1,13
+mirror
+
+@1:32.39 laser lb  6,0
+
+@1:47.58 laser lb  4,0
+mirror
+
+@1:50.34 stealth  3,5 0,12
++0.55 mirror
++0.55 stealth  6,4 6,0

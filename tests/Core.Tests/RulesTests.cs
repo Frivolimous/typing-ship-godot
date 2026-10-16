@@ -43,7 +43,7 @@ static class Play
 public class WeaponTests
 {
     // A small missile ship flying in from the top: 5 points, a 4-letter word.
-    const string OneShip = "missile sn 0.01  6,0 6,4 6,12";
+    const string OneShip = "@0:00.55 missile sn  6,0 6,4 6,12";
 
     [Fact]
     public void Typing_a_ships_word_fires_a_missile_and_the_hit_scores()
@@ -64,7 +64,7 @@ public class WeaponTests
     [Fact]
     public void A_shield_needs_an_emp_first()
     {
-        var g = TestData.WithLevel0("missile ss 0.01  6,0 6,4 6,12");
+        var g = TestData.WithLevel0("@0:00.55 missile ss  6,0 6,4 6,12");
         g.NewGame(0);
         g.Until(() => g.Objects.Count == 1);
         var ship = g.OnlyShip();
@@ -80,7 +80,7 @@ public class WeaponTests
     [Fact]
     public void Big_ships_take_one_missile_per_health()
     {
-        var g = TestData.WithLevel0("missile ln 0.01  6,0 6,4 6,12");
+        var g = TestData.WithLevel0("@0:00.55 missile ln  6,0 6,4 6,12");
         g.NewGame(0);
         g.Until(() => g.Objects.Count == 1);
         var ship = g.OnlyShip();
@@ -111,7 +111,7 @@ public class WeaponTests
     [Fact]
     public void A_laser_charges_for_500_over_cps_ticks_then_hits()
     {
-        var g = TestData.WithLevel0("laser sn 0.01  6,0");
+        var g = TestData.WithLevel0("@0:00.55 laser sn  6,0");
         g.NewGame(0);
         g.Until(() => g.Objects.Count == 1);
         var ship = g.OnlyShip();
@@ -125,7 +125,7 @@ public class WeaponTests
     [Fact]
     public void A_turret_shoots_down_missiles_near_its_ship()
     {
-        var g = TestData.WithLevel0("missile st 0.01  6,0 6,3 6,12");
+        var g = TestData.WithLevel0("@0:00.55 missile st  6,0 6,3 6,12");
         g.NewGame(0);
         g.Until(() => g.Objects.Count == 1 && g.OnlyShip().Position.Y > 100);
         var ship = g.OnlyShip();
@@ -140,7 +140,7 @@ public class WeaponTests
 
 public class TypingTests
 {
-    static Game Started(string level = "missile sn 5  6,0 6,4 6,12")
+    static Game Started(string level = "@5:00 missile sn  6,0 6,4 6,12")
     {
         var g = TestData.WithLevel0(level);
         g.NewGame(0);
@@ -189,7 +189,7 @@ public class TypingTests
     [Fact]
     public void A_word_whose_ship_left_stays_typeable_for_a_while()
     {
-        var g = Started("missile sn 0.01  6,0 6,1 6,-2");
+        var g = Started("@0:00.55 missile sn  6,0 6,1 6,-2");
         g.Until(() => g.Objects.Count == 1);
         var ship = g.OnlyShip();
         g.Until(() => ship.Removed);
@@ -198,7 +198,7 @@ public class TypingTests
         g.Type(overflow.Word);
         Assert.Empty(g.Overflows);
 
-        g = Started("missile sn 0.01  6,0 6,1 6,-2");
+        g = Started("@0:00.55 missile sn  6,0 6,1 6,-2");
         g.Until(() => g.Overflows.Count == 1);
         g.Ticks(g.Tuning.OverflowTicks + 1);
         Assert.Empty(g.Overflows);
@@ -208,7 +208,7 @@ public class TypingTests
     public void Losing_all_health_loses_the_level_after_the_explosion()
     {
         var rec = new Recorder();
-        var g = TestData.WithLevel0("missile sn 5  6,0 6,4 6,12", events: rec);
+        var g = TestData.WithLevel0("@5:00 missile sn  6,0 6,4 6,12", events: rec);
         g.NewGame(0);
         for (int i = 0; i < 5; i++) g.DamagePlayer();
         g.Step();
@@ -224,7 +224,7 @@ public class TypingTests
     public void Cheat_words_and_the_riddler_medal_in_order()
     {
         var rec = new Recorder();
-        var g = TestData.WithLevel0("missile sn 5  6,0 6,4 6,12", events: rec);
+        var g = TestData.WithLevel0("@5:00 missile sn  6,0 6,4 6,12", events: rec);
         g.NewGame(0);
         g.Type("kamikaze"); // out of order: no medal, but it still blows up the ship
         Assert.Empty(rec.Awards);
@@ -252,7 +252,7 @@ public class TypingTests
     public void A_tutorial_pauses_until_closed_and_shows_once()
     {
         var rec = new Recorder();
-        var g = TestData.WithLevel0("missile sn 5  6,0 6,4 6,12", wpm: 40, events: rec);
+        var g = TestData.WithLevel0("@5:00 missile sn  6,0 6,4 6,12", wpm: 40, events: rec);
         g.NewGame(0);
         Array.Fill(g.TutFlags, false); // a fresh game below 50 wpm
         g.HitTarget(g.Player, Weapons.Suicide);
@@ -272,7 +272,7 @@ public class BossTests
     [Fact]
     public void The_scanner_takes_short_words_then_a_long_one_to_hit_the_boss()
     {
-        var g = TestData.WithLevel0("boss 0.01 2");
+        var g = TestData.WithLevel0("@0:00.55 boss 2");
         g.NewGame(0);
         g.Until(() => g.Boss?.Scanner != null);
         var boss = g.Boss!;
@@ -293,7 +293,7 @@ public class BossTests
     [Fact]
     public void Boss_escorts_keep_coming_during_the_fight()
     {
-        var g = TestData.WithLevel0("boss 0.01 1");
+        var g = TestData.WithLevel0("@0:00.55 boss 1");
         g.NewGame(0);
         g.Until(() => g.BossMode);
         g.Until(() => g.Objects.OfType<EnemyShip>().Any(), limit: 20000);

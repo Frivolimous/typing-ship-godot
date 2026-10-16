@@ -54,9 +54,7 @@ public sealed class Tuning
     public float Jitter = 10;
     public float ArriveDistance = 20;
     public double HaltScale = 100 / 3.0;
-    public double ShrinkFrom = 0.1, ShrinkCps = 25, ShrinkLimit = 0.5;
-    public double EndWait = 0.05;
-    public double DurationTail = 5, CopyGap = 0.01;
+    public double EndWait = 2.77, CopyGap = 0.55; // seconds
 
     // [bosses]
     public int BossHealth = 3, BossPoints = 100;
@@ -118,11 +116,7 @@ public sealed class Tuning
         F(Scripts, "jitter", (t, v) => t.Jitter = v),
         F(Scripts, "arrive distance", (t, v) => t.ArriveDistance = v),
         D(Scripts, "halt scale", (t, v) => t.HaltScale = v),
-        D(Scripts, "shrink from", (t, v) => t.ShrinkFrom = v),
-        D(Scripts, "shrink cps", (t, v) => t.ShrinkCps = v),
-        D(Scripts, "shrink limit", (t, v) => t.ShrinkLimit = v),
         D(Scripts, "end wait", (t, v) => t.EndWait = v),
-        D(Scripts, "duration tail", (t, v) => t.DurationTail = v),
         D(Scripts, "copy gap", (t, v) => t.CopyGap = v),
 
         I(Bosses, "health", (t, v) => t.BossHealth = v),

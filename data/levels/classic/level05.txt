@@ -1,66 +1,70 @@
-# Level 5 (5 on the map).
-# How to write these: docs/level-format.md. The game reads this file when the level starts.
+# Level 5 (5 on the map). Classic: the original level, converted to seconds on Hard. A baseline; not edited.
+# How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
-missile ss 0.05  5,0 5,4 2,0
+@0:02.77 missile ss  5,0 5,4 2,0
 mirror
-repeat 0.03 1 2
-missile sn 0.03  5,0 5,4 2,0
-mirror
-repeat 0.03 1 2
+repeat 1.66 1 2
 
-missile ss 0.1  6,0 6,5 0,10
-repeat 0.06 5 1 mirrored
-missile sn 0  1,0 2,4 3,0
-missile sn 0  2,0 3,4 4,0
+@0:06.09 missile sn  5,0 5,4 2,0
+mirror
+repeat 1.66 1 2
+
+@0:12.09 missile ss  6,0 6,5 0,10
+repeat 3.32 5 1 mirrored
+missile sn  1,0 2,4 3,0
+missile sn  2,0 3,4 4,0
 repeat 0 1 2
 insert -10
 insert -9
 insert -7
 insert -6
-missile sn 0  12,1 8,2 12,3
-missile sn 0  12,2 8,3 12,4
+missile sn  12,1 8,2 12,3
+missile sn  12,2 8,3 12,4
 repeat 0 1 2
 insert -6
 insert -5
 insert -3
 insert -2
 
-missile ss 0.15  9,0 9,6 9,12
-offset 0  1,0
-missile mn 0.02  2,0 2,6 2,12
-offset 0  2,0
-missile sn 0.04  0,2 5,4 12,7
-repeat 0.01 3 1 mirrored
+@0:35.22 missile ss  9,0 9,6 9,12
+offset  1,0
++1.11 missile mn  2,0 2,6 2,12
+offset  2,0
 
-missile sn 0.15  1,0 1,6 1,12
-offset 0  1,0
-repeat 0.04 1 2
-missile mn 0.02  10,0 10,6 10,12
-repeat 0.03 3 3
-laser ms 0  5,0
+@0:38.54 missile sn  0,2 5,4 12,7
+repeat 0.55 3 1 mirrored
+
+@0:46.71 missile sn  1,0 1,6 1,12
+offset  1,0
+repeat 2.22 1 2
++1.11 missile mn  10,0 10,6 10,12
+repeat 1.66 3 3
+laser ms  5,0
 mirror
 insert -4
 
-suicide sn 0.32  1.5,0 1.5,6
-offset 0  3,0
-offset 0  3,0
-offset 0  3,0
-repeat 0.035 7 4 mirrored
+@1:12.22 suicide sn  1.5,0 1.5,6
+offset  3,0
+offset  3,0
+offset  3,0
+repeat 1.94 7 4 mirrored
 
-missile ss 0.3  6,0 6,5 0,9
-missile mn 0.01  0,8 4,5 5,0
+@1:38.81 missile ss  6,0 6,5 0,9
++0.55 missile mn  0,8 4,5 5,0
 mirror
-repeat 0.07 3 3 mirrored
-laser ms 0  2,0
+repeat 3.88 3 3 mirrored
+laser ms  2,0
 insert -9
-laser ms 0  10,0
+laser ms  10,0
 insert -6
 
-missile mn 0.2  2,0 2,5 2,12
-missile ss 0  3,0 3.5,5 7,0
-repeat 0.05 3 2
-missile mn 0.03  12,2 5,5 2,12
-missile ss 0  12,3.5 7,5 12,7
-repeat 0.05 3 2
-suicide ms 0.06  0,12 3,4
-repeat 0.015 3 1 mirrored
+@2:01.33 missile mn  2,0 2,5 2,12
+missile ss  3,0 3.5,5 7,0
+repeat 2.77 3 2
+
+@2:11.3 missile mn  12,2 5,5 2,12
+missile ss  12,3.5 7,5 12,7
+repeat 2.77 3 2
+
+@2:22.93 suicide ms  0,12 3,4
+repeat 0.83 3 1 mirrored

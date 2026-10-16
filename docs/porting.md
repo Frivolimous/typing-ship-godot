@@ -45,27 +45,40 @@ ported, what's left, where the port deliberately differs from the original, and 
      Jeremy; the test picks one at random), rules in src/Core/TypingTestRun.cs, the screen in
      UI/Screens.cs. The suggestion keeps the old mapping (the hardest difficulty at or below the result).
    - **Difficulty selection:** open to experiments (Jeremy iterated on it a lot in the original).
-   - **Pacing rules** ([pacing-rules.md](pacing-rules.md), Jeremy, from playtesting Hard): regular levels last
-     `90 + 9 x (level - 1)` seconds (1:30 to 3:00) at every difficulty, measured to the last spawn plus a 5 s tail;
-     waves keep their timing and get fatter with P; average load 0.65–0.80, with rules for lulls, earned lulls,
-     sustained intensity, peaks and the level arc. Boss levels are exempt from all of them; level 3 from the arc rule
-     for now. **Done:** the checker (`ts 13`, `pacing --check`, numbers in data/pacing-rules.txt), a realistic bot
-     (80% speed, 3.5% mistakes) in the report, and the level-format lines the rework needs: `duration` and `density`
-     above 100%. **Next:** the timestamped level edits in the spec, then converting the levels.
-   - **Pacing rework:** levels last the same time at every difficulty (time-based pacing; durations above). Difficulty comes from
-     more and/or faster enemies, not from level length. The 12 original levels are the baseline: Jeremy picks
-     the best-tuned difficulty (probably Hard) as the template and tunes the others around it. **Mechanism
-     done; the levels themselves are next, after Jeremy sets new targets.** The level format has `pace hard`
-     (the level's clock runs at Hard's speed at every difficulty), difficulty tags (`hard+:` and `only` blocks),
-     numbers per difficulty (`1/2/3/3/4`) and `density` (keeps evenly spread waves); see
-     [level-format.md](level-format.md). A Classic level with `pace hard` plays on Hard exactly as Classic
-     (tested). The pacing report (`ts 11`) puts the game's levels and Classic side by side as average and peak
-     demand ÷ stated speed, with a density to try. Classic across all 12 levels averages about 0.70–0.76 of the
-     stated speed at every difficulty, with 10-second peaks of 2.2× (Easy) down to 1.3× (Insane); levels last
-     about 2:08 on Hard. Found while testing: with a pace line, ships stay slower on Easy, so a level's last ships
-     take longer to leave and the level runs about 20% longer there.
+   - **Pacing rules** ([pacing-rules.md](pacing-rules.md), Jeremy, from playtesting Hard): durations, average load
+     0.65–0.80, lulls, earned lulls, sustained intensity, peaks and the level arc; boss levels exempt, level 3 exempt
+     from the arc rule for now. **Done:** the checker (`ts 13`, `pacing --check`, numbers in data/pacing-rules.txt)
+     and a realistic bot (80% speed, 3.5% mistakes) in the report. The rules themselves get revised after the Hard
+     pass, from what the hand-tuned levels actually do.
+   - **A first rework was scrapped** (branch level-pacing-rework, not merged): Jeremy wasn't happy with the
+     levels, and the distance-based format with pace/duration/density lines made them hard to reason about.
+   - **Hard pass (now).** Back to basics, with Hard as the reference:
+     1. ~~**Time-based level format.**~~ Done. Waves start at `@m:ss`, lines within use `+gap` seconds, no prefix is
+        the same moment; `halt`, `repeat` gaps and every other time are seconds as played on Hard. Timing is the
+        same at every difficulty (no pace line); a level's length is its content. A header can name numbers
+        (`HOVER = 3.8`), and per-difficulty values (`0.9/0.9/0.7/0.6/0.5`) are allowed only there. Removed: `pace`,
+        `duration`, `density`, difficulty tags, `only` blocks and inline `/` values. Halts convert to other
+        difficulties with the cps scaling they always had. See [level-format.md](level-format.md).
+     2. ~~**Conversion.**~~ Done, by the engine at Hard, for the game's levels and Classic alike (both are the
+        original levels for now). Each gap became its Hard seconds, rounded to hundredths: all 928 events arrive
+        within one tick (1/24 s) of before, 82% on the same tick; Classic Hard runs last the same and spawn the same
+        ships as before. Halts, paths and random draws are identical at all five difficulties (checked against
+        a capture of the old engine). `repeat` gaps convert cleanly; the old quirk where a repeated group's inner
+        gap of 0.1 or more shrank again never occurs in the levels.
+     3. ~~**Tools.**~~ Done: the report's `lines.csv` and the F9 overlay give each line's Hard time (`L42 -> 1:37`);
+        the report has words on screen per second and each level's last spawn; the report and the rule check share
+        one definition of average load (letters from the start to the last spawn plus the tail, over that time).
+     4. **Jeremy hand-tunes the Hard levels** in data/levels/. Once he's done, they aren't changed to satisfy the
+        rule check.
+   - **Difficulty pass (after Hard).** Derive the other difficulties from Hard, then adjust by hand. Until then
+     every difficulty plays Hard's wave timing (with its own ship speeds), so Easy and Normal are much too dense.
+     **TBD:** thin ships within each wave rather than dropping whole waves, so lower difficulties keep Hard's peaks
+     and lulls in the same places. If Insane still plays too hard after that, flatten its ship speed curve slightly
+     (e.g. cps^0.9) rather than cut density. Tuning times could also be written as seconds on Hard (laser charge
+     ≈ 3.8 s) to match the level files.
    - **Classic:** the original 12 levels stay available as a baseline and check during development, and are
-     removed before release. **Done:** data/levels/classic/ (`--classic`, `ts 12`); data/levels/ is the game's
+     removed before release. **Done:** data/levels/classic/ (`--classic`, `ts 12`), converted to seconds on Hard
+     like the rest; data/levels/ is the game's
      own set, for now unchanged copies.
 6. **New features and deeper game logic:** new mechanics, enemies, modes and systems beyond the original (the
    old TODO list in Facade.as is a starting point: dodging, tractor beam, mega bomb, boss AI, space mines).
@@ -186,8 +199,9 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 ## Notes from the original worth knowing
 
 - The original worked in WPM; the port's rules work in CPS (`cps = wpm / 12`), so its numbers are the original's
-  with the 12 folded in. Classic distance per tick is `cps / 7200` (`wpm / 24 / 3600`). Level script steps of 0.1
-  or more are scaled by `max(1 - cps/25, 0.5)` (`1 - wpm/300`).
+  with the 12 folded in. The original's level clock was distance, `cps / 7200` a tick (`wpm / 24 / 3600`), and
+  level script steps of 0.1 or more were scaled by `max(1 - cps/25, 0.5)` (`1 - wpm/300`); the levels are now in
+  seconds, converted at Hard (see the Hard pass above).
 - Enemies only actually fire a missile when an accumulator passes 1. The rate is `clamp(cps/12.5, 0.3, 1)`
   (`wpm/150`) per fire command, so at low difficulty most fire commands do nothing.
 - Laser charge time is `500 / cps` ticks (`6000 / wpm`). At half charge the word turns red and the charge sound plays.

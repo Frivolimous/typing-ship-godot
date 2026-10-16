@@ -2,31 +2,23 @@ using TypingShip.Core.Data;
 
 namespace TypingShip.Core.Levels;
 
-/// <summary>
-/// What building a level needs: the random numbers, the tuning, the difficulty (its speed in CPS), and the level's
-/// pace (<see cref="LevelScript.Pace"/>, null for Classic pacing) and density at this difficulty.
-/// </summary>
-public sealed record LevelContext(Rng Rng, Tuning Tuning, double Cps, double? Pace = null, double Density = 1)
+/// <summary>What building a level needs: the random numbers, the tuning, and the difficulty (its speed in CPS).</summary>
+public sealed record LevelContext(Rng Rng, Tuning Tuning, double Cps)
 {
     /// <summary>0 (easy) to 4 (insane).</summary>
     public int DifficultyIndex => Difficulty.Of(Cps) - 1;
-
-    /// <summary>The speed the level's clock runs at: its pace, or (Classic) the difficulty's own speed.</summary>
-    public double ClockCps => Pace ?? Cps;
 }
 
-/// <summary>Something in a level that happens once the ship has travelled Distance.</summary>
+/// <summary>Something in a level that happens at Time: seconds from the start of the level, the same at every difficulty.</summary>
 public abstract class LevelEvent
 {
-    public double Distance;
+    public double Time;
     /// <summary>Where it came from (for the editing overlay and "start from line N"), or 0.</summary>
     public string File = "";
     public int Line;
-    /// <summary>The difficulties it happens at (<see cref="DifficultyTag"/>).</summary>
-    public int Mask = DifficultyTag.All;
 }
 
-/// <summary>The original's LevelEvent: Loop (re-run the level from event Index), Wait, or Jump (skip ahead).</summary>
+/// <summary>The original's LevelEvent: Loop (re-run the level from event Index), Wait, or Jump (skip ahead Index seconds).</summary>
 public sealed class MarkerEvent : LevelEvent
 {
     public enum Kind { Loop, Wait, Jump }
@@ -34,9 +26,9 @@ public sealed class MarkerEvent : LevelEvent
     public Kind Type;
     public double Index;
 
-    public MarkerEvent(double distance, Kind type, double index)
+    public MarkerEvent(double time, Kind type, double index)
     {
-        Distance = distance;
+        Time = time;
         Type = type;
         Index = index;
     }
@@ -47,9 +39,9 @@ public sealed class BossEvent : LevelEvent
 {
     public int Type;
 
-    public BossEvent(double distance, int type)
+    public BossEvent(double time, int type)
     {
-        Distance = distance;
+        Time = time;
         Type = type;
     }
 }
@@ -72,11 +64,11 @@ public sealed class SpawnEvent : LevelEvent
     public int Fires, KillBy = Weapons.Missile, Value, WordSize, Health;
     public bool Shielded, HasTurret;
 
-    public SpawnEvent(LevelContext c, double distance, string t, float x, float y, ObjectCommand[]? commands = null)
+    public SpawnEvent(LevelContext c, double time, string t, float x, float y, ObjectCommand[]? commands = null)
     {
         var tune = c.Tuning;
         Type = t;
-        Distance = distance;
+        Time = time;
         X = x;
         Y = y;
         Commands = commands ?? Array.Empty<ObjectCommand>();
@@ -126,6 +118,8 @@ public sealed class SpawnEvent : LevelEvent
 
 /// <summary>
 /// One step of a ship's script: fly to (x, y), or wait timer ticks; optionally fire when the step starts.
+/// Halts are given in "halt units" (the original's), timer x halt scale / cps ticks; a halt written in seconds as
+/// played on Hard is <see cref="UnitsFromSeconds"/> units, so it lasts that long on Hard and scales with cps elsewhere.
 /// Targets inside the view get up to ±jitter px, as in the original (re-rolled on clone/mirror/offset).
 /// </summary>
 public sealed class ObjectCommand
@@ -135,7 +129,7 @@ public sealed class ObjectCommand
     public bool Fire, Move;
     readonly LevelContext c;
 
-    public ObjectCommand(LevelContext c, float x = 0, float y = 0, int timer = 0, bool move = true, bool fire = false)
+    public ObjectCommand(LevelContext c, float x = 0, float y = 0, double timer = 0, bool move = true, bool fire = false)
     {
         this.c = c;
         float j = c.Tuning.Jitter;
@@ -165,4 +159,7 @@ public sealed class ObjectCommand
     public ObjectCommand Clone() => new(c, X, Y, BaseTimer, Move, Fire);
     public ObjectCommand Mirror() => new(c, Playfield.ViewWidth - X, Y, BaseTimer, Move, Fire);
     public ObjectCommand Offset(float xOff, float yOff) => new(c, X + xOff, Y + yOff, BaseTimer, Move, Fire);
+
+    /// <summary>Halt units for a halt of this many seconds on Hard.</summary>
+    public static double UnitsFromSeconds(double seconds, Tuning t) => seconds * Playfield.TickRate * Difficulty.Hard / t.HaltScale;
 }

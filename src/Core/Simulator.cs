@@ -13,7 +13,7 @@ public sealed partial class Game
     {
         static string F(float f) => f.ToString("R", CultureInfo.InvariantCulture);
         var sb = new StringBuilder();
-        sb.Append($"{Distance.ToString("R", CultureInfo.InvariantCulture)} s{Score} h{Player.Health} [{Typed}] hull:{Hull.Word}");
+        sb.Append($"{Time.ToString("R", CultureInfo.InvariantCulture)} s{Score} h{Player.Health} [{Typed}] hull:{Hull.Word}");
         foreach (var o in Objects)
         {
             sb.Append($" | {o.TraceName} {F(o.Position.X)},{F(o.Position.Y)} {F(o.Rotation)} {o.Word} p{o.Priority}");

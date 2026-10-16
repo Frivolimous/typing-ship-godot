@@ -94,7 +94,7 @@ public partial class GameUI : Control
 
     public void OnTick()
     {
-        int per = (int)(G.Model.Distance / G.Model.MaxDistance * 100);
+        int per = G.Model.MaxTime > 0 ? (int)(G.Model.Time / G.Model.MaxTime * 100) : 0;
         diffText.Text = per > 100 ? "100%" : $"{per}%";
 
         if (dashC == 0)

@@ -9,15 +9,26 @@ public class PacingRulesTests
     static readonly double Cps = Difficulty.Hard;
 
     /// <summary>
-    /// A run whose load (demand ÷ speed) is the given value each second. Every second up to the last spawns a little,
-    /// and one word is visible unless the visible list says otherwise.
+    /// A run whose load (demand ÷ speed) is the given value each second, and whose new letters each second add up to
+    /// the same load (spread so whole letters carry the remainder), so averages and the rolling demand agree. Every
+    /// second up to the last spawns something, and one word is visible unless the visible list says otherwise.
     /// </summary>
     static Pacing.Run RunOf(double[] load, int[]? visible = null, int lastSpawn = 0)
     {
         if (lastSpawn == 0) lastSpawn = load.Length - 5;
-        var samples = load.Select((l, i) => new Pacing.Sample(i + 1, 0, i + 1 <= lastSpawn ? 5 : 0, l * Cps, 1, 5,
-            visible?[i] ?? 1)).ToList();
-        return new Pacing.Run(0, Cps, true, "", samples);
+        double carry = 0;
+        var samples = load.Select((l, i) =>
+        {
+            int letters = 0;
+            if (i + 1 <= lastSpawn)
+            {
+                carry += l * Cps;
+                letters = Math.Max(1, (int)Math.Floor(carry + 1e-9));
+                carry -= letters;
+            }
+            return new Pacing.Sample(i + 1, 0, letters, l * Cps, 1, 5, visible?[i] ?? 1);
+        }).ToList();
+        return new Pacing.Run(0, Cps, true, "", samples, Rules.TailSeconds);
     }
 
     /// <summary>A level-1 length run (85 s to the last spawn + 5 s tail) at a steady load, to edit bits of.</summary>

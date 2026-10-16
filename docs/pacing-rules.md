@@ -185,7 +185,9 @@ Details the spec leaves open, as `src/Core/PacingRules.cs` implements them:
 - **Peaks** are one per burst. On a plateau, the peak's time is the plateau's last second. A level whose load never
   drops below the burst level is one burst with one peak.
 - **Spikes** are counted per stretch above the peak cap, so two spikes inside one burst are two spikes.
-- **Duration** passes within ± "duration tolerance" (3 s) of the target. The tail is the tuning's "duration tail".
+- **Duration** passes within ± "duration tolerance" (3 s) of the target. The tail is "duration tail" in data/pacing-rules.txt.
+- **Average load** is one definition, shared with the pacing report: the letters of every word that appears from the
+  start of the level to the last spawn plus the tail, divided by that time and by P.
 - **Average target:** outside 0.65–0.80 is a violation; inside it but more than "average target tolerance" (0.03)
   from the level's target is a warning, which doesn't fail the check.
 - **Perfect bot:** every rule is checked on the perfect bot's run (seed 1). The realistic bot (80% of P, 3.5%

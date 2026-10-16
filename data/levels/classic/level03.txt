@@ -1,16 +1,16 @@
 # Level 3 (boss 1, B1 on the map).
-# How to write these: docs/level-format.md. The game reads this file when the level starts.
+# How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
-missile sn 0.1  0,3 3,5 8,0
-repeat 0.02 5 1 mirrored
-laser ss 0.02  5,0
-mirror 0.02
-suicide mn 0.02  0,2 6,3
-mirror 0.02
-suicide mn 0.02  0,4 6,5
-mirror 0.02
-repeat 0.02 1 4
-laser ms 0.02  0,2
-mirror 0.02
+@0:04.34 missile sn  0,3 3,5 8,0
+repeat 1.11 5 1 mirrored
++1.11 laser ss  5,0
++1.11 mirror
++1.11 suicide mn  0,2 6,3
++1.11 mirror
++1.11 suicide mn  0,4 6,5
++1.11 mirror
+repeat 1.11 1 4
++1.11 laser ms  0,2
++1.11 mirror
 
-boss 0.2 1
+@0:31.85 boss 1

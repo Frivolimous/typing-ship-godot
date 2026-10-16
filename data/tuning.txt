@@ -4,7 +4,8 @@
 # The game checks this file when it starts: a typo or a missing line stops it with a message saying which line.
 # With the editing keys on (--edit), F5 reloads this file along with the level.
 #
-# Units: positions and distances are pixels in the 600 x 550 game view. Times are ticks (24 a second).
+# Units: positions and distances are pixels in the 600 x 550 game view. Times are ticks (24 a second) unless a line
+# says seconds.
 # "cps" is the difficulty's typing speed in characters per second (words per minute x 5 / 60): Easy 2.08 (25 WPM),
 # Normal 3.33 (40), Hard 5.42 (65), Extreme 6.25 (75), Insane 7.5 (90). Speeds that say "x cps" are multiplied by
 # it, so everything gets faster on harder difficulties, and times that say "/ cps" are divided by it. A number can
@@ -81,13 +82,10 @@ emp charge = 5            # ticks before an EMP (typed at a shield) hits
 [level scripts]
 jitter = 10               # ships aim up to this far either side of each grid point (inside the view)
 arrive distance = 20      # how close a ship gets to a point before moving on
-halt scale = 100/3        # "halt N" waits N x this / cps ticks (400 / wpm)
-shrink from = 0.1         # steps of at least this much distance...
-shrink cps = 25           # ...are shortened at higher speeds: multiplied by 1 - cps / this,
-shrink limit = 0.5        #   but never by less than this
-end wait = 0.05           # distance between the last ship leaving and the level ending
-duration tail = 5         # seconds: a level with a "duration" line has its last event this long before the end
-copy gap = 0.01           # distance between a wave and each copy a density above 100% adds
+halt scale = 100/3        # converts halts between difficulties: a halt of S seconds (as on Hard) waits S x 24 x 5.42 / cps
+                          # ticks. The built-in ship moves (laser, stealth) use the original's halt units, N x this / cps.
+end wait = 2.77           # seconds between the last ship leaving and the level ending
+copy gap = 0.55           # seconds between a wave and a copy of it (for the coming difficulty pass; nothing uses it yet)
 
 [bosses]
 health = 3                # hits to kill a boss

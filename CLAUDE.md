@@ -20,9 +20,12 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
 - **Fix real bugs instead of preserving them** (Jeremy's call, e.g. the player missile heading). When a fix changes
   how the game plays, list it under "Deviations" in docs/porting.md.
 - **Levels and tuning are data**, for Jeremy to edit: `data/levels/*.txt` (the original LevelData helpers, one per
-  line: `missile sn 0.05  5,0 5,6 4,12`) and `data/tuning.txt`. The format is documented for him in
+  line, timed in seconds as played on Hard: `@0:02.77 missile sn  5,0 5,6 4,12`, `+0.55 mirror`) and `data/tuning.txt`. The format is documented for him in
   [docs/level-format.md](docs/level-format.md); keep that current when the format changes. Every mistake in a data
   file must stop the game with a message naming the file and line.
+- **Hard is the reference** for level pacing: level timing is written for Hard and is the same at every
+  difficulty. Jeremy hand-tunes the Hard levels; once he has, never change them to satisfy the pacing rule check.
+  The other difficulties get derived from Hard later (docs/porting.md, "Difficulty pass").
 
 ## Layout
 
@@ -82,7 +85,7 @@ tests/Core.Tests. The rest of the testing happens through the dev flags in docs/
 
 - **Headless simulation** (fast, no window): `--headless --fixed-fps 24 --path game -- --autotype --quit-on-end
   [--wpm=N] [--botwpm=N] [--level=N] [--seed=N]` (or `--cps`, `--botcps`) prints a one-line result per level. A perfect bot should clear
-  every level at every difficulty. A slow bot (`--botwpm` well below `--wpm`) should take damage.
+  every level on Hard and up (Easy and Normal play Hard's timing until the difficulty pass). A slow bot (`--botwpm` well below `--wpm`) should take damage.
 - **Screenshots** (needs a window): `--screenshot=path.png --at=600,1200` saves frames, then quits. Look at them.
   Save into the scratchpad or `screenshots/` (ignored).
 - Feel and difficulty can only be judged by Jeremy playing. Say so instead of claiming it's verified.

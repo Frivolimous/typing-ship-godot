@@ -4,41 +4,35 @@ namespace TypingShip.Core.Levels;
 
 /// <summary>
 /// Turns a level script into its list of events for one play: positions on the 12 x 12 grid become pixels, ships
-/// get their flight plans, mirror/repeat/insert copy and shuffle events, and steps of 0.1 or more shrink at higher
-/// typing speeds. This is the original LevelData's helpers, line for line; random numbers are drawn in the same
-/// order, so a seed gives the same level it always did.
+/// get their flight plans, mirror/repeat/insert copy and shuffle events, and each line's time (seconds, the same at
+/// every difficulty) is worked out from its @ time or + gap. Random numbers are drawn in the order they're written,
+/// as the original's LevelData helpers drew them.
 /// </summary>
 public sealed class LevelBuilder
 {
     readonly LevelContext c;
     readonly List<LevelEvent> array = new();
-    readonly double mult;
-    double dist;
+    readonly double start;
+    double time;
     string file = "";
-    int line, mask = DifficultyTag.All;
+    int line;
 
-    LevelBuilder(LevelContext c, double startDistance)
+    LevelBuilder(LevelContext c, double startTime)
     {
         this.c = c;
-        var t = c.Tuning;
-        mult = Math.Max(1 - c.ClockCps / t.ShrinkCps, t.ShrinkLimit);
-        dist = startDistance;
+        start = time = startTime;
     }
 
     /// <summary>
-    /// Builds a script's events, starting at the given distance (bossLoop starts where the ship is). A level file's
-    /// pace and density apply to it (and, through the context, to its boss escorts). Lines tagged for other
-    /// difficulties are left out, then the density thins out ship waves (not for boss 1's hangar: thin = false).
+    /// Builds a script's events. A level starts at 0; a boss's escorts start where the level is (startTime), and
+    /// their @ times count from there.
     /// </summary>
-    public static List<LevelEvent> Build(LevelScript script, LevelContext c, double startDistance = 0, bool thin = true)
+    public static List<LevelEvent> Build(LevelScript script, LevelContext c, double startTime = 0)
     {
-        if (script.Pace is { } pace) c = c with { Pace = pace };
-        if (script.Density is { } density) c = c with { Density = density[c.DifficultyIndex] };
-        var b = new LevelBuilder(c, startDistance) { file = script.File };
+        var b = new LevelBuilder(c, startTime) { file = script.File };
         foreach (var s in script.Statements)
         {
             b.line = s.Line;
-            b.mask = s.Mask;
             try
             {
                 b.Run(s);
@@ -48,92 +42,31 @@ public sealed class LevelBuilder
                 throw new DataError(script.File, s.Line, e.Message);
             }
         }
-        return b.Finish(thin);
-    }
-
-    /// <summary>Leaves out what this difficulty doesn't have: tagged lines, then waves the density thins out.</summary>
-    List<LevelEvent> Finish(bool thin)
-    {
-        if (array.Count == 0) return array;
-        double end = array.Max(e => e.Distance);
-        int d = c.DifficultyIndex;
-        var kept = array.Where(e => DifficultyTag.Includes(e.Mask, d)).ToList();
-        if (thin && c.Density < 1)
-        {
-            // Ships that arrive together (same distance) are one wave. Keep waves evenly: with density 40%, the 1st,
-            // 3rd, 6th, 8th... (wave k stays when ceil((k + 1) x density) > ceil(k x density)).
-            var result = new List<LevelEvent>();
-            int wave = -1;
-            bool keep = true;
-            double last = double.NaN;
-            foreach (var e in kept)
-            {
-                if (e is SpawnEvent)
-                {
-                    if (e.Distance != last)
-                    {
-                        wave++;
-                        last = e.Distance;
-                        keep = Math.Ceiling((wave + 1) * c.Density - 1e-9) > Math.Ceiling(wave * c.Density - 1e-9);
-                    }
-                    if (!keep) continue;
-                }
-                result.Add(e);
-            }
-            kept = result;
-        }
-        else if (thin && c.Density > 1)
-        {
-            // Fatter waves: spread the extra share evenly. With density 150%, every other wave gets one copy; with
-            // 200%, every wave gets one; with 250%, every wave one and every other wave a second. Each copy flies the
-            // same plan (re-jittered, like "clone") one copy gap after the wave, then the next another gap later.
-            double extra = c.Density - 1;
-            var result = new List<LevelEvent>();
-            var pending = new List<LevelEvent>();
-            int wave = -1, copies = 0;
-            double last = double.NaN;
-            void Flush()
-            {
-                for (int k = 1; k <= copies; k++)
-                    foreach (var e in pending)
-                        if (e is SpawnEvent s)
-                            result.Add(new SpawnEvent(c, s.Distance + k * c.Tuning.CopyGap, s.Type, s.X, s.Y,
-                                s.Commands.Select(cmd => cmd.Clone()).ToArray()) { File = s.File, Line = s.Line, Mask = s.Mask });
-                pending.Clear();
-            }
-            foreach (var e in kept)
-            {
-                if (e is SpawnEvent && e.Distance != last)
-                {
-                    Flush();
-                    wave++;
-                    last = e.Distance;
-                    copies = (int)(Math.Ceiling((wave + 1) * extra - 1e-9) - Math.Ceiling(wave * extra - 1e-9));
-                }
-                result.Add(e);
-                if (e is SpawnEvent) pending.Add(e);
-            }
-            Flush();
-            // Copies land a little after their wave, so put everything back in order (a stable sort keeps ties as written).
-            kept = result.OrderBy(e => e.Distance).ToList();
-        }
-        // Leaving out the last ships mustn't end the level sooner: the level keeps its length.
-        if (kept.Count < array.Count && (kept.Count == 0 || kept.Max(e => e.Distance) < end))
-            kept.Add(new MarkerEvent(end, MarkerEvent.Kind.Wait, 0) { File = file, Line = array[^1].Line });
-        return kept;
+        return b.array;
     }
 
     double E(Num n) => n.Eval(c.Rng, c.DifficultyIndex);
 
+    /// <summary>Moves the clock to the line's time.</summary>
+    void When(Timing t)
+    {
+        switch (t.Type)
+        {
+            case Timing.Kind.At: time = start + t.At; break;
+            case Timing.Kind.After: time += E(t.Gap!); break;
+        }
+    }
+
     void Run(Statement s)
     {
-        var r = c.Rng;
+        // The time comes first, then the line's numbers in the order they're written (as the original evaluated
+        // its arguments, so random numbers are drawn in the same order).
+        if (s.Moment is { } when) When(when);
         switch (s)
         {
-            // Numbers are rolled in the order they're written, as the original evaluated its arguments.
             case Statement.Missile m:
             {
-                double d = E(m.Dist), x = E(m.From.X), y = E(m.From.Y);
+                double x = E(m.From.X), y = E(m.From.Y);
                 var to = new double[6];
                 Array.Fill(to, -1);
                 for (int i = 0; i < m.To.Length; i++)
@@ -141,89 +74,68 @@ public sealed class LevelBuilder
                     to[i * 2] = E(m.To[i].X);
                     to[i * 2 + 1] = E(m.To[i].Y);
                 }
-                missile(m.Type, d, x, y, to[0], to[1], to[2], to[3], to[4], to[5]);
+                missile(m.Type, x, y, to[0], to[1], to[2], to[3], to[4], to[5]);
                 break;
             }
             case Statement.Laser l:
             {
-                double d = E(l.Dist), x = E(l.At.X), y = E(l.At.Y), speed = E(l.Speed);
-                laser(l.Type, d, x, y, (int)speed);
+                double x = E(l.At.X), y = E(l.At.Y), speed = E(l.Speed);
+                laser(l.Type, x, y, (int)speed);
                 break;
             }
             case Statement.Suicide su:
             {
-                double d = E(su.Dist), x = E(su.From.X), y = E(su.From.Y), xTo = E(su.To.X), yTo = E(su.To.Y);
-                suicide(su.Type, d, x, y, xTo, yTo);
+                double x = E(su.From.X), y = E(su.From.Y), xTo = E(su.To.X), yTo = E(su.To.Y);
+                suicide(su.Type, x, y, xTo, yTo);
                 break;
             }
             case Statement.Stealth st:
             {
-                double d = E(st.Dist), x = E(st.From.X), y = E(st.From.Y), xTo = E(st.To.X), yTo = E(st.To.Y);
-                stealth(d, x, y, xTo, yTo, st.Shield);
+                double x = E(st.From.X), y = E(st.From.Y), xTo = E(st.To.X), yTo = E(st.To.Y);
+                stealth(x, y, xTo, yTo, st.Shield);
                 break;
             }
             case Statement.Ship sh:
             {
-                double d = E(sh.Dist), x = E(sh.From.X), y = E(sh.From.Y);
+                double x = E(sh.From.X), y = E(sh.From.Y);
                 var commands = sh.Steps.Select(step => step.Type switch
                 {
                     Step.Kind.Move => move(E(step.To!.X), E(step.To.Y), step.Fire),
-                    Step.Kind.Halt => halt(step.Halt, step.Fire),
+                    Step.Kind.Halt => halt(ObjectCommand.UnitsFromSeconds(E(step.Halt!), c.Tuning), step.Fire),
                     _ => fire(),
                 }).ToArray();
-                ship(sh.Code, d, x, y, commands);
+                ship(sh.Code, x, y, commands);
                 break;
             }
-            case Statement.Boss bo: boss(E(bo.Dist), bo.Number - 1); break;
-            case Statement.Mirror mi: mirror(E(mi.Dist), mi.Back); break;
-            case Statement.Copy cl: clone(E(cl.Dist), cl.Back); break;
+            case Statement.Boss bo: Add(new BossEvent(time, bo.Number - 1)); break;
+            case Statement.Mirror mi: mirror(mi.Back); break;
+            case Statement.Copy cl: clone(cl.Back); break;
             case Statement.Offset o:
             {
-                double d = E(o.Dist), x = E(o.By.X), y = E(o.By.Y);
-                offset(d, x, y, o.Back);
+                double x = E(o.By.X), y = E(o.By.Y);
+                offset(x, y, o.Back);
                 break;
             }
-            case Statement.Repeat re: repeat(E(re.Dist), (int)E(re.Times), re.Count, re.Mirrored); break;
+            case Statement.Repeat re: repeat(E(re.Gap), (int)E(re.Times), re.Count, re.Mirrored); break;
             case Statement.Insert ins: insert(ins.At); break;
-            case Statement.Wait w: wait(E(w.Dist)); break;
-            case Statement.Jump j: jump(E(j.Dist)); break;
-            case Statement.Loop lo: loopBack(lo.From); break;
+            case Statement.Wait: Add(new MarkerEvent(time, MarkerEvent.Kind.Wait, 0)); break;
+            case Statement.Jump j: Add(new MarkerEvent(time, MarkerEvent.Kind.Jump, E(j.Seconds))); break;
+            case Statement.Loop lo: Add(new MarkerEvent(time, MarkerEvent.Kind.Loop, lo.From < 0 ? array.Count + lo.From : lo.From)); break;
             default: throw new InvalidOperationException($"Unknown statement {s}");
         }
     }
 
-    T Add<T>(T e, LevelEvent? copyOf = null) where T : LevelEvent
+    T Add<T>(T e) where T : LevelEvent
     {
         e.File = file;
         e.Line = line;
-        e.Mask = mask & (copyOf?.Mask ?? DifficultyTag.All); // a copy of a ship that isn't there isn't there either
         array.Add(e);
         return e;
     }
 
     // ---- The original LevelData helpers. Lowercase names kept so they compare easily with the AS3. ----
 
-    void setDist(double d)
-    {
-        if (d >= c.Tuning.ShrinkFrom) d *= mult;
-        dist += d;
-    }
-
-    void loopBack(int j = 0)
-    {
-        if (j < 0) j = array.Count + j;
-        Add(new MarkerEvent(dist, MarkerEvent.Kind.Loop, j));
-    }
-
-    void wait(double d = 0)
-    {
-        setDist(d);
-        Add(new MarkerEvent(dist, MarkerEvent.Kind.Wait, d));
-    }
-
-    void jump(double j = 0) => Add(new MarkerEvent(dist, MarkerEvent.Kind.Jump, j));
-
-    void laser(string type, double d, double x, double y, int speed = 0)
+    void laser(string type, double x, double y, int speed = 0)
     {
         ObjectCommand[] commands;
         if (x == 0) commands = [move(2, y), halt(10 - speed), halt(20 - speed, true), move(-2, y)];
@@ -231,48 +143,39 @@ public sealed class LevelBuilder
         else if (y == 0) commands = [move(x, 2), halt(10 - speed), halt(20 - speed, true), move(x, -2)];
         else if (y == 12) commands = [move(x, 10), halt(10 - speed), halt(20 - speed, true), move(x, 14)];
         else throw new ArgumentException($"A laser ship has to start on the edge of the grid (x 0 or 12, or y 0 or 12), not at {x},{y}.");
-        ship($"{type[0]}l{type[1]}", d, x, y, commands);
+        ship($"{type[0]}l{type[1]}", x, y, commands);
     }
 
-    void suicide(string type, double d, double x, double y, double xTo, double yTo) =>
-        ship($"{type[0]}s{type[1]}", d, x, y, [move(xTo, yTo), fire()]);
+    void suicide(string type, double x, double y, double xTo, double yTo) =>
+        ship($"{type[0]}s{type[1]}", x, y, [move(xTo, yTo), fire()]);
 
-    void stealth(double d, double x, double y, double xTo, double yTo, bool shield = false) =>
-        ship(shield ? "xms" : "xmn", d, x, y,
+    void stealth(double x, double y, double xTo, double yTo, bool shield = false) =>
+        ship(shield ? "xms" : "xmn", x, y,
             [halt(8), halt(10, true), halt(10, true), halt(10, true), halt(10, true), halt(5, true), move(xTo, yTo)]);
 
-    void missile(string type, double d, double x, double y, double xTo1, double yTo1,
+    void missile(string type, double x, double y, double xTo1, double yTo1,
         double xTo2 = -1, double yTo2 = -1, double xTo3 = -1, double yTo3 = -1) =>
-        ship($"{type[0]}m{type[1]}", d, x, y,
+        ship($"{type[0]}m{type[1]}", x, y,
         [
             move(xTo1, yTo1),
             move(xTo2, yTo2, xTo3 == -1),
             xTo3 != -1 ? move(xTo3, yTo3, true) : halt(1),
         ]);
 
-    /// <summary>Move the last event back to position j, at that event's distance.</summary>
+    /// <summary>Move the last event back to position j, at that event's time.</summary>
     void insert(int j)
     {
         int at = j < 0 ? array.Count + j : j;
         if (at < 0 || at >= array.Count)
             throw new ArgumentException($"insert {j}: there are only {array.Count} events above this line.");
         var last = array[^1];
-        last.Distance = array[at].Distance; // before removing it: insert -1 leaves it where it is
+        last.Time = array[at].Time; // before removing it: insert -1 leaves it where it is
         array.RemoveAt(array.Count - 1);
         array.Insert(at, last);
     }
 
-    void ship(string type, double d, double x, double y, ObjectCommand[]? commands = null)
-    {
-        setDist(d);
-        Add(new SpawnEvent(c, dist, type, (float)(x * Playfield.GridX), (float)(y * Playfield.GridY), commands));
-    }
-
-    void boss(double d, int type)
-    {
-        setDist(d);
-        Add(new BossEvent(dist, type));
-    }
+    void ship(string type, double x, double y, ObjectCommand[]? commands = null) =>
+        Add(new SpawnEvent(c, time, type, (float)(x * Playfield.GridX), (float)(y * Playfield.GridY), commands));
 
     SpawnEvent At(int j, string what)
     {
@@ -283,48 +186,46 @@ public sealed class LevelBuilder
             ?? throw new ArgumentException($"{what} copies the ship {-j} back, but that's a {(array[at] is BossEvent ? "boss" : "wait/jump/loop")}, not a ship.");
     }
 
-    void clone(double d = 0, int j = -1)
+    void clone(int j = -1)
     {
         var src = At(j, "clone");
-        setDist(d);
-        Add(new SpawnEvent(c, dist, src.Type, src.X, src.Y, src.Commands.Select(cmd => cmd.Clone()).ToArray()), src);
+        Add(new SpawnEvent(c, time, src.Type, src.X, src.Y, src.Commands.Select(cmd => cmd.Clone()).ToArray()));
     }
 
-    void mirror(double d = 0, int j = -1)
+    void mirror(int j = -1)
     {
         var src = At(j, "mirror");
-        setDist(d);
-        Add(new SpawnEvent(c, dist, src.Type, Playfield.ViewWidth - src.X, src.Y, src.Commands.Select(cmd => cmd.Mirror()).ToArray()), src);
+        Add(new SpawnEvent(c, time, src.Type, Playfield.ViewWidth - src.X, src.Y, src.Commands.Select(cmd => cmd.Mirror()).ToArray()));
     }
 
-    void offset(double d = 0, double xOff = 0, double yOff = 0, int j = -1)
+    void offset(double xOff = 0, double yOff = 0, int j = -1)
     {
         var src = At(j, "offset");
-        setDist(d);
         float x = (float)(xOff * Playfield.GridX), y = (float)(yOff * Playfield.GridY);
-        Add(new SpawnEvent(c, dist, src.Type, src.X + x, src.Y + y, src.Commands.Select(cmd => cmd.Offset(x, y)).ToArray()), src);
+        Add(new SpawnEvent(c, time, src.Type, src.X + x, src.Y + y, src.Commands.Select(cmd => cmd.Offset(x, y)).ToArray()));
     }
 
-    /// <summary>Repeat the last repeatC spawns repeatN times (mirrored if reverse), keeping their spacing.</summary>
-    void repeat(double d, int repeatN = 1, int repeatC = 1, bool reverse = false)
+    /// <summary>
+    /// Repeat the last repeatC spawns repeatN times (mirrored if reverse): each group starts gap seconds after the
+    /// one before, and keeps the spacing its ships had.
+    /// </summary>
+    void repeat(double gap, int repeatN = 1, int repeatC = 1, bool reverse = false)
     {
         if (repeatC > array.Count)
             throw new ArgumentException($"repeat copies the last {repeatC} ship(s), but there {(array.Count == 1 ? "is only 1 event" : $"are only {array.Count} events")} above this line.");
         for (int k = 0; k < repeatN * repeatC; k++)
         {
-            double step = k % repeatC == 0
-                ? d
-                : array[^repeatC].Distance - array[^(repeatC + 1)].Distance;
-            if (reverse) mirror(step, -repeatC);
-            else clone(step, -repeatC);
+            time += k % repeatC == 0 ? gap : array[^repeatC].Time - array[^(repeatC + 1)].Time;
+            if (reverse) mirror(-repeatC);
+            else clone(-repeatC);
         }
     }
 
     ObjectCommand move(double x, double y, bool fire = false) =>
         new(c, (float)(x * Playfield.GridX), (float)(y * Playfield.GridY), 0, true, fire);
 
-    ObjectCommand halt(int timer, bool fire = false) =>
-        new(c, Playfield.ViewWidth / 2, Playfield.ViewHeight - 100, timer, false, fire);
+    ObjectCommand halt(double units, bool fire = false) =>
+        new(c, Playfield.ViewWidth / 2, Playfield.ViewHeight - 100, units, false, fire);
 
     ObjectCommand fire() => new(c, 0, 0, 1, false, true);
 }

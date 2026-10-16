@@ -11,7 +11,8 @@
 burst = 0.5                      # a burst is seconds at or above this load; a lull, below it
 intro seconds = 8                # the first seconds of a level aren't checked by rules 3-7
 
-# ---- 1. duration: last spawn + the tuning's "duration tail" (5 s) ----
+# ---- 1. duration: last spawn + the duration tail ----
+duration tail = 5                # seconds after the last spawn that still count as the level (also for the average)
 duration base = 90               # seconds for level 1...
 duration per level = 9           # ...plus this per level after it (level 11 = 3:00)
 duration tolerance = 3           # how far off (seconds) still passes

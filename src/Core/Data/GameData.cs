@@ -149,21 +149,16 @@ public sealed class LevelSet
         }
     }
 
-    /// <summary>The context a level is built and played in: its pace and density at this difficulty.</summary>
-    public LevelContext Context(int level, Rng rng, Tuning tuning, double cps)
-    {
-        var script = level >= 0 && level < Levels.Count ? Levels[level] : null;
-        var c = new LevelContext(rng, tuning, cps, script?.Pace);
-        return script?.Density is { } d ? c with { Density = d[c.DifficultyIndex] } : c;
-    }
+    /// <summary>The context a level is built and played in.</summary>
+    public LevelContext Context(int level, Rng rng, Tuning tuning, double cps) => new(rng, tuning, cps);
 
     public List<LevelEvent> BuildLevel(int level, LevelContext c) => LevelBuilder.Build(Levels[level], c);
 
-    /// <summary>Escorts that keep coming while a boss fight is on, starting from the current distance.</summary>
-    public List<LevelEvent> BuildBossLoop(int boss, LevelContext c, double distance) =>
-        LevelBuilder.Build(BossScripts[$"boss {boss + 1} escorts"], c, distance);
+    /// <summary>Escorts that keep coming while a boss fight is on, starting from the current time.</summary>
+    public List<LevelEvent> BuildBossLoop(int boss, LevelContext c, double time) =>
+        LevelBuilder.Build(BossScripts[$"boss {boss + 1} escorts"], c, time);
 
     /// <summary>The six suicide ships boss 1 launches, positioned relative to the boss art's top-left corner.</summary>
     public List<SpawnEvent> BuildHangar(LevelContext c) =>
-        LevelBuilder.Build(BossScripts["boss 1 hangar"], c, thin: false).Cast<SpawnEvent>().ToList();
+        LevelBuilder.Build(BossScripts["boss 1 hangar"], c).Cast<SpawnEvent>().ToList();
 }

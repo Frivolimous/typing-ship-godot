@@ -133,7 +133,7 @@ footer code { font: 12px var(--mono); color: var(--ink-2); }
   <section class="panel" aria-labelledby="tb-h">
     <div class="panel-head">
       <h2 id="tb-h">The numbers</h2>
-      <p class="note">Average / peak demand as a share of the stated speed, then length, and for the game levels a density to try that should bring the average near the Classic share.</p>
+      <p class="note">Average / peak demand as a share of the stated speed, then the level's length and its last spawn.</p>
     </div>
     <div class="table-wrap"><table id="table"></table></div>
   </section>
@@ -303,8 +303,8 @@ function renderLevels() {
     const xMax = prog ? 100 : Math.ceil(longest / 60) * 60;
     const series = lr.map(r => ({
       name: r.diff + setLabel(r.set), color: colorOf(r.diff), dash: r.set === "classic",
-      pts: r.d.map((v, i) => [prog ? (i + 1) / r.seconds * 100 : i + 1, v]),
-      label: p => `${Math.round(p[1])} WPM` + (prog ? ` at ${fmtTime(p[0] / 100 * r.seconds)}` : ""),
+      pts: r.d.map((v, i) => [prog ? (i + 1) / r.seconds * 100 : i + 1, v, r.w ? r.w[i] : null]),
+      label: p => `${Math.round(p[1])} WPM` + (p[2] != null ? ` · ${p[2]} on screen` : "") + (prog ? ` at ${fmtTime(p[0] / 100 * r.seconds)}` : ""),
     }));
     const xTicks = prog ? [0, 25, 50, 75, 100] : Array.from({ length: xMax / 60 + 1 }, (_, i) => i * 60).filter((t, i, a) => a.length <= 9 || i % 2 === 0);
     lineChart(chart, {
@@ -324,8 +324,8 @@ function renderTable() {
     h += `<tr><td>${level}${BOSS.has(level) ? " ★" : ""}${set === "classic" ? ' <span class="sub">Classic</span>' : ""}</td>`;
     for (const d of diffs) {
       const r = runOf(set, level, d.name);
-      const dens = r.density != null && r.density < 99.5 ? ` · try ${r.density}%` : "";
-      h += `<td>${Math.round(r.avg / r.wpm * 100)}% / ${Math.round(r.peak / r.wpm * 100)}% <span class="sub">${fmtTime(r.seconds)}${dens}</span>${r.cleared ? "" : " ✗"}</td>`;
+      const last = r.lastSpawn != null ? ` · last spawn ${fmtTime(r.lastSpawn)}` : "";
+      h += `<td>${Math.round(r.avg / r.wpm * 100)}% / ${Math.round(r.peak / r.wpm * 100)}% <span class="sub">${fmtTime(r.seconds)}${last}</span>${r.cleared ? "" : " ✗"}</td>`;
     }
     h += "</tr>";
   }

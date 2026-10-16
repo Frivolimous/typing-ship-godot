@@ -4,7 +4,8 @@ using System.Text;
 namespace TypingShip.Core.Tests;
 
 /// <summary>
-/// The Classic levels (the original 12) must keep playing exactly as they did: every level at every difficulty, a
+/// The Classic levels (the original 12, converted to seconds on Hard) must keep playing exactly as recorded: every
+/// level at every difficulty, a
 /// perfect bot on two seeds and a slow bot on one, gives the same per-tick trace as the file classic-traces.txt
 /// records (a hash per run). If a change is meant to alter how the Classic levels play, regenerate the file by
 /// running the tests with UPDATE_CLASSIC_TRACES=1 and say why in the commit.

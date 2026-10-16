@@ -24,12 +24,19 @@ public static class Pacing
     public sealed record Sample(int Second, int Progress, int NewChars, double DemandCps, int WordsOnScreen, int CharsOnScreen,
         int VisibleWords);
 
-    public sealed record Run(int Level, double Cps, bool Cleared, string Line, IReadOnlyList<Sample> Samples)
+    /// <param name="Tail">Seconds after the last spawn that still count as the level (the pacing rules' "duration tail").</param>
+    public sealed record Run(int Level, double Cps, bool Cleared, string Line, IReadOnlyList<Sample> Samples, double Tail = 5)
     {
         public int Seconds => Samples.Count;
         public int TotalChars => Samples.Sum(s => s.NewChars);
-        /// <summary>Average typing speed the whole level asks for.</summary>
-        public double AverageCps => Seconds == 0 ? 0 : TotalChars / (double)Seconds;
+        /// <summary>The level's length for averages: start to the last spawn plus the tail (not the time the last ships
+        /// take to leave).</summary>
+        public int AverageSeconds => Math.Max(1, Math.Min(Seconds, LastSpawnSecond + (int)Math.Round(Tail)));
+        /// <summary>
+        /// Average typing speed the level asks for: the letters of every word that appears, start to last spawn + tail,
+        /// over that time. The one definition of "average", used by the report and the pacing rules alike.
+        /// </summary>
+        public double AverageCps => Samples.Take(AverageSeconds).Sum(s => s.NewChars) / (double)AverageSeconds;
         public double PeakCps => Samples.Count == 0 ? 0 : Samples.Max(s => s.DemandCps);
         /// <summary>Average and peak demand as a share of the difficulty's speed (1 = typing flat out at it).</summary>
         public double AverageRatio => AverageCps / Cps;
@@ -62,7 +69,8 @@ public static class Pacing
             Math.Max(0, g.Player.Health));
     }
 
-    public static Run Measure(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1, bool classic = false)
+    public static Run Measure(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1, bool classic = false,
+        double tail = 5)
     {
         var samples = new List<Sample>();
         var seen = new HashSet<(object, string)>();
@@ -96,10 +104,10 @@ public static class Pacing
             perSecond.Add(newChars);
             int window = perSecond.Skip(Math.Max(0, perSecond.Count - Window)).Sum();
             double demand = window / (double)Math.Min(Window, perSecond.Count);
-            int progress = game.MaxDistance > 0 ? (int)Math.Min(100, game.Distance / game.MaxDistance * 100) : 0;
+            int progress = game.MaxTime > 0 ? (int)Math.Min(100, game.Time / game.MaxTime * 100) : 0;
             samples.Add(new Sample(perSecond.Count, progress, newChars, demand, current.Count, chars, visible));
             newChars = 0;
         });
-        return new Run(level, cps, result.Cleared, result.Line, samples);
+        return new Run(level, cps, result.Cleared, result.Line, samples, tail);
     }
 }
