@@ -7,44 +7,39 @@ public static class Sprites
 {
     static Texture2D T(string name) => GD.Load<Texture2D>($"res://assets/sprites/{name}.png");
 
-    public static readonly Texture2D[] Player = { T("PShip0"), T("PShip1"), T("PShip2") };
+    // The AI-generated placeholder set in assets/sprites/ai/ (point up, drawn at AiScale) replaced the Flash ships,
+    // the mine, the bomber and the missiles. The stealth ship (index 8) still uses its Flash art.
+    public const float AiScale = 0.5f;
+
+    public static readonly Texture2D[] Player = { T("ai/player") };
 
     // Each enemy is a single frame or an animation; index 9 (the invisible "nl" laser) has no art.
     public static readonly Texture2D[]?[] Enemy =
     {
-        new[] { T("Enemy0") },
-        new[] { T("Enemy1") },
-        new[]
-        {
-            T("Enemy2a"), T("Enemy2a"), T("Enemy2a"), T("Enemy2a"), T("Enemy2a"), T("Enemy2b"), T("Enemy2c"),
-            T("Enemy2d"), T("Enemy2d"), T("Enemy2d"), T("Enemy2b"),
-        },
-        new[] { T("Enemy3") },
-        new[] { T("Enemy4") },
-        new[] { T("Enemy5") },
-        new[] { T("Enemy6") },
-        new[] { T("Enemy7") },
+        new[] { T("ai/missile_s") },
+        new[] { T("ai/laser_s") },
+        new[] { T("ai/mine") },
+        new[] { T("ai/missile_m") },
+        new[] { T("ai/laser_m") },
+        new[] { T("ai/bomber") },
+        new[] { T("ai/missile_l") },
+        new[] { T("ai/laser_l") },
         new[] { T("Enemy8") },
         null,
     };
 
-    public static readonly Texture2D[] PMissile = { T("PMiss0"), T("PMiss1"), T("PMiss2") };
-    public static readonly Texture2D[] EMissile = { T("EMiss0"), T("EMiss1"), T("EMiss2") };
+    public static readonly Texture2D[] PMissile = { T("ai/projectile_blue") };
+    public static readonly Texture2D[] EMissile = { T("ai/projectile_red") };
+    // Points right, with the pivot at the centre of its round base (texture pixels from the top left).
+    public static readonly Texture2D Turret = T("ai/turret");
+    public static readonly Vector2 TurretPivot = new(18, 18);
     public static readonly Texture2D[] Nebula = { T("Nebula0"), T("Nebula1"), T("Nebula2") };
     public static readonly Texture2D[] Dash = { T("Dash0"), T("Dash1"), T("Dash2"), T("Dash3"), T("Dash4"), T("Dash5") };
     public static readonly Texture2D[] Back = { T("StarBack0"), T("StarBack1"), T("StarBack2") };
-    public static readonly Texture2D[] Boss = { T("Boss0"), T("Boss1a"), T("Boss2") };
-
-    // SpriteSheets.bRes: boss 0's hangar doors (closed, open, open with ships), boss 1's glow,
-    // boss 2's charge-up frames and its beam (plain, then the three frames of the beam hitting the player's shield).
-    public static readonly Texture2D[] Door = { T("Door0"), T("Door1"), T("Door2") };
-    public static readonly Texture2D Boss1Glow = T("Boss1b");
-    public static readonly Texture2D[] Boss2Charge = { T("Boss2a"), T("Boss2b"), T("Boss2c") };
-    public static readonly Texture2D[] Boss2Beam = { T("Boss2L0"), T("Boss2L1a"), T("Boss2L1c"), T("Boss2L1b") };
 
     static readonly Dictionary<string, Texture2D> named = new();
 
-    /// <summary>A sprite by its linkage name ("Boss0", "Door1"), as the rules name boss art.</summary>
+    /// <summary>A sprite by its path under assets/sprites, as the rules name boss art ("ai/boss0").</summary>
     public static Texture2D Named(string name) => named.TryGetValue(name, out var t) ? t : named[name] = T(name);
 
     /// <summary>Which pixels of a sprite are visible, for the rules (the boss scanner lands on visible pixels).</summary>

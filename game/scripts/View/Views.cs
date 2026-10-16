@@ -68,6 +68,7 @@ public partial class SpriteView : Node2D
         View.Texture = frames?[0];
         View.Scale = new Vector2(scale, scale);
         if (artPointsUp) View.Rotation = Mathf.Pi / 2; // art points up; heading 0 points right
+        EngineFlames.Attach(View);
         AddChild(View);
         AddChild(Word);
         Position = G.V(model.Position);
@@ -300,16 +301,35 @@ public partial class PlayerView : SpriteView
 public partial class BossView : SpriteView
 {
     readonly Boss boss;
-    readonly Sprite2D over = new() { Centered = false };
-    string art, overArt = "";
+    readonly ShaderMaterial glowMaterial = new() { Shader = BossShaders.Glow };
+    readonly Sprite2D? doors;
+    readonly BossBeam? beam;
+    float glow, open;
 
     public BossView(Boss boss) : base(boss, new[] { Sprites.Named(boss.Art) }, boss.SpriteScale, artPointsUp: false)
     {
         this.boss = boss;
-        art = boss.Art;
-        View.Position = G.V(boss.ArtOffset);
-        over.Scale = boss.Index == 2 ? Vector2.One : new Vector2(boss.SpriteScale, boss.SpriteScale);
-        SyncOver();
+        View.Material = glowMaterial;
+        if (boss.Index == 0)
+        {
+            // The hangar doors sit in the game view, over the boss and the ships launched from inside.
+            var mask = Sprites.Named(Boss.HangarArt);
+            doors = new Sprite2D
+            {
+                Texture = mask,
+                Centered = false,
+                Scale = new Vector2(boss.SpriteScale, boss.SpriteScale),
+                Material = new ShaderMaterial { Shader = BossShaders.Doors },
+            };
+            G.UI.GameView.AddChild(doors);
+        }
+        if (boss.Index == 2)
+        {
+            // The beam goes over the boss, out of the cannon's mouth.
+            beam = new BossBeam(boss);
+            G.UI.BossView.AddChild(beam);
+        }
+        Sync();
     }
 
     public BossView() : this(null!) { }
@@ -317,55 +337,132 @@ public partial class BossView : SpriteView
     public override void Sync()
     {
         base.Sync();
-        if (boss.Art != art) View.Texture = Sprites.Named(art = boss.Art);
-        SyncOver();
         Modulate = new Color(1, 1, 1, boss.Alpha);
-        if (over.GetParent() != this) over.Modulate = Modulate;
-    }
-
-    void SyncOver()
-    {
-        var name = boss.Over ?? "";
-        if (name != overArt)
+        if (doors != null)
         {
-            overArt = name;
-            if (name == "") over.GetParent()?.RemoveChild(over);
-            else
+            doors.Position = G.V(boss.TopLeft);
+            doors.Modulate = Modulate;
+            if (boss.Health == 0 && doors.GetParent() != G.UI.BossView)
             {
-                over.Texture = Sprites.Named(name);
-                if (over.GetParent() == null)
-                {
-                    switch (boss.Index)
-                    {
-                        // The hangar doors sit in the game view, over the boss and the ships launched from behind them.
-                        case 0: G.UI.GameView.AddChild(over); break;
-                        case 1: AddChild(over); break;
-                        // The beam is behind the boss, from the gun at the bottom.
-                        default: G.UI.BossView.AddChild(over); G.UI.BossView.MoveChild(over, 0); break;
-                    }
-                }
+                // The doors fade out with the boss.
+                doors.GetParent().RemoveChild(doors);
+                G.UI.BossView.AddChild(doors);
             }
         }
-        over.Position = boss.Index switch
+        beam?.QueueRedraw();
+    }
+
+    public override void _Process(double delta)
+    {
+        float d = (float)delta;
+        // Boss 2's guns flare as it fires; boss 3's cannon brightens with each charge stage and blazes while firing.
+        float target = boss.Index switch
         {
-            0 => G.V(boss.TopLeft),
-            1 => -G.V(boss.ViewSize) / 2,
-            _ => new Vector2(43, 160),
+            1 => boss.Glowing ? 1 : 0,
+            2 when boss.BeamFrame >= 0 => 1.2f + 0.3f * G.Rand(),
+            2 => boss.ChargeStage * 0.3f + (boss.ChargeStage > 0 ? 0.15f * G.Rand() : 0),
+            _ => 0,
         };
-        if (boss.Index == 0 && over.GetParent() != null && boss.Health == 0 && over.GetParent() != G.UI.BossView)
+        glow = Mathf.MoveToward(glow, target, d * 6);
+        glowMaterial.SetShaderParameter("glow", glow);
+        if (doors != null)
         {
-            // The doors fade out with the boss.
-            over.GetParent().RemoveChild(over);
-            G.UI.BossView.AddChild(over);
+            open = Mathf.MoveToward(open, boss.DoorsOpen ? 1 : 0, d * 3);
+            ((ShaderMaterial)doors.Material).SetShaderParameter("open", open);
         }
     }
 
     public override void Detach()
     {
-        if (over.GetParent() != this) over.GetParent()?.RemoveChild(over);
-        over.QueueFree();
+        doors?.GetParent()?.RemoveChild(doors);
+        doors?.QueueFree();
+        beam?.GetParent()?.RemoveChild(beam);
+        beam?.QueueFree();
         base.Detach();
     }
+}
+
+/// <summary>Boss 3's beam, from its cannon to the player (or splashing on the player's shield).</summary>
+public partial class BossBeam : Node2D
+{
+    const float ShieldRadius = 50;
+    readonly Boss boss;
+
+    public BossBeam(Boss boss) => this.boss = boss;
+
+    public BossBeam() : this(null!) { }
+
+    public override void _Draw()
+    {
+        int frame = boss.BeamFrame;
+        if (frame < 0) return;
+        var from = G.V(boss.Muzzle);
+        var player = G.V(G.Model.Player.Position);
+        var to = frame == 0 ? player : player + new Vector2(0, -ShieldRadius);
+        float wobble = 1 + 0.15f * G.Rand();
+        DrawLine(from, to, new Color(0.2f, 0.8f, 1, 0.25f), 34 * wobble);
+        DrawLine(from, to, new Color(0.3f, 0.9f, 1, 0.6f), 20 * wobble);
+        DrawLine(from, to, new Color(0.85f, 1, 1), 8 * wobble);
+        DrawCircle(from, 16 * wobble, new Color(0.6f, 0.95f, 1, 0.8f));
+        if (frame > 0)
+        {
+            // The splash on the shield grows and shrinks over the three frames.
+            float r = 14 + 6 * frame;
+            DrawSetTransform(to, 0, new Vector2(1.6f, 0.6f));
+            DrawCircle(Vector2.Zero, r * 1.4f, new Color(0.3f, 0.9f, 1, 0.35f));
+            DrawCircle(Vector2.Zero, r, new Color(0.85f, 1, 1, 0.9f));
+            DrawSetTransform(Vector2.Zero);
+        }
+    }
+}
+
+static class BossShaders
+{
+    /// <summary>Brightens the art's cyan parts (cores, tubes, gun rings) by <c>glow</c>.</summary>
+    public static readonly Shader Glow = new()
+    {
+        Code = """
+            shader_type canvas_item;
+            uniform float glow = 0.0;
+            void fragment() {
+                vec4 c = COLOR;
+                // Only the bright, saturated cyan lights: boss 2's teal hull stays put.
+                float cyan = smoothstep(0.35, 0.6, min(c.g, c.b) - c.r);
+                c.rgb += glow * cyan * vec3(0.45, 0.85, 1.0);
+                COLOR = c;
+            }
+            """,
+    };
+
+    /// <summary>
+    /// Boss 1's hangar doors, drawn over the opening mask: a slatted shutter that rolls up into the top of each opening
+    /// as <c>open</c> goes from 0 to 1, with a hazard-striped leading edge.
+    /// </summary>
+    public static readonly Shader Doors = new()
+    {
+        Code = """
+            shader_type canvas_item;
+            uniform float open = 0.0;
+            // The openings' top and bottom rows on the mask, as UV.y.
+            uniform float top = 0.21;
+            uniform float bottom = 0.69;
+            void fragment() {
+                float a = texture(TEXTURE, UV).a;
+                float v = (UV.y - top) / (bottom - top);
+                float edge = 1.0 - open;
+                if (a < 0.5 || v > edge) discard;
+                vec2 px = UV / TEXTURE_PIXEL_SIZE;
+                float slat = fract((v + open) * 14.0);
+                vec3 col = mix(vec3(0.13, 0.27, 0.19), vec3(0.2, 0.38, 0.27), smoothstep(0.0, 0.5, slat));
+                col *= slat > 0.9 ? 0.55 : 1.0;
+                if (edge - v < 0.06) {
+                    bool stripe = mod((px.x + px.y) / 12.0, 2.0) < 1.0;
+                    col = stripe ? vec3(0.85, 0.68, 0.22) : vec3(0.08, 0.08, 0.08);
+                }
+                COLOR = vec4(col * COLOR.rgb, COLOR.a);
+            }
+            """,
+    };
 }
 
 /// <summary>The scanner ring on a boss, closing in as its words are typed.</summary>

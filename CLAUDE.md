@@ -34,7 +34,7 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
 | `src/Core/` | **The rules**, plain C# with no Godot reference (a test checks): `Game` (state, the 24 Hz tick, weapons, typing), entities, bosses, the bot (`AutoTyper`), `Simulator`, the RNG, save data and scoring. `Levels/` parses and builds level files; `Data/` loads and checks the data files |
 | `tests/Core.Tests/` | xUnit tests of the rules and data files |
 | `game/` | The Godot project: presentation and input only |
-| `data/` | words.txt, tuning.txt, typing-test.txt (the typing test's passages), levels/ (read from disk in a checkout, embedded in the game assembly for exports) |
+| `data/` | words.txt, tuning.txt, typing-test.txt (the typing test's passages), engines.txt (where engine flames sit on each sprite), levels/ (read from disk in a checkout, embedded in the game assembly for exports) |
 | `docs/`, `reference/` | Docs; the original AS3 (read-only) |
 
 ## Architecture
@@ -93,6 +93,8 @@ tests/Core.Tests. The rest of the testing happens through the dev flags in docs/
 ## Assets
 
 `game/assets/` holds what was extracted from the original `Typing Ship.fla` (a CS6 zip), named by their AS3 linkage
-class names (`Enemy0.png`, `LaserS.wav`, `Music2.wav`). **Music is git-ignored** (Jeremy keeps it backed up
+class names (`Enemy0.png`, `LaserS.wav`, `Music2.wav`). `game/assets/sprites/ai/` holds AI-generated placeholder
+art (ships point up; the bosses are animated in code), cut out from sources in `C:\JS Projects\Typing Ship PUB\art\ai-sprites\`.
+When ship art changes, move its flames in data/engines.txt. **Music is git-ignored** (Jeremy keeps it backed up
 elsewhere). Code must keep working when `game/assets/music/` is empty, and nothing should start tracking those files. The `.fla` and the raw art sources live outside the repo:
 `C:\JS Projects\Typing Ship PUB\` and `C:\JS Projects\Typing Ship\` (Audio/, Bitmaps/, Vector/).

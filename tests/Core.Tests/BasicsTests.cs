@@ -46,9 +46,9 @@ public class ArtMaskTests
     [Fact]
     public void Reads_boss_art_from_png()
     {
-        var boss = TestData.Art["Boss0"];
-        Assert.Equal(1000, boss.Width);
-        Assert.Equal(571, boss.Height);
+        var boss = TestData.Art["ai/boss0"];
+        Assert.Equal(938, boss.Width);
+        Assert.Equal(494, boss.Height);
         Assert.False(boss.Opaque(0, 0)); // a transparent corner
         Assert.True(boss.Opaque(boss.Width / 2f, boss.Height / 2f)); // the hull in the middle
         Assert.False(boss.Opaque(-1, 5));
@@ -58,7 +58,7 @@ public class ArtMaskTests
     [Fact]
     public void Random_pixel_is_always_opaque()
     {
-        var mask = TestData.Art["Boss1a"];
+        var mask = TestData.Art["ai/boss1"];
         var rng = new Rng(3);
         for (int i = 0; i < 200; i++)
         {

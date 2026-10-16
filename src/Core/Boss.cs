@@ -19,20 +19,31 @@ public sealed class Boss : Sprite
     public int Index;
     /// <summary>Counter-words typed during boss 3's beam (Game.ShootInstant).</summary>
     public int Count;
-    /// <summary>The boss art showing now ("Boss0", "Boss1a", "Boss2", or boss 3's charge frames "Boss2a"-"Boss2c").</summary>
-    public string Art;
-    /// <summary>The overlay art showing (hangar doors, boss 2's glow, boss 3's beam), or null.</summary>
-    public string? Over;
+    /// <summary>The boss art, by sprite name. The view animates it from the state below.</summary>
+    public readonly string Art;
+    /// <summary>Boss 1: the hangar doors are open.</summary>
+    public bool DoorsOpen;
+    /// <summary>Boss 2: its guns are flaring.</summary>
+    public bool Glowing;
+    /// <summary>Boss 3: how far its cannon has charged (0 idle, 1-3).</summary>
+    public int ChargeStage;
+    /// <summary>Boss 3: the beam showing (-1 none, 0 the plain beam, 1-3 the frames of it hitting the player's shield).</summary>
+    public int BeamFrame = -1;
     /// <summary>The art's scale in the game view.</summary>
     public readonly float SpriteScale;
-    /// <summary>Where the art is drawn relative to Position (boss 3's art is 12 px off centre).</summary>
-    public readonly Vec2 ArtOffset;
     readonly List<Sprite> objects = new();
     int delay = -1;
     readonly int five;
     readonly LevelContext c;
 
-    public static readonly string[] Arts = { "Boss0", "Boss1a", "Boss2" };
+    public static readonly string[] Arts = { "ai/boss0", "ai/boss1", "ai/boss2" };
+    /// <summary>Boss 1's hangar openings (behind the doors), on its art.</summary>
+    public const string HangarArt = "ai/boss0_hangar";
+    /// <summary>Boss 2's six gun muzzles, in art pixels: the turrets it drops start there.</summary>
+    static readonly Vec2[] GunPorts =
+        { new(143, 354), new(265, 375), new(390, 481), new(578, 481), new(703, 375), new(825, 353) };
+    /// <summary>Boss 3's cannon muzzle, in art pixels.</summary>
+    static readonly Vec2 MuzzleArt = new(469, 342);
 
     public Boss(Game game, int i, LevelContext c) : base(game)
     {
@@ -47,18 +58,13 @@ public sealed class Boss : Sprite
         Art = Arts[i];
         switch (Index)
         {
-            case 0: Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 100)); SpriteScale = 0.5f; break;
-            case 1: Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 170)); SpriteScale = 0.7f; break;
-            default: Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 170)); SpriteScale = 0.5f; break;
+            case 0: Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 100)); SpriteScale = 0.53f; break;
+            case 1: Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 170)); SpriteScale = 0.48f; break;
+            default: Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 170)); SpriteScale = 0.42f; break;
         }
         Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 500, t.BossFirstAttack, false, true));
 
         Init(Playfield.ViewWidth / 2, -50, MathF.PI / 2, 0.1f, 0, true);
-        switch (Index)
-        {
-            case 0: Over = "Door0"; break;
-            case 2: ArtOffset = new Vec2(12, 0); break;
-        }
     }
 
     /// <summary>Ticks until the last hit of boss 3's beam (until then a counter-word still blocks one), or -1.</summary>
@@ -68,7 +74,10 @@ public sealed class Boss : Sprite
     public Vec2 ViewSize => Game.Art[Art].Size * SpriteScale;
 
     /// <summary>Top-left corner of the art in game-view space.</summary>
-    public Vec2 TopLeft => Position + ArtOffset - ViewSize / 2;
+    public Vec2 TopLeft => Position - ViewSize / 2;
+
+    /// <summary>Boss 3's cannon muzzle in game-view space, where the beam comes from.</summary>
+    public Vec2 Muzzle => TopLeft + MuzzleArt * SpriteScale;
 
     public override bool MoreUpdate()
     {
@@ -94,8 +103,8 @@ public sealed class Boss : Sprite
                 else
                 {
                     delay--;
-                    if (delay == 35) Over = "Boss1b";
-                    else if (delay == 20) Over = null;
+                    if (delay == 35) Glowing = true;
+                    else if (delay == 20) Glowing = false;
                 }
                 break;
             case 2: UpdateBeam(); break;
@@ -135,20 +144,11 @@ public sealed class Boss : Sprite
                     ship.Position += TopLeft;
                     Game.Events.Spawned(ship, Layer.Back);
                 }
-                Over = "Door1";
+                DoorsOpen = true;
                 delay = 20;
                 break;
             case 1:
-                var port = (int)(Game.Rng.Rand() * 6) switch
-                {
-                    0 => new Vec2(96, 115),
-                    1 => new Vec2(205, 235),
-                    2 => new Vec2(250, 185),
-                    3 => new Vec2(390, 185),
-                    4 => new Vec2(430, 235),
-                    _ => new Vec2(540, 115),
-                };
-                var p = TopLeft + port * SpriteScale;
+                var p = TopLeft + GunPorts[(int)(Game.Rng.Rand() * 6)] * SpriteScale;
                 var spawn = new SpawnEvent(c, 0, Health > 1 ? "nln" : "nls", p.X, p.Y,
                 [
                     new ObjectCommand(c, p.X, 500, Health > 1 ? 1 : 3, false),
@@ -157,7 +157,7 @@ public sealed class Boss : Sprite
                 Game.Objects.Add(Game.Spawn(spawn));
                 break;
             case 2:
-                Art = "Boss2a";
+                ChargeStage = 1;
                 Game.Events.Sound(GameSound.BossCharge);
                 Count = 0;
                 delay = five * 44;
@@ -172,11 +172,11 @@ public sealed class Boss : Sprite
         {
             if (delay == 10)
             {
-                if (objects.Count == 0) Over = "Door1";
+                if (objects.Count == 0) DoorsOpen = true;
             }
             else if (delay == 1)
             {
-                Over = objects.Count > 0 ? "Door2" : "Door0";
+                DoorsOpen = objects.Count > 0;
             }
             delay--;
         }
@@ -200,18 +200,18 @@ public sealed class Boss : Sprite
         else if (delay == five * 40) MakeCounter(-75, -20);
         else if (delay == five * 36)
         {
-            Art = "Boss2b";
+            ChargeStage = 2;
             Game.Events.Sound(GameSound.BossCharge);
         }
         else if (delay == five * 28)
         {
-            Art = "Boss2c";
+            ChargeStage = 3;
             Game.Events.Sound(GameSound.BossCharge);
         }
         else if (delay == five * 20)
         {
             // The original left a stale shield frame here if the last beam ended with counters unused.
-            Over = Count > 0 ? "Boss2L1a" : "Boss2L0";
+            BeamFrame = Count > 0 ? 1 : 0;
             Game.Events.Sound(GameSound.BossFire);
         }
         else if (delay < five * 15)
@@ -219,7 +219,7 @@ public sealed class Boss : Sprite
             if (delay % 5 == 0)
             {
                 if (Count == 0) Game.Events.BeamHitsPlayer();
-                else Over = BeamFrames[delay / 5 % 3 + 1];
+                else BeamFrame = delay / 5 % 3 + 1;
             }
             if (delay % (five * 4) == 0)
             {
@@ -230,7 +230,7 @@ public sealed class Boss : Sprite
                     player.SetShieldAlpha(player.ShieldAlpha - 0.2f);
                     if (Count == 0)
                     {
-                        Over = BeamFrames[0];
+                        BeamFrame = 0;
                         player.RemoveShield();
                     }
                 }
@@ -242,8 +242,8 @@ public sealed class Boss : Sprite
             if (delay == 0)
             {
                 player.RemoveShield();
-                Over = null;
-                Art = Arts[2];
+                BeamFrame = -1;
+                ChargeStage = 0;
                 foreach (var o in objects)
                     if (!o.Removed) o.Remove();
                 objects.Clear();
@@ -251,9 +251,6 @@ public sealed class Boss : Sprite
         }
         delay--;
     }
-
-    /// <summary>The beam: plain, then the three frames of it hitting the player's shield.</summary>
-    static readonly string[] BeamFrames = { "Boss2L0", "Boss2L1a", "Boss2L1c", "Boss2L1b" };
 
     /// <summary>A counter-word next to the player. Typing it (Game.ShootInstant) blocks one beam hit.</summary>
     void MakeCounter(float x, float y)
@@ -272,7 +269,7 @@ public sealed class Boss : Sprite
     public override void Remove()
     {
         Scanner?.Remove();
-        Over = null;
+        BeamFrame = -1;
         RecycleWord();
         Game.Boss = null;
         Detach();
@@ -314,13 +311,13 @@ public sealed class Scanner : Entity
         var t = game.Tuning;
         WordSize = t.ScannerWord;
         AddWord();
-        // A random visible pixel of the boss (not behind boss 1's hangar doors), away from the bottom and left edges.
+        // A random visible pixel of the boss (not in boss 1's hangar), away from the bottom and left edges.
         Vec2 p;
         var art = game.Art[v.Art];
         do
         {
             var px = art.RandomOpaquePixel(game.Rng);
-            if (v.Index == 0 && game.Art["Door0"].Opaque(px.X, px.Y))
+            if (v.Index == 0 && game.Art[Boss.HangarArt].Opaque(px.X, px.Y))
             {
                 p = new Vec2(0, 500);
                 continue;

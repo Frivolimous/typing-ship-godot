@@ -107,7 +107,7 @@ public sealed class ArtMask
     }
 }
 
-/// <summary>The art masks the rules need, by sprite name (the original's linkage names: "Boss0", "Door0", ...).</summary>
+/// <summary>The art masks the rules need, by sprite name ("ai/boss0", "ai/boss0_hangar", ...).</summary>
 public sealed class ArtLibrary
 {
     readonly Dictionary<string, ArtMask> masks = new();

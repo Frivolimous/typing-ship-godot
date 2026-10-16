@@ -22,6 +22,7 @@ public partial class Main : Node2D
         try
         {
             data = DataFiles.Load();
+            EngineMounts.Load(DataFiles.Source);
         }
         catch (DataError e)
         {

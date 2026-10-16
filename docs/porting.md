@@ -102,7 +102,10 @@ ported, what's left, where the port deliberately differs from the original, and 
      - Word packs only: no menu translation.
    - Larger word lists are needed anyway: higher densities run the current 9- and 10-letter lists dry.
 7. **Visual overhaul:** new art and fonts, side-panel HUD and decoration, effects (shaders, particles, screen
-   shake), and UI polish. Make it look as good as possible.
+   shake), and UI polish. Make it look as good as possible. **Started:** AI-generated placeholder art for the
+   player, the enemies, the missiles and the three bosses (game/assets/sprites/ai/; the bosses are animated in code:
+   hangar doors, gun glow, cannon charge, beam); engine flames placed by data/engines.txt; new explosions (flash,
+   shockwave, fireballs, sparks, smoke) and a three-layer starfield.
 8. **Placeholder cleanup:** replace the Flash-portal leftovers ("submit high score", "display high score", the
    sponsor link and "More games") with real features or remove them. Done just before Steam, because
    leaderboards are the likely replacement for submitting high scores.
@@ -128,7 +131,7 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 | EnemyShip, PlayerShip, Missile, Turret | Entities.cs | View/Views.cs, View/Presenter.cs |
 | Charge, ShieldView, StealthEffect | Entities.cs (the charge timer, the shield flag, the fade-in count) | View/Views.cs (ChargeGlow), View/ShieldView.cs, Fx/Effects.cs |
 | ScrambleObject | Scramble.cs | Unused, as in the original |
-| Starfield, Star, Particle, Nebula | | Fx/Starfield.cs |
+| Starfield, Star, Particle, Nebula | | Fx/Starfield.cs (stars, nebulae), Fx/Explosions.cs (the particles); engine flames in Fx/EngineFlames.cs + data/engines.txt |
 | LaserEffect, EMPEffect | | Fx/Effects.cs (BeamEffect) |
 | PopScore, Overflow | Entities.cs (Overflow); the score itself in Game | Fx/Effects.cs (PopScore) |
 | GameUI, ShipSystem, PopWarning | Entities.cs (Hull: the repair word) | UI/GameUI.cs (HUD, HullBar) |
@@ -188,7 +191,10 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   explosion went off near the top-left corner of the game view.
 - **Boss 2's beam** starts from its plain frame each time. The original could keep showing a shield-hit frame from
   the previous beam if that one ended with counter-words left over.
-- **Boss 2's scanner and death explosions** land on the art. The original ignored the art's 12 px offset.
+- **The bosses' new art moves where things happen**, in Classic too (Jeremy's call: the old positions aren't kept,
+  not even for reference). The scanner and death explosions land on the new art, the turrets drop from boss 1's six
+  gun muzzles, boss 0's ships launch from inside its two hangars (data/levels/*/bosses.txt), and the bosses' sizes
+  changed a little. The Classic boss traces were re-recorded for it.
 - **Counter-word while the shield is fading:** typing one of boss 2's counter-words while the player's shield is
   fading out brings the shield back. The original added to the fading shield, which then vanished anyway.
 - **"chameleon"** recolours the player's ship with a shader: a random hue rotation (Flash's luminance-weighted

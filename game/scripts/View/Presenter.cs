@@ -47,7 +47,7 @@ public sealed class Presenter : IGameEvents
         SpriteView view = s switch
         {
             EnemyShip e => new EnemyShipView(e),
-            Missile m => new SpriteView(m, m.FromPlayer ? Sprites.PMissile : Sprites.EMissile, 0.1f),
+            Missile m => new SpriteView(m, m.FromPlayer ? Sprites.PMissile : Sprites.EMissile, Sprites.AiScale),
             Superman => new SpriteView(s, new[] { Sprites.Superman }, 0.2f),
             Boss b => new BossView(b),
             _ => new SpriteView(s, null, 0.2f), // boss 3's counter-words: just a word
