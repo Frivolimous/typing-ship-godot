@@ -450,8 +450,8 @@ public partial class BossView : SpriteView
         }
         if (boss.Index == 2)
         {
-            // The beam goes over the boss, out of the cannon's mouth.
-            beam = new BossBeam(boss);
+            // The beam goes over the boss, out of the cannon's mouth (drawn above it: the boss joins its layer after this).
+            beam = new BossBeam(boss) { ZIndex = 1 };
             G.UI.BossView.AddChild(beam);
         }
         Sync();
