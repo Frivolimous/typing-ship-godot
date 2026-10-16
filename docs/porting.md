@@ -111,9 +111,9 @@ ported, what's left, where the port deliberately differs from the original, and 
    and the score pop-ups; banners mark a level's start, a boss's arrival and a cleared level; the player's death is a
    short sequence of explosions ending in one big blast; and a bloom (HDR 2D, Fx/ScreenFx.cs) makes overbright light
    glow. The "Low Health!" text is gone: the cockpit rim and the hull pips show it.
-8. **Placeholder cleanup:** replace the Flash-portal leftovers ("submit high score", "display high score", the
-   sponsor link and "More games") with real features or remove them. Done just before Steam, because
-   leaderboards are the likely replacement for submitting high scores.
+8. **Placeholder cleanup:** ~~replace the Flash-portal leftovers ("submit high score", "display high score", the
+   sponsor link and "More games") with real features or remove them.~~ Removed (Jeremy, with the screens restyle);
+   the title shows the best total score instead. Leaderboards come with Steam (phase 9).
 9. **Steam integration:** Steamworks, achievements, cloud saves, Steam Deck support and store builds, plus
    the endless and daily leaderboards and Workshop word lists from phase 6. See
    [release-checklist.md](release-checklist.md).
@@ -184,10 +184,17 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   it as "Explorer", a bug.
 - **Escape counts as pausing "without clicking"** for the silver Explorer medal, as typing "pause" does.
 - **The difficulty box stays on the stage.** Next to level 5 it hung off the right edge.
-- **Flash-portal stubs** (submit and display high score, the sponsor link, More games) show the original's
-  placeholder messages until phase 8. The sponsor link still gives the bronze Explorer medal.
+- **No Flash-portal stubs:** submit and display high score, the sponsor link and More games are gone. The bronze
+  Explorer medal, which the sponsor link gave, is now for viewing the credits.
+- **The screens outside a level are new** (phase 7), in the cockpit's style over the moving starfield: the title
+  (the player's ship, which launches off the top when you START), a level map drawn in code (a star chart with the
+  route lit as far as you've reached, the bosses' own ships as their nodes, health and accuracy medal icons), the
+  mission report, game over, achievements (medals), credits (as text, from the original's picture), the typing
+  test (a miss flashes the passage's frame instead of a big red cross) and the message box. The fades between
+  screens are dark rather than white or black, except the white flash into a level.
+- **RETRY on the game-over screen** (new): the same level again, at the same difficulty.
 - The score screen's count-up runs at 60 steps a second (the original's 10 ms timer, which Flash capped at about
-  that). Its number column is right-aligned at x = 520; the original's autosized fields can't be reproduced exactly.
+  that).
 - **The "New Achievement" pop-up** shows under "FINAL SCORE:" on the score screen, where the original's top-centre
   spot would cover the "Level N Complete!" title. Elsewhere it's at the top centre as before.
 - **"superman" ends.** The cheat's hero is removed once it has flown off the top. The original kept it in the object

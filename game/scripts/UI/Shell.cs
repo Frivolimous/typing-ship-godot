@@ -6,6 +6,9 @@ namespace TypingShip;
 // pop-ups over everything, and keyboard input outside the game. The game itself (GameUI) is "no screen".
 public partial class Shell : Control, IViewTicker
 {
+    /// <summary>The fade between screens: a deep blue-black (white is kept for launching into a level).</summary>
+    public static readonly Color Dark = new(0.01f, 0.02f, 0.04f);
+
     public MenuUI Menu = null!;
     public ScoreUI Score = null!;
     public GameOverUI GameOver = null!;
@@ -20,13 +23,13 @@ public partial class Shell : Control, IViewTicker
     readonly Control screens = new() { MouseFilter = MouseFilterEnum.Ignore };
     readonly Control popups = new() { MouseFilter = MouseFilterEnum.Ignore };
     readonly ColorRect fade = new() { Size = new Vector2(G.StageSize, G.StageSize), Visible = false, MouseFilter = MouseFilterEnum.Stop };
-    readonly MenuBox tempBox = new("", 50, 50, 450, 450, 40);
+    // What's been typed on a menu screen, at the top: the words act like clicking a button.
     readonly Label typed = new()
     {
-        Position = new Vector2(0, 2),
+        Position = new Vector2(0, 4),
         Size = new Vector2(G.StageSize, 20),
         HorizontalAlignment = HorizontalAlignment.Center,
-        LabelSettings = Fonts.Settings(Fonts.Word, 15, Palette.Gold, 3),
+        LabelSettings = Fonts.Settings(Fonts.Word, 14, new Color(0.55f, 1, 0.85f), 4, new Color(0, 0, 0, 0.8f)),
         MouseFilter = MouseFilterEnum.Ignore,
     };
 
@@ -63,7 +66,6 @@ public partial class Shell : Control, IViewTicker
         AddChild(typed);
         AddChild(fade);
         AddChild(popups);
-        popups.AddChild(tempBox);
         G.Ctrl.AddTicker(this);
         G.Ctrl.LevelOver += OnLevelOver;
     }
@@ -123,6 +125,7 @@ public partial class Shell : Control, IViewTicker
     {
         if (fade.Visible) TransitionTick();
         current?.OnTick();
+        if (current != null) G.Starfield.Update(); // the stars keep drifting behind the menus
         return true;
     }
 
@@ -163,12 +166,12 @@ public partial class Shell : Control, IViewTicker
     {
         if (cleared)
         {
-            Go(Score, Colors.White);
+            Go(Score, Dark);
             return;
         }
         G.Model.RecordLoss(); // a lost level still keeps its best score
         GameOver.AddLose();
-        Go(GameOver, Colors.Black, 3);
+        Go(GameOver, Dark, 3);
     }
 
     /// <summary>Space on the score screen: the victory credits after the last level, otherwise the map.</summary>
@@ -180,20 +183,7 @@ public partial class Shell : Control, IViewTicker
             Victory.Run();
             Go(Victory, Colors.White);
         }
-        else Go(Menu, Colors.White);
-    }
-
-    public void ShowBox(string text)
-    {
-        tempBox.Message = text;
-        tempBox.Visible = true;
-    }
-
-    /// <summary>Facade.goSponsor: a placeholder for the sponsor link, worth the first explorer tier.</summary>
-    public void GoSponsor()
-    {
-        if (G.Model.Save.Achieve[Achievement.Explorer] == 0) G.Model.Award(Achievement.Explorer, 1);
-        ShowBox(Strings.SponsorStub);
+        else Go(Menu, Dark);
     }
 
     public void AddPopup(Control c) => popups.AddChild(c);
@@ -213,12 +203,6 @@ public partial class Shell : Control, IViewTicker
             return;
         }
 
-        if (tempBox.Visible)
-        {
-            tempBox.Close();
-            GetViewport().SetInputAsHandled();
-            return;
-        }
         if (InGame || current == null) return;
         GetViewport().SetInputAsHandled();
         if (Transitioning || current.OnKey(key)) return;

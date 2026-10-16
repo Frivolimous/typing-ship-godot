@@ -14,7 +14,7 @@ public static class Strings
         new[] { "IT'S A BIRD, IT'S A PLANE, IT'S...", "JAPANESE DEATH PILOT'S SCREAM", "NATURE'S MASTER OF DISGUISE" },
         new[] { "COMPLETE ANY LEVEL WITH PERFECT HEALTH", "ACHIEVE 5 GOLD HEALTH MEDALS", "FINISH EVERY LEVEL WITH PERFECT HEALTH" },
         new[] { "COMPLETE ANY LEVEL KILLING EVERY SHIP", "ACHIEVE 5 GOLD ACCURACY MEDALS", "FINISH EVERY LEVEL WITH PERFECT ACCURACY" },
-        new[] { "VISIT OUR SPONSORS", "PAUSE THE GAME WITHOUT CLICKING", "KILL SUPERMAN" },
+        new[] { "VIEW THE CREDITS", "PAUSE THE GAME WITHOUT CLICKING", "KILL SUPERMAN" },
     };
 
     public static readonly string[] Tiers = { "", "BRONZE", "SILVER", "GOLD" };
@@ -23,9 +23,7 @@ public static class Strings
     // Score screen
     public const string LevelScore = "LEVEL SCORE: ", DiffBonus = "DIFFICULTY BONUS x", HealthBonus = "HEALTH BONUS x",
         HealthPerfect = "PERFECT HEALTH x", AccBonus = "ACCURACY BONUS x", AccPerfect = "PERFECT ACCURACY x",
-        FinalScore = "FINAL SCORE: ", Spacebar = "HIT SPACEBAR TO CONTINUE";
-
-    public static string LevelComplete(int i) => $"Level {i} Complete!";
+        FinalScore = "FINAL SCORE", Spacebar = "PRESS SPACE TO CONTINUE";
 
     // In game
     public const string Paused = "-PAUSED-", Yes = "YES", No = "NO";
@@ -34,20 +32,27 @@ public static class Strings
     public static readonly string[] Diffs = { "EASY", "NORMAL", "HARD", "EXTREME", "INSANE" };
 
     // Game over screen
-    public const string Menu = "MENU", HsSubmit = "SUBMIT SCORE", MoreGames = "MORE GAMES",
-        WonGame = "Congratulations!  You won the game!", LoseGame = "You have been destroyed!";
+    public const string Menu = "MENU", WonGame = "VICTORY", LoseGame = "SHIP DESTROYED";
 
     // Map and menus
     public const string Health = "HEALTH", Accuracy = "ACCURACY", Skip = "SKIP", TypingTest = "TYPING TEST";
-
-    // Facade's stand-ins for the Flash-portal features (phase 8 replaces them).
-    public const string HighscoreStub = "This will display the high score.", SubmitStub = "This will submit the high score.",
-        SponsorStub = "This will lead to the sponsor's website.";
 
     // Typing test (the passages are in data/typing-test.txt)
     public const string TestHint = "Type the text. The clock starts with your first key.";
     public static string TestResult(int wpm, int accuracy, string difficulty) =>
         $"Net speed: {wpm} WPM\nAccuracy: {accuracy}%\nSuggested: {difficulty}";
+
+    /// <summary>The credits screen: each role and who did it (from the original's credits picture).</summary>
+    public static readonly (string Heading, string Names)[] Credits =
+    {
+        ("PROGRAMMING AND DESIGN", "YERMIYAH HORNICK"),
+        ("ART", "AVI KENTRIDGE"),
+        ("MUSIC", "BINYAMIN HORNICK"),
+        ("DESIGN CONSULTANT", "XELU"),
+        ("FONTS", "ORBITRON BY THE ORBITRON PROJECT AUTHORS, JETBRAINS MONO BY JETBRAINS (SIL OPEN FONT LICENSE)"),
+        ("SPECIAL THANKS", "GOD, MOM, A. WALKER, DAVEY KOFSKY, DAMON KENTRIDGE, MICHELLE KENTRIDGE, GABRIEL MENRIX, MAX JACKEL, " +
+            "EDWARD GEIN, KUROSAI, AND YOU!"),
+    };
 
     public const string FinalCredits =
         "As the debris settles in the depths of space a heavy sigh of relief washes across all the people of earth.  " +

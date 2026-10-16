@@ -7,9 +7,9 @@ Things that must be settled before a commercial Steam release.
 - [ ] **Fonts.** The original used Consolas, Arial, Rosewood, Rocket Script, Quixley LET and Lily UPC, none
       licensed for embedding in a paid game. The port reads Consolas and Arial from the system as placeholders
       (game/scripts/Core/Fonts.cs). Replace them with bundled fonts under a suitable licence (e.g. OFL), and keep each
-      licence file in the repo. **Partly done:** the in-game HUD and the words use bundled OFL fonts, Orbitron and
-      JetBrains Mono, with their licences in game/assets/fonts/. The menus, pop-ups and tutorials still use the
-      system fonts. Credit the bundled fonts' authors where the credits list third-party assets.
+      licence file in the repo. **Done for everything players see:** bundled OFL fonts, Orbitron and JetBrains Mono,
+      with their licences in game/assets/fonts/ and credited on the credits screen. Only the dev level editor still
+      reads Arial from the system.
 - [ ] **Art.** The original art is by Avi Kentridge. Get permission to use it, or replace it all.
 - [ ] **Music.** The original music is by Binyamin Hornick. Get permission, and decide whether to keep or
       replace the tracks.

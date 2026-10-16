@@ -89,43 +89,45 @@ public partial class Screen : Control
     }
 }
 
-// UIButton: a text button that lights up under the mouse. Its typed word is its first word, lower-cased.
+// UIButton: a text button that lights up under the mouse. Its typed word is its first word, lower-cased, unless given.
 public partial class TextButton : Label
 {
     readonly Action output;
     readonly LabelSettings normal, over;
     public readonly string Word;
 
-    /// <param name="simple">The original's plain style (title font, white with a coloured glow); otherwise the
-    /// bevelled ROSE_FONT style, in the colour itself.</param>
-    public TextButton(string text, Action f, Color? c1 = null, Color? c2 = null, bool simple = false, string? word = null)
-    {
-        Color a = c1 ?? Palette.Blue, b = c2 ?? (c1 == null ? Palette.BlueOver : a);
-        Text = text;
-        Word = word ?? text.Split(' ')[0].ToLowerInvariant();
-        output = f;
-        normal = simple ? Fonts.Settings(Fonts.Title, 16, Colors.White, 4, a) : Fonts.Settings(Fonts.Space, 20, a, 4, Colors.Black);
-        over = simple ? Fonts.Settings(Fonts.Title, 16, Colors.White, 7, b) : Fonts.Settings(Fonts.Space, 20, a, 6, b);
-        LabelSettings = normal;
-        MouseFilter = MouseFilterEnum.Stop;
-        MouseDefaultCursorShape = CursorShape.PointingHand;
-        MouseEntered += () => LabelSettings = over;
-        MouseExited += () => LabelSettings = normal;
-    }
-
-    /// <summary>A button in the in-game HUD's style: Orbitron, lit cyan under the mouse.</summary>
-    public TextButton(string text, Action f, int size, string? word = null)
+    /// <summary>
+    /// A button in the cockpit's style: Orbitron, lit under the mouse. Boxed, it sits on a slanted chip (in
+    /// <paramref name="colour"/>, cyan by default), at least <paramref name="width"/> wide with its text centred.
+    /// </summary>
+    public TextButton(string text, Action f, int size, string? word = null, bool boxed = false, Color? colour = null, float width = 0)
     {
         Text = text;
         Word = word ?? text.Split(' ')[0].ToLowerInvariant();
         output = f;
-        normal = Fonts.Settings(Fonts.HudBold, size, new Color(0.8f, 0.92f, 1), 4, new Color(0, 0, 0, 0.7f));
-        over = Fonts.Settings(Fonts.HudBold, size, Colors.White, 6, new Color(Cockpit.Rim, 0.7f));
+        var ink = boxed ? Colors.White.Lerp(colour ?? Kit.Ink, 0.35f) : new Color(0.8f, 0.92f, 1);
+        normal = Fonts.Settings(Fonts.HudBold, size, ink, boxed ? 0 : 4, new Color(0, 0, 0, 0.7f));
+        over = Fonts.Settings(Fonts.HudBold, size, Colors.White, boxed ? 0 : 6, new Color(colour ?? Cockpit.Rim, 0.7f));
         LabelSettings = normal;
         MouseFilter = MouseFilterEnum.Stop;
         MouseDefaultCursorShape = CursorShape.PointingHand;
-        MouseEntered += () => LabelSettings = over;
-        MouseExited += () => LabelSettings = normal;
+        if (width > 0)
+        {
+            CustomMinimumSize = new Vector2(width, 0);
+            HorizontalAlignment = HorizontalAlignment.Center;
+        }
+        StyleBox? box = boxed ? Kit.ButtonBox(false, colour) : null, lit = boxed ? Kit.ButtonBox(true, colour) : null;
+        if (box != null) AddThemeStyleboxOverride("normal", box);
+        MouseEntered += () =>
+        {
+            LabelSettings = over;
+            if (lit != null) AddThemeStyleboxOverride("normal", lit);
+        };
+        MouseExited += () =>
+        {
+            LabelSettings = normal;
+            if (box != null) AddThemeStyleboxOverride("normal", box);
+        };
     }
 
     public override void _GuiInput(InputEvent e)
@@ -185,7 +187,7 @@ public partial class BitButton : Control
     }
 }
 
-// MenuBox: a message box over the whole stage; a click (or any key) dismisses it.
+// MenuBox: a message panel over the whole stage; a click (or any key) dismisses it.
 public partial class MenuBox : Control
 {
     readonly Rect2 box;
@@ -202,9 +204,11 @@ public partial class MenuBox : Control
         {
             AutowrapMode = TextServer.AutowrapMode.WordSmart, // first: setting Text before it would widen the label
             Text = text,
-            Position = new Vector2(x + 3, y + 3),
-            Size = new Vector2(width - 6, height - 6),
-            LabelSettings = Fonts.Settings(Fonts.Space, size, Palette.BorderBlue, 4, new Color(Palette.Blue, 0.6f)),
+            Position = new Vector2(x + 16, y + 14),
+            Size = new Vector2(width - 32, height - 28),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            LabelSettings = Kit.Body(Math.Max(10, size - 6)),
             MouseFilter = MouseFilterEnum.Ignore,
         };
         AddChild(display);
@@ -218,8 +222,8 @@ public partial class MenuBox : Control
 
     public override void _Draw()
     {
-        DrawRect(box, new Color(Palette.MenuBlue, 0.9f));
-        DrawRect(box, Palette.BorderBlue, false, 2);
+        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0.01f, 0.03f, 0.5f)); // dims what's behind
+        Kit.Panel(this, box);
     }
 
     public override void _GuiInput(InputEvent e)
@@ -231,5 +235,13 @@ public partial class MenuBox : Control
         }
     }
 
-    public void Close() => Visible = false;
+    /// <summary>Raised when the box is dismissed.</summary>
+    public event Action? Closed;
+
+    public void Close()
+    {
+        if (!Visible) return;
+        Visible = false;
+        Closed?.Invoke();
+    }
 }

@@ -2,14 +2,31 @@ using Godot;
 
 namespace TypingShip;
 
-// The credits picture. A click (or any key) goes back to the menu.
+// The credits, as text over the stars. Any key or a click goes back to the menu. Visiting them earns the bronze
+// Explorer medal (the original's "visit our sponsors", whose link is gone).
 public partial class CreditsUI : Screen
 {
     public CreditsUI()
     {
-        Picture(this, Sprites.Credits);
         MouseDefaultCursorShape = CursorShape.PointingHand;
+        Kit.Label(this, "CREDITS", Kit.Title(22), 0, 22, G.StageSize, HorizontalAlignment.Center);
+        float y = 76;
+        foreach (var (heading, names) in Strings.Credits)
+        {
+            Kit.Label(this, heading, Kit.Caption(8), 60, y, 430, HorizontalAlignment.Center);
+            var settings = Kit.Body(names.Length > 60 ? 11 : 14);
+            Kit.Label(this, names, settings, 60, y + 12, 430, HorizontalAlignment.Center, wrap: true);
+            y += 12 + Kit.TextHeight(names, settings, 430) + 12;
+        }
+        Kit.Label(this, "PRESS ANY KEY TO RETURN", Kit.Caption(8), 0, 512, G.StageSize, HorizontalAlignment.Center);
     }
+
+    public override void NavIn()
+    {
+        if (G.Model.Save.Achieve[Achievement.Explorer] == 0) G.Model.Award(Achievement.Explorer, 1);
+    }
+
+    public override void _Draw() => Kit.Rule(this, new Vector2(190, 56), new Vector2(360, 56));
 
     public override void _GuiInput(InputEvent e)
     {
@@ -22,48 +39,74 @@ public partial class CreditsUI : Screen
         return true;
     }
 
-    static void Back() => G.Shell.Go(G.Shell.Menu, Colors.White);
+    static void Back() => G.Shell.Go(G.Shell.Menu, Shell.Dark);
 }
 
-// Six trophies; pointing at one (or typing its name) shows what each of its tiers takes.
+// Six medals; pointing at one (or typing its name) shows what each of its tiers takes, the earned ones in their
+// metal's colour.
 public partial class AchieveUI : Screen
 {
-    readonly TextureRect[] trophies = new TextureRect[6];
-    readonly Label[] display = new Label[3];
-    readonly TextureRect[] stars = new TextureRect[3];
+    const float CardW = 160, CardH = 150;
+    static readonly Rect2 Detail = new(18, 382, 514, 108);
+    readonly TextureRect[] medals = new TextureRect[6];
+    readonly Label[] tiers = new Label[6];
+    readonly Label[] lines = new Label[3];
+    readonly TextureRect[] lineMedals = new TextureRect[3];
+    readonly Label hint;
+    int showing = -1;
+
+    static Rect2 Card(int i) => new(18 + i % 3 * 177, 52 + i / 3 * 163, CardW, CardH);
 
     public AchieveUI()
     {
-        Picture(this, Sprites.AchieveBack);
+        Kit.Label(this, "ACHIEVEMENTS", Kit.Title(18), 18, 14);
         for (int i = 0; i < 6; i++)
         {
             int index = i;
-            var award = new Control
+            var r = Card(i);
+            var card = new Control
             {
-                Position = new Vector2(13 + i % 3 * 187, 44 + i / 3 * 187),
-                Size = new Vector2(160, 140),
+                Position = r.Position,
+                Size = r.Size,
                 MouseFilter = MouseFilterEnum.Stop,
                 MouseDefaultCursorShape = CursorShape.PointingHand,
             };
-            // The medal at half size (its art is drawn at twice that), centred above its name.
-            var medal = Sprites.Achieve[0].GetSize() / 2;
-            trophies[i] = Picture(award, Sprites.Achieve[0], (160 - medal.X) / 2, 0, 0.5f);
-            Text(award, Strings.AchieveNames[i], Fonts.Title, 17, Colors.White, 10, 92, outline: 4, outlineColor: Palette.Gold);
-            award.MouseEntered += () => PopText(index);
-            award.MouseExited += () => PopText(-1);
-            AddChild(award);
-            Nav.Add(Strings.AchieveNames[i], () => PopText(index));
+            var size = Sprites.Achieve[0].GetSize() / 2; // half the art's size
+            medals[i] = new TextureRect
+            {
+                Texture = Sprites.Achieve[0],
+                Scale = new Vector2(0.5f, 0.5f),
+                Position = new Vector2((CardW - size.X) / 2, 10),
+                MouseFilter = MouseFilterEnum.Ignore,
+            };
+            card.AddChild(medals[i]);
+            Kit.Label(card, Strings.AchieveNames[i], Kit.Body(12), 0, 104, CardW, HorizontalAlignment.Center);
+            tiers[i] = Kit.Label(card, "", Kit.Caption(8), 0, 124, CardW, HorizontalAlignment.Center);
+            card.MouseEntered += () => Show(index);
+            card.MouseExited += () => Show(-1);
+            AddChild(card);
+            Nav.Add(Strings.AchieveNames[i], () => Show(index));
         }
-        float[] y = { 390, 434, 488 };
-        for (int i = 0; i < 3; i++)
+        hint = Kit.Label(this, "POINT AT AN ACHIEVEMENT, OR TYPE ITS NAME", Kit.Caption(8), Detail.Position.X, Detail.Position.Y + 48,
+            Detail.Size.X, HorizontalAlignment.Center);
+        for (int j = 0; j < 3; j++)
         {
-            display[i] = Text(this, "", Fonts.Title, 11, Palette.Gold, 75, y[i], 225);
-            stars[i] = Picture(this, Sprites.Star[i * 2]);
+            float y = Detail.Position.Y + 12 + 31 * j;
+            var art = Sprites.Achieve[j + 1];
+            float s = 26 / art.GetHeight();
+            lineMedals[j] = new TextureRect
+            {
+                Texture = art,
+                Scale = new Vector2(s, s),
+                Position = new Vector2(Detail.Position.X + 16, y - 3),
+                MouseFilter = MouseFilterEnum.Ignore,
+            };
+            AddChild(lineMedals[j]);
+            lines[j] = Kit.Label(this, "", Kit.Body(11), Detail.Position.X + 44, y + 3, Detail.Size.X - 60);
         }
-        var done = new TextButton(Strings.Done, () => G.Shell.Go(G.Shell.Menu, Colors.White), Palette.Gold, Palette.GoldOver)
+        var done = new TextButton(Strings.Done, () => G.Shell.Go(G.Shell.Menu, Shell.Dark), 13, boxed: true, width: 110)
         {
-            Position = new Vector2(355, 440),
-            Scale = new Vector2(2, 2),
+            Position = new Vector2(330, 506),
         };
         AddChild(done);
         Nav.Add(done);
@@ -71,93 +114,100 @@ public partial class AchieveUI : Screen
 
     public override void NavIn()
     {
-        for (int i = 0; i < 6; i++) trophies[i].Texture = Sprites.Achieve[G.Model.Save.Achieve[i]];
-        PopText(-1);
+        for (int i = 0; i < 6; i++)
+        {
+            int tier = G.Model.Save.Achieve[i];
+            medals[i].Texture = Sprites.Achieve[tier];
+            tiers[i].Text = tier > 0 ? Strings.Tiers[tier] : "NOT EARNED";
+            tiers[i].LabelSettings = Kit.Caption(8, tier > 0 ? Kit.TierColours[tier] : new Color(Kit.Ink, 0.4f));
+        }
+        Show(-1);
     }
 
     public override bool OnKey(InputEventKey key)
     {
         if (key.Keycode != Key.Escape) return false;
-        G.Shell.Go(G.Shell.Menu, Colors.White);
+        G.Shell.Go(G.Shell.Menu, Shell.Dark);
         return true;
     }
 
     /// <summary>Show award i's goals: bronze always, the next tiers once the one before is earned (-1 clears).</summary>
-    void PopText(int i)
+    void Show(int i)
     {
-        foreach (var d in display) d.Text = "";
-        for (int j = 0; j < 3; j++) stars[j].Texture = Sprites.Star[j * 2];
-        if (i < 0) return;
-        int tier = G.Model.Save.Achieve[i];
-        var text = Strings.AchieveText[i];
-        display[0].Text = text[0];
-        display[1].Text = tier >= 1 ? text[1] : "???";
-        display[2].Text = tier >= 2 ? text[2] : "???";
+        showing = i;
+        hint.Visible = i < 0;
         for (int j = 0; j < 3; j++)
-            if (tier > j) stars[j].Texture = Sprites.Star[j * 2 + 1];
+        {
+            lines[j].Visible = lineMedals[j].Visible = i >= 0;
+            if (i < 0) continue;
+            int tier = G.Model.Save.Achieve[i];
+            bool earned = tier > j, known = tier >= j;
+            lines[j].Text = known ? Strings.AchieveText[i][j] : "???";
+            lines[j].LabelSettings = Kit.Body(11, earned ? Kit.TierColours[j + 1] : new Color(Kit.Ink, known ? 0.8f : 0.4f));
+            lineMedals[j].Modulate = earned ? Colors.White : new Color(0.3f, 0.32f, 0.38f);
+        }
+        QueueRedraw();
+    }
+
+    public override void _Draw()
+    {
+        Kit.Rule(this, new Vector2(18, 42), new Vector2(200, 42));
+        for (int i = 0; i < 6; i++)
+        {
+            int tier = G.Model?.Save.Achieve[i] ?? 0;
+            Kit.Panel(this, Card(i), tier > 0 ? Kit.TierColours[tier] : null, glow: i == showing ? 1 : 0.45f);
+        }
+        Kit.Panel(this, Detail);
     }
 }
 
 // The typing test: a passage of the story from data/typing-test.txt, for up to 90 seconds from the first key. A
-// wrong key flashes a red cross for a second and counts against accuracy. At the end it shows net WPM (correct
-// characters), accuracy and the difficulty it suggests (the rules are Core's TypingTestRun). Escape cancels.
+// wrong key flashes the passage's frame red and counts against accuracy. At the end it shows net WPM (correct
+// characters), accuracy and the difficulty it suggests (the rules are Core's TypingTestRun), until Space, Enter,
+// Escape or a click goes back to the menu. Escape during the test cancels it.
 public partial class TypingTest : Screen
 {
+    static readonly Rect2 PassageBox = new(18, 50, 514, 250), TypedBox = new(18, 316, 514, 170);
     readonly RichTextLabel top, bottom;
     readonly Label clock, hint;
-    readonly Control errorS;
-    readonly MenuBox finishB = new("", 135, 200, 280, 140);
+    readonly MenuBox finishB = new("", 135, 190, 280, 150, 20);
     TypingTestRun run = new("");
-    double errorT, finishT;
+    double errorT;
+    bool reported; // the result (or the cancel message) is showing, or has been
 
     static double Now => Time.GetTicksMsec() / 1000.0;
 
     public TypingTest()
     {
-        top = Rich(30, Palette.Gold);
-        bottom = Rich(290, Palette.Red);
-        errorS = new Cross { Visible = false };
-        AddChild(errorS);
+        Kit.Label(this, "TYPING TEST", Kit.Title(18), 18, 14);
+        top = Rich(PassageBox, Kit.Ink);
+        bottom = Rich(TypedBox, Kit.Good);
         // The original's MenuBt cancelled the test with the mouse; it never made it onto the stage.
-        var back = new TextButton(Strings.Menu, Cancel, Palette.Gold, Palette.GoldOver, true) { Position = new Vector2(10, 520) };
+        var back = new TextButton(Strings.Menu, Cancel, 12, boxed: true, width: 90) { Position = new Vector2(18, 506) };
         AddChild(back);
-        hint = new Label
-        {
-            Text = Strings.TestHint,
-            Position = new Vector2(100, 524),
-            Size = new Vector2(330, 20),
-            HorizontalAlignment = HorizontalAlignment.Center,
-            LabelSettings = Fonts.Settings(Fonts.Space, 13, Palette.Gold),
-            MouseFilter = MouseFilterEnum.Ignore,
-        };
-        AddChild(hint);
-        clock = new Label
-        {
-            Position = new Vector2(430, 1),
-            Size = new Vector2(100, 28),
-            HorizontalAlignment = HorizontalAlignment.Right,
-            LabelSettings = Fonts.Settings(Fonts.Space, 22, Palette.Gold),
-            MouseFilter = MouseFilterEnum.Ignore,
-        };
-        AddChild(clock);
+        hint = Kit.Label(this, Strings.TestHint, Kit.Caption(8), 120, 514, 340, HorizontalAlignment.Center);
+        clock = Kit.Label(this, "", Kit.Title(20), 380, 12, 152, HorizontalAlignment.Right);
         AddChild(finishB);
+        finishB.Closed += () =>
+        {
+            if (IsVisibleInTree() && !G.Shell.Transitioning) G.Shell.Go(G.Shell.Menu, Shell.Dark);
+        };
     }
 
-    RichTextLabel Rich(float y, Color c)
+    RichTextLabel Rich(Rect2 box, Color c)
     {
         var r = new RichTextLabel
         {
-            Position = new Vector2(30, y),
-            Size = new Vector2(490, 230),
+            Position = box.Position + new Vector2(16, 14),
+            Size = box.Size - new Vector2(32, 24),
             BbcodeEnabled = true,
             ScrollActive = false,
             MouseFilter = MouseFilterEnum.Ignore,
         };
-        r.AddThemeFontOverride("normal_font", Fonts.Space);
-        r.AddThemeFontSizeOverride("normal_font_size", 24);
+        r.AddThemeFontOverride("normal_font", Fonts.Word);
+        r.AddThemeFontSizeOverride("normal_font_size", 19);
         r.AddThemeColorOverride("default_color", c);
-        r.AddThemeConstantOverride("outline_size", 3);
-        r.AddThemeColorOverride("font_outline_color", new Color(c, 0.35f));
+        r.AddThemeConstantOverride("line_separation", 6);
         AddChild(r);
         return r;
     }
@@ -170,19 +220,27 @@ public partial class TypingTest : Screen
         top.ScrollToLine(0);
         bottom.ScrollToLine(0);
         hint.Visible = true;
+        reported = false;
+        finishB.Visible = false;
         Highlight();
         ShowClock();
     }
 
     public override bool OnKey(InputEventKey key)
     {
+        if (finishB.Visible)
+        {
+            // The result is up: Space, Enter or Escape closes it (and goes back to the menu).
+            if (key.Keycode is Key.Space or Key.Enter or Key.KpEnter or Key.Escape) finishB.Close();
+            return true;
+        }
         if (key.Keycode == Key.Escape)
         {
             Cancel();
             return true;
         }
         if (key.Unicode == 0) return true; // Shift and the like do nothing
-        if (finishB.Visible || run.Finished) return true;
+        if (reported || run.Finished) return true;
         Update((char)key.Unicode);
         return true;
     }
@@ -204,15 +262,15 @@ public partial class TypingTest : Screen
         }
         else if (!run.Finished)
         {
-            errorS.Visible = true;
-            errorT = 1;
+            errorT = 0.35;
+            QueueRedraw();
         }
         if (run.Finished) Done();
     }
 
     void Highlight() =>
         top.Text = run.Typed == 0 ? Escape(run.Passage)
-            : $"[bgcolor=#ffcc3355]{Escape(run.Passage[..run.Typed])}[/bgcolor]{Escape(run.Passage[run.Typed..])}";
+            : $"[color=#73ffa6][bgcolor=#5cd9ff26]{Escape(run.Passage[..run.Typed])}[/bgcolor][/color]{Escape(run.Passage[run.Typed..])}";
 
     static string Escape(string s) => s.Replace("[", "[lb]");
 
@@ -222,8 +280,10 @@ public partial class TypingTest : Screen
         clock.Text = $"{s / 60}:{s % 60:00}";
     }
 
+    /// <summary>The test is over (the passage typed, or the time up): record and show the result, once.</summary>
     void Done()
     {
+        if (reported) return;
         ShowClock();
         int wpm = (int)run.NetWpm;
         G.Model.Save.TestWpm = wpm;
@@ -234,62 +294,59 @@ public partial class TypingTest : Screen
 
     void Finish(string message)
     {
-        finishB.Message = message;
+        reported = true;
+        finishB.Message = message + "\n\nPRESS SPACE TO CONTINUE";
         finishB.Visible = true;
-        finishT = 6;
     }
 
     public override void _Process(double delta)
     {
-        if (errorT > 0 && (errorT -= delta) <= 0) errorS.Visible = false;
-        if (finishT > 0 && (finishT -= delta) <= 0) FinishTick();
-        if (!finishB.Visible)
-        {
-            ShowClock();
-            if (run.Tick(Now)) Done(); // out of time
-        }
+        if (!IsVisibleInTree()) return; // a screen keeps processing while hidden
+        if (errorT > 0 && (errorT -= delta) <= 0) QueueRedraw();
+        if (reported) return;
+        ShowClock();
+        if (run.Tick(Now)) Done(); // out of time
     }
 
-    void FinishTick()
+    public override void _Draw()
     {
-        finishT = 0;
-        finishB.Close();
-        G.Shell.Go(G.Shell.Menu, Colors.Black);
+        Kit.Rule(this, new Vector2(18, 42), new Vector2(200, 42));
+        Kit.Panel(this, PassageBox);
+        Kit.Panel(this, TypedBox, Kit.Good);
+        if (errorT > 0)
+        {
+            // A miss: the passage's frame flashes red.
+            var pts = Kit.Chamfer(PassageBox);
+            DrawPolyline(pts.Append(pts[0]).ToArray(), new Color(Kit.Bad, 0.35f), 8, true);
+            DrawPolyline(pts.Append(pts[0]).ToArray(), Kit.Bad, 2, true);
+        }
     }
 
     void Cancel()
     {
-        if (finishB.Visible) FinishTick();
-        else if (!G.Shell.Transitioning)
+        if (finishB.Visible) finishB.Close();
+        else if (!G.Shell.Transitioning && !reported)
         {
             int last = G.Model.Save.TestWpm;
-            Finish(last > 0 ? $"Test Cancelled.\n wpm remains at {last}." : "Test Cancelled.");
-        }
-    }
-
-    partial class Cross : Control
-    {
-        public Cross() => MouseFilter = MouseFilterEnum.Ignore;
-
-        public override void _Draw()
-        {
-            DrawLine(new Vector2(50, 50), new Vector2(500, 500), Colors.Red, 10);
-            DrawLine(new Vector2(500, 50), new Vector2(50, 500), Colors.Red, 10);
+            Finish(last > 0 ? $"Test cancelled.\nYour speed stays at {last} WPM." : "Test cancelled.");
         }
     }
 }
 
-// Level complete: the level score, then each bonus multiplier counting the score up, then the final score.
-// Also where the level's best score, best difficulty and medals are recorded, and the defender and perfectionist
-// achievements are checked.
+// Level complete, as a mission report: the level score, then each bonus multiplier counting the score up, then the
+// final score and the medals this run earned. Also where the level's best score, best difficulty and medals are
+// recorded, and the defender and perfectionist achievements are checked.
 public partial class ScoreUI : Screen
 {
     const double Step = 1 / 60.0; // the original's 10 ms timer; Flash ran timers at most 60 times a second
+    static readonly Rect2 Report = new(40, 92, 470, 360);
 
-    readonly Label title;
-    readonly Label[][] rows = new Label[7][];
-    int score, index, tickBy, shown;
-    float cMult;
+    readonly Label title, subtitle, prompt;
+    readonly Label[][] rows = new Label[6][];
+    readonly TextureRect[] runMedals = new TextureRect[2];
+    readonly Label[] runMedalNames = new Label[2];
+    int score, index, tickBy, shown, healthMedal, accuracyMedal;
+    float cMult, time2;
     int[] cLevel = null!;
     bool running;
     double time;
@@ -298,38 +355,58 @@ public partial class ScoreUI : Screen
 
     public ScoreUI()
     {
-        Picture(this, Sprites.ScoreBack, scale: G.StageSize / Sprites.ScoreBack.GetHeight());
+        title = Kit.Label(this, "MISSION COMPLETE", Kit.Title(26, Kit.Good), 0, 26, G.StageSize, HorizontalAlignment.Center);
+        subtitle = Kit.Label(this, "", Kit.Caption(9), 0, 64, G.StageSize, HorizontalAlignment.Center);
+        float[] y = { 110, 160, 192, 224, 0, 290 };
         for (int i = 0; i < rows.Length; i++)
         {
-            float y = i == 0 ? 90 : i == 6 ? 500 : 120 + 35 * i;
-            var label = Text(this, "", Fonts.Space, 30, Colors.White, 25, y, outline: 4, outlineColor: Palette.Gold);
-            var value = Text(this, "", Fonts.Space, 30, Colors.White, 70, y, outline: 4, outlineColor: Palette.Gold);
-            value.Size = new Vector2(450, 0);
-            value.HorizontalAlignment = HorizontalAlignment.Right;
+            if (i == 4) continue; // the rule, drawn
+            var label = Kit.Label(this, "", Kit.Body(15), 62, y[i]);
+            var value = Kit.Label(this, "", Kit.Body(17, Colors.White), 260, y[i] - 1, 228, HorizontalAlignment.Right);
             rows[i] = new[] { label, value };
         }
-        // The final score: twice the size, its number two and a half times and a line lower.
-        rows[5][0].LabelSettings = Fonts.Settings(Fonts.Space, 60, Colors.White, 6, Palette.Gold);
-        rows[5][1].LabelSettings = Fonts.Settings(Fonts.Space, 75, Colors.White, 7, Palette.Gold);
-        rows[5][1].Position = new Vector2(-480, 120 + 35 * 5 + 60);
-        rows[5][1].Size = new Vector2(1000, 0);
-        title = Text(this, "", Fonts.Space, 50, Colors.White, 30, 5, outline: 6, outlineColor: Palette.Gold);
+        // The final score: big, centred under its caption.
+        rows[5][0].LabelSettings = Kit.Caption(10);
+        rows[5][0].Size = new Vector2(Report.Size.X, 0);
+        rows[5][0].Position = new Vector2(Report.Position.X, 272);
+        rows[5][0].HorizontalAlignment = HorizontalAlignment.Center;
+        rows[5][1].LabelSettings = Kit.Title(46);
+        rows[5][1].Position = new Vector2(Report.Position.X, 288);
+        rows[5][1].Size = new Vector2(Report.Size.X, 0);
+        rows[5][1].HorizontalAlignment = HorizontalAlignment.Center;
+        for (int i = 0; i < 2; i++)
+        {
+            runMedals[i] = new TextureRect { Scale = new Vector2(0.22f, 0.22f), MouseFilter = MouseFilterEnum.Ignore, Visible = false };
+            AddChild(runMedals[i]);
+            runMedalNames[i] = Kit.Label(this, i == 0 ? Strings.Health : Strings.Accuracy, Kit.Caption(8), 0, 0, 120, HorizontalAlignment.Center);
+            runMedalNames[i].Visible = false;
+        }
+        prompt = Kit.Label(this, Strings.Spacebar, Kit.Caption(9), 0, 474, G.StageSize, HorizontalAlignment.Center);
     }
 
     public bool Counting => running;
 
     public override void NavIn()
     {
-        foreach (var r in rows) r[0].Text = r[1].Text = "";
+        foreach (var r in rows)
+            if (r != null) r[0].Text = r[1].Text = "";
+        foreach (var m in runMedals) m.Visible = false;
+        foreach (var n in runMedalNames) n.Visible = false;
+        prompt.Visible = false;
+        subtitle.Text = $"{Banner.LevelName(M.Level)}  ·  {Difficulty.Names[Difficulty.Of(M.Cps) - 1].ToUpperInvariant()}";
         score = M.Score - M.ScoreC;
         index = 0;
         time = 0;
         running = true;
+        QueueRedraw();
     }
 
     public override void _Process(double delta)
     {
-        if (!running || !Visible) return;
+        if (!Visible) return;
+        time2 += (float)delta;
+        prompt.Modulate = new Color(1, 1, 1, 0.55f + 0.45f * Mathf.Sin(time2 * 4));
+        if (!running) return;
         time += delta;
         for (int n = 0; time >= Step && running && n < 4; n++)
         {
@@ -350,10 +427,16 @@ public partial class ScoreUI : Screen
         if (!running && e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) G.Shell.ScoreDone();
     }
 
+    public override void _Draw()
+    {
+        Kit.Panel(this, Report, Kit.Good);
+        if (index > 4) Kit.Rule(this, new Vector2(62, 258), new Vector2(488, 258), alpha: 0.5f);
+    }
+
     void ScoreTick()
     {
-        var label = rows[Math.Min(index, 6)][0];
-        var value = rows[Math.Min(index, 6)][1];
+        var row = rows[Math.Min(index, 5)];
+        Label label = row?[0]!, value = row?[1]!;
         switch (index)
         {
             case 0: // the level score, less a point for each letter still in the typing bar
@@ -361,7 +444,6 @@ public partial class ScoreUI : Screen
                 {
                     label.Text = Strings.LevelScore;
                     value.Text = score.ToString();
-                    title.Text = Strings.LevelComplete(M.Level + 1);
                     cLevel = M.Save.LevelScore[M.Level];
                     if (M.Diff > cLevel[1]) cLevel[1] = M.Diff;
                 }
@@ -387,7 +469,8 @@ public partial class ScoreUI : Screen
                     var ship = M.Player;
                     cMult = Scoring.HealthBonus(ship.Injured, ship.Health, ship.MaxHealth);
                     label.Text = (ship.Injured ? Strings.HealthBonus : Strings.HealthPerfect) + cMult.ToString("F2");
-                    cLevel[2] = Math.Max(cLevel[2], Scoring.HealthMedal(ship.Injured, ship.Health, ship.MaxHealth));
+                    healthMedal = Scoring.HealthMedal(ship.Injured, ship.Health, ship.MaxHealth);
+                    cLevel[2] = Math.Max(cLevel[2], healthMedal);
                     if (!ship.Injured) M.CheckMedalAchievement(Achievement.Defender, 2);
                 }
                 else Count(value);
@@ -401,24 +484,40 @@ public partial class ScoreUI : Screen
                 }
                 else Count(value);
                 break;
-            case 4:
-                label.Text = "----------------------------------------------";
+            case 4: // the rule
                 index++;
+                QueueRedraw();
                 break;
             case 5:
                 label.Text = Strings.FinalScore;
                 value.Text = score.ToString();
                 cLevel[0] = Math.Max(cLevel[0], score);
                 float hit = M.HitRatio();
-                cLevel[3] = hit == 1 ? 3 : Math.Max(cLevel[3], Scoring.AccuracyMedal(hit));
+                accuracyMedal = Scoring.AccuracyMedal(hit);
+                cLevel[3] = hit == 1 ? 3 : Math.Max(cLevel[3], accuracyMedal);
                 if (hit == 1) M.CheckMedalAchievement(Achievement.Perfectionist, 3);
                 M.Save.Save();
-                index++;
-                break;
-            case 6:
+                ShowRunMedals();
                 running = false;
-                label.Text = Strings.Spacebar;
+                prompt.Visible = true;
                 break;
+        }
+    }
+
+    /// <summary>This run's health and accuracy medals, side by side under the final score (dark if none).</summary>
+    void ShowRunMedals()
+    {
+        int[] tiers = { healthMedal, accuracyMedal };
+        for (int i = 0; i < 2; i++)
+        {
+            var art = Sprites.Achieve[tiers[i]];
+            float cx = 275 + (i == 0 ? -70 : 70);
+            runMedals[i].Texture = art;
+            runMedals[i].Position = new Vector2(cx - art.GetWidth() * 0.22f / 2, 352);
+            runMedals[i].Visible = true;
+            runMedalNames[i].Position = new Vector2(cx - 60, 396);
+            runMedalNames[i].LabelSettings = Kit.Caption(8, tiers[i] > 0 ? Kit.TierColours[tiers[i]] : new Color(Kit.Ink, 0.4f));
+            runMedalNames[i].Visible = true;
         }
     }
 
@@ -445,57 +544,85 @@ public partial class ScoreUI : Screen
     }
 }
 
-// Game over: "You have been destroyed!" with the level score, or after the victory credits, the win screen with
-// the total of every level's best score.
+// Game over: "SHIP DESTROYED" with the level score and a RETRY (the same level, at the same difficulty), or after
+// the victory credits, the win screen with the total of every level's best score.
 public partial class GameOverUI : Screen
 {
-    readonly TextureRect back;
-    readonly Label title, score;
+    static readonly Rect2 ScoreBox = new(150, 170, 250, 120);
+    readonly Label title, subtitle, caption, score;
+    readonly TextButton retry;
+    bool won;
 
     public GameOverUI()
     {
-        back = Picture(this, Sprites.LoseBack);
-        title = Text(this, "", Fonts.Space, 50, Colors.White, 30, 5, 500, 6, Palette.Gold);
-        score = Text(this, "", Fonts.Space, 50, Colors.White, 5, 150, outline: 6, outlineColor: Palette.Gold);
-        AddButton(Strings.Menu, () => G.Shell.Go(G.Shell.Menu, Colors.Black), 70, 420);
-        AddButton(Strings.HsSubmit, () => G.Shell.ShowBox(Strings.SubmitStub), 270, 420);
-        AddButton(Strings.MoreGames, () => G.Shell.GoSponsor(), 270, 480);
+        title = Kit.Label(this, "", Kit.Title(30), 0, 70, G.StageSize, HorizontalAlignment.Center);
+        subtitle = Kit.Label(this, "", Kit.Caption(9), 0, 116, G.StageSize, HorizontalAlignment.Center);
+        caption = Kit.Label(this, "", Kit.Caption(9), ScoreBox.Position.X, ScoreBox.Position.Y + 22, ScoreBox.Size.X, HorizontalAlignment.Center);
+        score = Kit.Label(this, "", Kit.Title(40), ScoreBox.Position.X, ScoreBox.Position.Y + 42, ScoreBox.Size.X, HorizontalAlignment.Center);
+        retry = new TextButton("RETRY", Retry, 14, boxed: true, colour: Kit.Good, width: 170) { Position = new Vector2(190, 340) };
+        AddChild(retry);
+        Nav.Add(retry);
+        var menu = new TextButton(Strings.Menu, () => G.Shell.Go(G.Shell.Menu, Shell.Dark), 14, boxed: true, width: 170)
+        {
+            Position = new Vector2(190, 386),
+        };
+        AddChild(menu);
+        Nav.Add(menu);
+        Kit.Label(this, "TYPE A BUTTON'S WORD, OR SPACE FOR THE MENU", Kit.Caption(7), 0, 440, G.StageSize, HorizontalAlignment.Center);
     }
 
-    void AddButton(string text, Action f, float x, float y)
+    static void Retry()
     {
-        var b = new TextButton(text, f, Palette.Gold, Palette.GoldOver, true) { Position = new Vector2(x, y), Scale = new Vector2(1.5f, 1.5f) };
-        AddChild(b);
-        Nav.Add(b);
+        if (G.Shell.Transitioning) return;
+        G.Shell.StartGame(G.Model.Level, G.Model.Cps);
     }
 
     public void AddWin()
     {
-        back.Texture = Sprites.WinBack;
-        back.Scale = Vector2.One * (G.StageSize / Sprites.WinBack.GetHeight());
+        won = true;
         title.Text = Strings.WonGame;
-        score.Text = $"{Strings.FinalScore}\n        {G.Model.Save.Highscore}";
+        title.LabelSettings = Kit.Title(30, Kit.Good);
+        subtitle.Text = "THE EMPEROR IS DEFEATED";
+        caption.Text = "TOTAL SCORE";
+        score.Text = G.Model.Save.Highscore.ToString();
+        retry.Visible = false;
+        QueueRedraw();
     }
 
     public void AddLose()
     {
-        back.Texture = Sprites.LoseBack;
-        back.Scale = Vector2.One * (G.StageSize / Sprites.LoseBack.GetHeight());
+        won = false;
         title.Text = Strings.LoseGame;
-        score.Text = $"{Strings.LevelScore}\n        {G.Model.Score}";
+        title.LabelSettings = Kit.Title(30, Kit.Bad);
+        subtitle.Text = $"{Banner.LevelName(G.Model.Level)}  ·  {Difficulty.Names[Difficulty.Of(G.Model.Cps) - 1].ToUpperInvariant()}";
+        caption.Text = Strings.LevelScore.TrimEnd(' ', ':');
+        score.Text = G.Model.Score.ToString();
+        retry.Visible = true;
+        QueueRedraw();
+    }
+
+    public override void _Draw()
+    {
+        if (!won)
+        {
+            // A red glow creeping in from the edges.
+            for (int i = 0; i < 10; i++)
+                DrawRect(new Rect2(i * 6, i * 6, G.StageSize - i * 12, G.StageSize - i * 12), new Color(Kit.Bad, 0.035f * (10 - i) / 10), false, 6);
+        }
+        Kit.Panel(this, ScoreBox, won ? Kit.Good : Kit.Bad);
     }
 
     public override bool OnKey(InputEventKey key)
     {
         // New: Space or Enter for MENU.
         if (key.Keycode is not (Key.Space or Key.Enter)) return false;
-        G.Shell.Go(G.Shell.Menu, Colors.Black);
+        G.Shell.Go(G.Shell.Menu, Shell.Dark);
         return true;
     }
 }
 
-// After the last level: the closing text and credits scroll up over the final picture. SKIP or the end goes to
-// the win screen.
+// After the last level: the closing text and credits scroll up over the stars. SKIP or the end goes to the win
+// screen.
 public partial class VictoryUI : Screen
 {
     readonly Label scroll;
@@ -503,19 +630,16 @@ public partial class VictoryUI : Screen
 
     public VictoryUI()
     {
-        Picture(this, Sprites.FinalBack);
-        scroll = Text(this, Strings.FinalCredits, Fonts.Space, 25, Colors.White, 50, 550, 450, 3, Palette.Gold);
-        scroll.HorizontalAlignment = HorizontalAlignment.Center;
-        var skip = new TextButton(Strings.Skip, Done, Palette.Gold, Palette.GoldOver) { Scale = new Vector2(0.5f, 0.5f) };
+        scroll = Kit.Label(this, Strings.FinalCredits, Kit.Body(15), 60, 550, 430, HorizontalAlignment.Center, wrap: true);
+        var skip = new TextButton(Strings.Skip, Done, 10, boxed: true) { Position = new Vector2(470, 12) };
         AddChild(skip);
-        skip.Position = new Vector2(550 - skip.GetMinimumSize().X * 0.5f - 10, 10);
         Nav.Add(skip);
     }
 
     public void Run()
     {
         G.Sound.Play(0);
-        scroll.Position = new Vector2(50, 550);
+        scroll.Position = new Vector2(60, 550);
         done = false;
     }
 
@@ -538,7 +662,7 @@ public partial class VictoryUI : Screen
         if (done) return;
         done = true;
         G.Shell.GameOver.AddWin();
-        G.Shell.Go(G.Shell.GameOver, Colors.Black, 5);
+        G.Shell.Go(G.Shell.GameOver, Shell.Dark, 5);
     }
 }
 

@@ -15,7 +15,8 @@ public partial class PopAchieve : Control
     public PopAchieve(int achieve, int tier)
     {
         tint = TierColours[Math.Clamp(tier, 0, 3)];
-        shown = G.Shell.ShowingScore ? new Vector2(30, 365) : new Vector2(G.StageSize - W - 10, 372);
+        // In a level, just above the cockpit; on the menus, low, out of the way of their text.
+        shown = G.Shell.ShowingScore ? new Vector2(30, 365) : new Vector2(G.StageSize - W - 10, G.Shell.InGame ? 372 : 455);
         hidden = G.Shell.ShowingScore ? shown : new Vector2(G.StageSize + 10, shown.Y);
         Position = hidden;
         Size = new Vector2(W, H);
