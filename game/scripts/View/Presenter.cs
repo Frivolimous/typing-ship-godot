@@ -191,8 +191,8 @@ public sealed class Presenter : IGameEvents
     int burnTick;
 
     /// <summary>
-    /// A dying boss, each tick of its 200-tick fade: explosions come faster and bigger, then as it starts to fade (tick
-    /// 100) one huge blast whites out the screen, and a few last ones go off as it disappears.
+    /// A dying boss, each tick of its 200-tick fade: explosions come faster and bigger, then at tick 100 one huge blast
+    /// whites out the screen and the boss is gone (the rules keep fading it out unseen until the level ends).
     /// </summary>
     public void BossBurning(Boss b)
     {
@@ -214,15 +214,15 @@ public sealed class Presenter : IGameEvents
             G.Starfield.Shockwave(G.V(c), 420, 18);
             G.Flash.Flash(new Color(1, 0.97f, 0.9f), 1, 0.9f, edgesOnly: false);
             G.Camera.Shake(1);
+            (views.GetValueOrDefault(b) as BossView)?.Vanish();
             return;
         }
-        float chance = n < 100 ? 0.35f + 0.5f * n / 100 : 0.3f * (1 - (n - 100) / 100f);
-        if (G.Rand() < chance)
+        if (n < 100 && G.Rand() < 0.35f + 0.5f * n / 100)
         {
             var p = b.RandomPoint(G.Rng);
-            int size = n < 100 ? 30 + n / 3 : 25;
+            int size = 30 + n / 3;
             G.Starfield.Explosion(p.X, p.Y, size);
-            G.Camera.Shake(n < 100 ? 0.06f + size / 900f : 0.04f);
+            G.Camera.Shake(0.06f + size / 900f);
         }
     }
 

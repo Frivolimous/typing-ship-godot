@@ -20,7 +20,7 @@ public partial class WordLabel : Node2D
         .Select(c => Fonts.Settings(Fonts.Word, FontSize, c, outline: 5, outlineColor: new Color(0, 0, 0, 0.9f)))
         .ToArray();
 
-    /// <summary>Typed letters, the brackets on a ship being spelled, and a fired word.</summary>
+    /// <summary>Typed letters, and a fired word.</summary>
     public static readonly Color MatchColor = new(0.35f, 1, 0.75f);
     static readonly LabelSettings MatchSettings =
         Fonts.Settings(Fonts.Word, FontSize, MatchColor, outline: 5, outlineColor: new Color(0, 0.12f, 0.06f, 0.95f));
@@ -50,10 +50,8 @@ public partial class WordLabel : Node2D
         Visible = false;
     }
 
-    /// <summary>How many of the word's letters the typing bar ends with (0 when none, and never all of them).</summary>
-    public int Matched { get; private set; }
-
-    public int Length => word?.Length ?? 0;
+    // How many of the word's letters the typing bar ends with (0 when none, and never all of them).
+    int matched;
 
     public override void _Process(double delta)
     {
@@ -71,8 +69,8 @@ public partial class WordLabel : Node2D
 
     void SetMatched(int k)
     {
-        if (k == Matched) return;
-        Matched = k;
+        if (k == matched) return;
+        matched = k;
         typed.Visible = k > 0;
         if (k == 0) return;
         typed.Text = word![..k];
@@ -130,7 +128,6 @@ public partial class SpriteView : Node2D
     protected Texture2D[]? Frames;
     int frame;
     public readonly WordLabel Word = new();
-    readonly TargetBrackets brackets = new();
 
     public SpriteView(Sprite model, Texture2D[]? frames, float scale, bool artPointsUp = true)
     {
@@ -141,7 +138,6 @@ public partial class SpriteView : Node2D
         if (artPointsUp) View.Rotation = Mathf.Pi / 2; // art points up; heading 0 points right
         EngineFlames.Attach(View);
         AddChild(View);
-        AddChild(brackets);
         AddChild(Word);
         Position = G.V(model.Position);
         Rotation = model.Rotation;
@@ -159,17 +155,6 @@ public partial class SpriteView : Node2D
         Word.Rotation = -Rotation;
     }
 
-    public override void _Process(double delta)
-    {
-        // Brackets close in on a ship as its word is spelled out, square to the screen whichever way it's flying.
-        brackets.Rotation = -Rotation;
-        float angle = Rotation + View.Rotation;
-        var size = View.Texture != null ? View.Texture.GetSize() * View.Scale * 0.85f : new Vector2(24, 24);
-        float c = Mathf.Abs(Mathf.Cos(angle)), s = Mathf.Abs(Mathf.Sin(angle));
-        brackets.HalfSize = new Vector2(size.X * c + size.Y * s, size.X * s + size.Y * c) / 2;
-        brackets.Target = Word.Matched > 0 ? (float)Word.Matched / Word.Length : 0;
-    }
-
     /// <summary>SpriteSheets.update: step an animated sprite to its next frame (every other tick).</summary>
     public void AdvanceFrame()
     {
@@ -185,38 +170,6 @@ public partial class SpriteView : Node2D
     {
         GetParent()?.RemoveChild(this);
         QueueFree();
-    }
-}
-
-/// <summary>Corner brackets around a ship whose word is being typed, tightening with each letter.</summary>
-public partial class TargetBrackets : Node2D
-{
-    public Vector2 HalfSize;
-    /// <summary>How much of the word is typed, 0-1 (0: no brackets).</summary>
-    public float Target;
-    float shown, alpha;
-
-    public override void _Process(double delta)
-    {
-        float k = 1 - Mathf.Exp(-(float)delta * 18);
-        shown = Mathf.Lerp(shown, Target, k);
-        alpha = Mathf.Lerp(alpha, Target > 0 ? 1 : 0, k);
-        Visible = alpha > 0.01f;
-        if (Visible) QueueRedraw();
-    }
-
-    public override void _Draw()
-    {
-        var half = HalfSize * (1.3f - 0.3f * shown) + new Vector2(4, 4);
-        float arm = Mathf.Clamp(Mathf.Min(half.X, half.Y) * 0.45f, 5, 14);
-        var c = WordLabel.MatchColor;
-        foreach (var (sx, sy) in new[] { (-1, -1), (1, -1), (1, 1), (-1, 1) })
-        {
-            var corner = new Vector2(sx * half.X, sy * half.Y);
-            var pts = new[] { corner + new Vector2(-sx * arm, 0), corner, corner + new Vector2(0, -sy * arm) };
-            DrawPolyline(pts, new Color(c, 0.25f * alpha), 5, true);
-            DrawPolyline(pts, new Color(c, (0.55f + 0.45f * shown) * alpha), 2, true);
-        }
     }
 }
 
@@ -542,6 +495,14 @@ public partial class BossView : SpriteView
             open = Mathf.MoveToward(open, boss.DoorsOpen ? 1 : 0, d * 3);
             ((ShaderMaterial)doors.Material).SetShaderParameter("open", open);
         }
+    }
+
+    /// <summary>The boss is blown apart: it (with its doors and beam) disappears at once.</summary>
+    public void Vanish()
+    {
+        Visible = false;
+        if (doors != null) doors.Visible = false;
+        if (beam != null) beam.Visible = false;
     }
 
     public override void Detach()

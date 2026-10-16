@@ -161,7 +161,7 @@ public partial class HullBar : Node2D
         if (flicker <= 0) return;
         flicker -= (float)delta;
         float t = 1 - Mathf.Max(flicker, 0) / FlickerTime;
-        bool on = (int)(t * 12) % 2 == 0;
+        bool on = (int)(t * 6) % 2 == 0; // three blinks
         bar.Modulate = flicker > 0 && on ? Hurt : Colors.White;
         lost.Modulate = new Color(3, 3, 3, 1 - t); // overbright white, fading
         if (flicker <= 0) lost.Visible = false;
