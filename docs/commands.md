@@ -45,7 +45,7 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 | `--screenshot=path.png` | Save a screenshot after 10 ticks and quit (`--frames=N` for a different tick) |
 | `--at=a,b,c` | With `--screenshot`: save `path_a.png`, `path_b.png`, ... at those ticks, then quit |
 | `--speed=N` | Run N times faster (windowed runs; capped by frame rate) |
-| `--edit` | The level-editing keys (F5 reload, F6 restart, F7/F8 back/ahead 10 s, F9 grid with each ship's line and time, F10 invincible) and a banner with the file, the level's time and the next line. Starts level 0 unless `--level` is given |
+| `--edit` | The level-editing keys (F5 reload, F6 restart, F7/F8 back/ahead 10 s, F9 grid with each ship's line and time, F10 invincible, F11 bot on/off) and a banner with the file, the level's time and the next line. Starts level 0 unless `--level` is given |
 | `--overlay` | With `--edit`: start with the grid and flight paths showing (F9 toggles them) |
 | `--from=N` | Start the level N% of the way in (the in-game progress meter's number), or `--from=1:37` at that time. Works with or without `--edit` |
 | `--line=N` | Start the level at line N of its file (the first ship that line or a later one makes) |

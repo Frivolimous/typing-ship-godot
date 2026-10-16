@@ -12,6 +12,7 @@ namespace TypingShip;
 //   F7  jump back 10 s       F8  jump ahead 10 s
 //   F9  show or hide the 12 x 12 grid, the ships' flight paths, and each ship's line and time (--overlay starts with it on)
 //   F10 invincible on or off
+//   F11 the auto-typing bot on or off (at the difficulty's speed, or --botwpm), so you can type parts yourself
 public partial class LevelEditor : Node
 {
     readonly string? from, line;
@@ -117,6 +118,7 @@ public partial class LevelEditor : Node
             case Key.F8: Restart(m.Time + 10); break;
             case Key.F9: overlay.Visible = !overlay.Visible; break;
             case Key.F10: m.Invincible = !m.Invincible; break;
+            case Key.F11: Warn(DevAutoTyper.Toggle(GetParent()) ? "Bot on." : "Bot off: your turn.", 48); break;
             default: return;
         }
         GetViewport().SetInputAsHandled();
@@ -138,8 +140,8 @@ public partial class LevelEditor : Node
         var next = m.LevelData.FirstOrDefault(e => e.Line > 0);
         banner.Text = $"EDIT  {m.Set.LevelFile(m.Level)}  {Clock(m.Time)} of {Clock(m.MaxTime)}  " +
             (next != null ? $"next: line {next.Line} at {Clock(next.Time)}" : m.BossMode ? "boss escorts" : "no more ships") +
-            (m.Invincible ? "  INVINCIBLE" : "") +
-            "\nF5 reload  F6 restart  F7/F8 back/ahead 10 s  F9 grid  F10 invincible";
+            (m.Invincible ? "  INVINCIBLE" : "") + (DevAutoTyper.IsOn(GetParent()) ? "  BOT" : "") +
+            "\nF5 reload  F6 restart  F7/F8 back/ahead 10 s  F9 grid  F10 invincible  F11 bot";
     }
 
     /// <summary>m:ss.s, the way level files write times.</summary>
