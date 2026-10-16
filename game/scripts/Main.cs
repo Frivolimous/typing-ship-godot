@@ -138,6 +138,13 @@ public partial class Main : Node2D
         // The soldier kill count isn't saved on every kill.
         if (what == NotificationWMCloseRequest && G.Model != null) G.Model.Save.Save();
     }
+
+    // The player's ship is out of the tree between levels (menus, typing test) and after it's destroyed; free it
+    // on the way out so it isn't reported as leaked.
+    public override void _ExitTree()
+    {
+        if (G.World?.Player is { } p && IsInstanceValid(p) && p.GetParent() == null) p.Free();
+    }
 }
 
 // Placeholder decoration for the space either side of the square playfield.

@@ -150,14 +150,14 @@ public partial class EnemyShipView : SpriteView
     // Per hull: art index, scale, shield size and offset, and where a laser's charge glows.
     static readonly Dictionary<string, (int Art, float Scale, Vector4 Shield, Vector2? Charge)> Hulls = new()
     {
-        ["sm"] = (0, 0.5f, new(45, 45, 0, 0), null),
-        ["sl"] = (1, 0.5f, new(55, 55, -5, 0), new(18, 0)),
-        ["ss"] = (2, 0.13f, new(30, 30, 0, 0), null),
-        ["mm"] = (3, 0.65f, new(60, 60, 0, 2), null),
-        ["ml"] = (4, 0.65f, new(70, 70, -2, 0), new(28, 1)),
-        ["ms"] = (5, 0.25f, new(35, 35, 0, 0), null),
-        ["lm"] = (6, 1, new(116, 82, -7, 1), null),
-        ["ll"] = (7, 1, new(110, 65, -8, 0), new(35, 3)),
+        ["sm"] = (0, Sprites.AiScale, new(45, 45, 0, 0), null),
+        ["sl"] = (1, Sprites.AiScale, new(55, 55, -5, 0), new(18, 0)),
+        ["ss"] = (2, Sprites.AiScale, new(30, 30, 0, 0), null),
+        ["mm"] = (3, Sprites.AiScale, new(60, 60, 0, 2), null),
+        ["ml"] = (4, Sprites.AiScale, new(70, 70, -2, 0), new(28, 1)),
+        ["ms"] = (5, Sprites.AiScale, new(35, 35, 0, 0), null),
+        ["lm"] = (6, Sprites.AiScale, new(116, 82, -7, 1), null),
+        ["ll"] = (7, Sprites.AiScale, new(110, 65, -8, 0), new(35, 3)),
         ["xm"] = (8, 0.5f, new(50, 35, 0, 0), null),
         ["nl"] = (9, 1, new(50, 35, 0, 0), new(10, 0)),
     };
@@ -185,6 +185,12 @@ public partial class EnemyShipView : SpriteView
     }
 
     public EnemyShipView() : this(null!) { }
+
+    // The shield is only in the tree while it's up, so free it with the ship when it isn't (most ships never have one).
+    public override void _Notification(int what)
+    {
+        if (what == NotificationPredelete && IsInstanceValid(shield) && shield.GetParent() == null) shield.Free();
+    }
 
     public ChargeGlow? Glow => glow;
 
@@ -230,6 +236,13 @@ public partial class TurretView : Node2D
         this.turret = turret;
         Name = "Turret";
         Position = G.V(turret.Position);
+        AddChild(new Sprite2D
+        {
+            Texture = Sprites.Turret,
+            Centered = false,
+            Offset = -Sprites.TurretPivot,
+            Scale = new Vector2(Sprites.AiScale, Sprites.AiScale),
+        });
         AddChild(Word);
         Sync();
     }
@@ -242,14 +255,6 @@ public partial class TurretView : Node2D
         Word.Set(turret.Word, turret.Priority);
         Word.Rotation = -Rotation - turret.Ship.Rotation;
     }
-
-    public override void _Draw()
-    {
-        DrawRect(new Rect2(0, -3, 15, 6), new Color(0x666666ff));
-        DrawRect(new Rect2(0, -3, 15, 6), new Color(0xaaaaaaff), false, 1);
-        DrawCircle(Vector2.Zero, 3, new Color(0x666666ff));
-        DrawArc(Vector2.Zero, 3, 0, Mathf.Tau, 16, new Color(0xaaaaaaff), 1);
-    }
 }
 
 public partial class PlayerView : SpriteView
@@ -259,7 +264,7 @@ public partial class PlayerView : SpriteView
     public readonly ChargeGlow Glow;
     bool shieldShown;
 
-    public PlayerView(PlayerShip ship) : base(ship, Sprites.Player, 1)
+    public PlayerView(PlayerShip ship) : base(ship, Sprites.Player, Sprites.AiScale)
     {
         this.ship = ship;
         Name = "Player";
@@ -270,6 +275,12 @@ public partial class PlayerView : SpriteView
     }
 
     public PlayerView() : this(null!) { }
+
+    // As for enemy ships: the shield is only in the tree while it's up.
+    public override void _Notification(int what)
+    {
+        if (what == NotificationPredelete && IsInstanceValid(Shield) && Shield.GetParent() == null) Shield.Free();
+    }
 
     public override void Sync()
     {
