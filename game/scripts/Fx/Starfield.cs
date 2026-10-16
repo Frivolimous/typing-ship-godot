@@ -114,6 +114,9 @@ public partial class Starfield : Node2D
         explosions.Add(point, c);
     }
 
+    /// <summary>A shockwave ring in the game view, with no explosion or sound.</summary>
+    public void Shockwave(Vector2 at, float radius, int ticks) => explosions.Shockwave(at, radius, ticks);
+
     public void ClearParticles() => explosions.Clear();
 
     public override void _Process(double delta)

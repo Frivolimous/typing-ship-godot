@@ -127,6 +127,7 @@ public sealed partial class Game
     bool TestWord(Entity v)
     {
         if (v.Word == null || !TestWord(v.Word)) return false;
+        Events.WordTyped(v);
         v.RecycleWord();
         return true;
     }

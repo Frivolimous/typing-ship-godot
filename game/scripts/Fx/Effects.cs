@@ -187,12 +187,39 @@ public partial class PopScore : Node2D, IViewTicker
 }
 
 // Stealth ships materialise: red and blue ghost images spiral in before the ship fades up (the rules count the
-// fade-in; this draws it).
+// fade-in; this draws it). A shimmer runs over the ghosts and the ship until it's solid.
 public partial class StealthEffect : Node2D, IViewTicker
 {
+    static readonly Shader Shimmer = new()
+    {
+        Code = """
+            shader_type canvas_item;
+            uniform float amount = 1.0; // 1 just appearing, 0 solid
+            uniform float seed = 0.0;
+            varying vec4 tint;
+            void vertex() { tint = COLOR; }
+            float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+            void fragment() {
+                // A heat-haze ripple across the rows.
+                float wave = sin(UV.y * 60.0 + TIME * 18.0 + seed) * 0.6 + sin(UV.y * 23.0 - TIME * 11.0 + seed) * 0.4;
+                vec4 c = texture(TEXTURE, UV + vec2(wave * 0.035 * amount, 0.0));
+                // Scanline bands rolling down it.
+                float band = smoothstep(0.3, 0.7, fract(UV.y * 36.0 - TIME * 5.0));
+                c.rgb *= mix(1.0, 0.6 + 0.6 * band, amount);
+                // Sparkles winking on and off over the hull.
+                vec2 cell = floor(UV * vec2(24.0, 40.0));
+                float sparkle = step(1.0 - 0.07 * amount, hash(cell + floor(TIME * 16.0) + seed));
+                c.rgb += sparkle * amount * 1.5;
+                c.a *= mix(1.0, 0.7 + 0.3 * sin(TIME * 37.0 + UV.y * 12.0), amount);
+                COLOR = c * tint;
+            }
+            """,
+    };
+
     readonly EnemyShipView toSpawn = null!;
     readonly EnemyShip ship = null!;
     readonly Sprite2D red = new(), blue = new();
+    readonly ShaderMaterial shimmer = new() { Shader = Shimmer };
 
     public StealthEffect() { }
 
@@ -202,14 +229,17 @@ public partial class StealthEffect : Node2D, IViewTicker
         ship = (EnemyShip)v.Model;
         v.GetParent().AddChild(this);
         Position = v.Position;
+        shimmer.SetShaderParameter("seed", G.Rand() * 100);
         foreach (var (s, tint) in new[] { (red, new Color(2, 0.4f, 0.4f)), (blue, new Color(0.4f, 0.4f, 2)) })
         {
             s.Texture = v.View.Texture;
             s.Scale = v.View.Scale;
             s.Rotation = v.View.Rotation;
             s.SelfModulate = tint;
+            s.Material = shimmer;
             AddChild(s);
         }
+        v.View.Material = shimmer;
         Modulate = new Color(1, 1, 1, 0);
         ResetPhysicsInterpolation();
         G.Ctrl.AddTicker(this);
@@ -219,6 +249,7 @@ public partial class StealthEffect : Node2D, IViewTicker
     {
         if (ship.Removed || !IsInstanceValid(toSpawn))
         {
+            if (IsInstanceValid(toSpawn)) toSpawn.View.Material = null;
             QueueFree();
             return false;
         }
@@ -230,7 +261,9 @@ public partial class StealthEffect : Node2D, IViewTicker
         red.Position = new Vector2(r * Mathf.Sin(a), r * Mathf.Cos(a));
         blue.Position = -red.Position;
         Modulate = new Color(1, 1, 1, 0.1f + counter / 150);
+        shimmer.SetShaderParameter("amount", 1 - counter / 100);
         if (counter < 100) return true;
+        toSpawn.View.Material = null;
         QueueFree();
         return false;
     }

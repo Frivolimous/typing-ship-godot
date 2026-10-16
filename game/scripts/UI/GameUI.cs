@@ -113,14 +113,21 @@ public partial class GameUI : Control
 // The hull bar under the cockpit. While damaged it carries a long word: type it to repair one point.
 public partial class HullBar : Node2D
 {
+    const float FlickerTime = 0.6f;
+    static readonly Color Hurt = new(1, 0.35f, 0.35f);
+
     readonly Sprite2D bar = new() { Texture = Sprites.HealthFull, Centered = false, RegionEnabled = true };
+    // The piece of hull just lost, burning off white.
+    readonly Sprite2D lost = new() { Texture = Sprites.HealthFull, Centered = false, RegionEnabled = true, Visible = false };
     readonly WordLabel word = new() { Position = new Vector2(180, 0) };
     int health = -1;
+    float flicker;
 
     public HullBar()
     {
         AddChild(new Sprite2D { Texture = Sprites.HealthBase, Centered = false });
         AddChild(bar);
+        AddChild(lost);
         AddChild(word);
     }
 
@@ -129,14 +136,40 @@ public partial class HullBar : Node2D
         var player = G.Model.Player;
         if (player.Health != health)
         {
-            health = player.Health;
             var size = Sprites.HealthFull.GetSize();
-            bar.RegionRect = new Rect2(0, 0, size.X * health / player.MaxHealth, size.Y);
+            float Width(int h) => size.X * h / player.MaxHealth;
+            if (health > 0 && player.Health < health) Hit(Width(player.Health), Width(health), size.Y);
+            health = player.Health;
+            bar.RegionRect = new Rect2(0, 0, Width(health), size.Y);
         }
         word.Set(G.Model.Hull.Word, G.Model.Hull.Priority);
     }
 
+    /// <summary>The player took damage: shake, red at the screen edges, and the bar flickers as the lost piece burns off.</summary>
+    void Hit(float from, float to, float height)
+    {
+        G.Camera.Shake(0.45f);
+        G.Flash.Flash(new Color(1, 0.1f, 0.05f, 0.75f), 1, 0.45f, edgesOnly: true);
+        lost.RegionRect = new Rect2(from, 0, to - from, height);
+        lost.Position = new Vector2(from, 0);
+        lost.Visible = true;
+        flicker = FlickerTime;
+    }
+
+    public override void _Process(double delta)
+    {
+        if (flicker <= 0) return;
+        flicker -= (float)delta;
+        float t = 1 - Mathf.Max(flicker, 0) / FlickerTime;
+        bool on = (int)(t * 12) % 2 == 0;
+        bar.Modulate = flicker > 0 && on ? Hurt : Colors.White;
+        lost.Modulate = new Color(3, 3, 3, 1 - t); // overbright white, fading
+        if (flicker <= 0) lost.Visible = false;
+    }
+
     public void ShowWord(bool b) => word.ShowWord(b);
+
+    public void PopWord() => word.Pop();
 }
 
 // Flashing "Low Health!" while the hull is down to its last point.

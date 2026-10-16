@@ -53,11 +53,12 @@ public partial class Main : Node2D
         AddChild(G.Ctrl);
         AddChild(new KeyboardControl { Name = "Keyboard" });
 
-        AddChild(new Camera2D
+        G.Camera = new ShakeCamera
         {
             Position = new Vector2(G.StageSize / 2, G.StageSize / 2),
             ProcessCallback = Camera2D.Camera2DProcessCallback.Physics,
-        });
+        };
+        AddChild(G.Camera);
         AddChild(new SidePanels());
 
         var playfield = new Control
@@ -81,6 +82,8 @@ public partial class Main : Node2D
         playfield.AddChild(G.Starfield.NebulaLayer);
         playfield.AddChild(G.Starfield);
         playfield.AddChild(G.UI);
+        G.Flash = new ScreenFlash { Name = "Flash" };
+        playfield.AddChild(G.Flash);
         G.UI.Init();
         G.UI.SetParticleLayer(G.Starfield.Particles);
         G.World.Init();

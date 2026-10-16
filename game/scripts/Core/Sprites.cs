@@ -8,7 +8,7 @@ public static class Sprites
     static Texture2D T(string name) => GD.Load<Texture2D>($"res://assets/sprites/{name}.png");
 
     // The AI-generated placeholder set in assets/sprites/ai/ (point up, drawn at AiScale) replaced the Flash ships,
-    // the mine, the bomber and the missiles. The stealth ship (index 8) still uses its Flash art.
+    // the mine, the bomber and the missiles.
     public const float AiScale = 0.5f;
     /// <summary>Missiles are drawn smaller than their art's AiScale size (Jeremy: they read too big).</summary>
     public const float MissileScale = AiScale * 0.55f;
@@ -26,7 +26,7 @@ public static class Sprites
         new[] { T("ai/bomber") },
         new[] { T("ai/missile_l") },
         new[] { T("ai/laser_l") },
-        new[] { T("Enemy8") },
+        new[] { T("ai/stealth") },
         null,
     };
 

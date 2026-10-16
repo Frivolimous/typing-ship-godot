@@ -191,6 +191,9 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   explosion went off near the top-left corner of the game view.
 - **Boss 2's beam** starts from its plain frame each time. The original could keep showing a shield-hit frame from
   the previous beam if that one ended with counter-words left over.
+- **Typing feedback** (new, in Classic too): on every word that the typing bar ends with the start of, the typed
+  letters light up and corner brackets close in on its ship; a typed word pops as it fires. The original showed
+  nothing until a whole word matched.
 - **The bosses' new art moves where things happen**, in Classic too (Jeremy's call: the old positions aren't kept,
   not even for reference). The scanner and death explosions land on the new art, the turrets drop from boss 1's six
   gun muzzles, boss 0's ships launch from inside its two hangars (data/levels/*/bosses.txt), and the bosses' sizes

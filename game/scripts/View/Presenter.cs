@@ -87,6 +87,19 @@ public sealed class Presenter : IGameEvents
         view.ResetPhysicsInterpolation();
     }
 
+    public void WordTyped(Entity e)
+    {
+        var label = e switch
+        {
+            Turret t => (views.GetValueOrDefault(t.Ship) as EnemyShipView)?.TurretWord,
+            Sprite sprite => views.GetValueOrDefault(sprite)?.Word,
+            Scanner scanner => scanners.GetValueOrDefault(scanner)?.Word,
+            _ => null,
+        };
+        if (label != null) label.Pop();
+        else if (e == G.Model.Hull) G.UI.Hull.PopWord();
+    }
+
     public void Explosion(Vec2 at, int size) => G.Starfield.Explosion(at.X, at.Y, size);
 
     public void Beam(Vec2 from, Vec2 to, BeamKind kind) => BeamFx.Make(from, to, kind);
@@ -174,12 +187,42 @@ public sealed class Presenter : IGameEvents
         glow?.SetColor(ChargeGlow.NextColor());
     }
 
+    Boss? burning;
+    int burnTick;
+
+    /// <summary>
+    /// A dying boss, each tick of its 200-tick fade: explosions come faster and bigger, then as it starts to fade (tick
+    /// 100) one huge blast whites out the screen, and a few last ones go off as it disappears.
+    /// </summary>
     public void BossBurning(Boss b)
     {
-        if (G.Rand() > 0.6f)
+        if (b != burning)
+        {
+            burning = b;
+            burnTick = 0;
+        }
+        int n = burnTick++;
+        if (n == 100)
+        {
+            var c = b.Position;
+            G.Starfield.Explosion(c.X, c.Y, 300);
+            for (int i = 0; i < 6; i++)
+            {
+                var p = b.RandomPoint(G.Rng);
+                G.Starfield.Explosion(p.X, p.Y, 60);
+            }
+            G.Starfield.Shockwave(G.V(c), 420, 18);
+            G.Flash.Flash(new Color(1, 0.97f, 0.9f), 1, 0.9f, edgesOnly: false);
+            G.Camera.Shake(1);
+            return;
+        }
+        float chance = n < 100 ? 0.35f + 0.5f * n / 100 : 0.3f * (1 - (n - 100) / 100f);
+        if (G.Rand() < chance)
         {
             var p = b.RandomPoint(G.Rng);
-            G.Starfield.Explosion(p.X, p.Y);
+            int size = n < 100 ? 30 + n / 3 : 25;
+            G.Starfield.Explosion(p.X, p.Y, size);
+            G.Camera.Shake(n < 100 ? 0.06f + size / 900f : 0.04f);
         }
     }
 

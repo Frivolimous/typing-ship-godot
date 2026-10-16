@@ -3,7 +3,7 @@
 #   sprite   x,y   flame   width   length   colour
 #   sprite   x,y   charge
 #
-#   sprite   the art's path under game/assets/sprites, without .png (ai/player, Enemy8)
+#   sprite   the art's path under game/assets/sprites, without .png (ai/player, ai/stealth)
 #   x,y      a point on that PNG, in its pixels, measured from its centre (x right, y down; the art points up)
 #   width    how wide the flame is at the nozzle, in the same pixels
 #   length   how long the flame is, in the same pixels (it flickers around this)
@@ -32,9 +32,8 @@ ai/laser_l           12,73  flame   10  32  cyan
 
 ai/bomber             0,26  flame    8  22  red
 
-Enemy8              -18,37  flame    8  18  purple
-Enemy8               -1,39  flame    8  20  purple
-Enemy8               17,36  flame    8  18  purple
+ai/stealth          -19,17  flame    6  16  purple
+ai/stealth           19,17  flame    6  16  purple
 
 ai/projectile_blue    0,30  flame    8  26  blue
 ai/projectile_red     0,28  flame    7  24  orange

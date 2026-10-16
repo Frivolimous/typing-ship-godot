@@ -64,6 +64,10 @@ public partial class Explosions : Node2D
         }
     }
 
+    /// <summary>A lone shockwave ring spreading to about <paramref name="radius"/> over <paramref name="ticks"/>.</summary>
+    public void Shockwave(Vector2 at, float radius, int ticks) =>
+        Add(Kind.Ring, at, Vector2.Zero, 10, life: ticks, grow: (radius - 10) / ticks);
+
     void Add(Kind kind, Vector2 p, Vector2 v, float r, float life, float grow = 0, float drag = 1, float delay = 0) =>
         particles.Add(new Particle { Kind = kind, P = p, V = v, R = r, Life = life, Grow = grow, Drag = drag, Delay = delay });
 

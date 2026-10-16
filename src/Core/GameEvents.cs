@@ -19,6 +19,8 @@ public interface IGameEvents
     /// <summary>A sprite or the boss scanner left play.</summary>
     void Removed(Entity e) { }
     void ScannerAdded(Scanner s) { }
+    /// <summary>The player typed an entity's word; it's about to be released (and the entity may be removed).</summary>
+    void WordTyped(Entity e) { }
 
     void Explosion(Vec2 at, int size) { }
     void Beam(Vec2 from, Vec2 to, BeamKind kind) { }

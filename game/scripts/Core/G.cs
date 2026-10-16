@@ -20,6 +20,10 @@ public static class G
     public static GameUI UI = null!;
     public static Starfield Starfield = null!;
     public static Shell Shell = null!;
+    /// <summary>Screen shake.</summary>
+    public static ShakeCamera Camera = null!;
+    /// <summary>Flashes over the playfield (hits, the boss's last blast).</summary>
+    public static ScreenFlash Flash = null!;
 
     /// <summary>Random numbers for the presentation (stars, particles, flicker).</summary>
     public static Rng Rng = new();

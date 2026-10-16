@@ -5,16 +5,25 @@ namespace TypingShip;
 // Nodes that draw the rules' objects (TypingShip.Core entities). Each copies its entity's state once per tick in
 // Sync(); the Presenter creates and frees them as the rules report sprites joining and leaving.
 
-/// <summary>The word carried by a ship, missile, scanner or the hull bar, coloured by how urgent it is (priority 0-3).</summary>
+/// <summary>
+/// The word carried by a ship, missile, scanner or the hull bar, coloured by how urgent it is (priority 0-3). The
+/// letters the typing bar ends with light up as they're typed, and the word pops when it's fired.
+/// </summary>
 public partial class WordLabel : Node2D
 {
+    const int FontSize = 14;
     static readonly Color[] PriorityColors =
     {
         new(0xffffffff), new(0xffff99ff), new(0xffbb99ff), new(0xff8877ff),
     };
     static readonly LabelSettings[] Settings = PriorityColors
-        .Select(c => Fonts.Settings(Fonts.Word, 14, c, outline: 5, outlineColor: new Color(0, 0, 0, 0.9f)))
+        .Select(c => Fonts.Settings(Fonts.Word, FontSize, c, outline: 5, outlineColor: new Color(0, 0, 0, 0.9f)))
         .ToArray();
+
+    /// <summary>Typed letters, the brackets on a ship being spelled, and a fired word.</summary>
+    public static readonly Color MatchColor = new(0.35f, 1, 0.75f);
+    static readonly LabelSettings MatchSettings =
+        Fonts.Settings(Fonts.Word, FontSize, MatchColor, outline: 5, outlineColor: new Color(0, 0.12f, 0.06f, 0.95f));
 
     readonly Label label = new()
     {
@@ -23,13 +32,73 @@ public partial class WordLabel : Node2D
         Size = new Vector2(200, 18),
         MouseFilter = Control.MouseFilterEnum.Ignore,
     };
+    // The typed letters, drawn over the start of the word.
+    readonly Label typed = new()
+    {
+        Size = new Vector2(200, 18),
+        MouseFilter = Control.MouseFilterEnum.Ignore,
+        LabelSettings = MatchSettings,
+        Visible = false,
+    };
     string? word;
     int priority = -1;
 
     public WordLabel()
     {
         AddChild(label);
+        AddChild(typed);
         Visible = false;
+    }
+
+    /// <summary>How many of the word's letters the typing bar ends with (0 when none, and never all of them).</summary>
+    public int Matched { get; private set; }
+
+    public int Length => word?.Length ?? 0;
+
+    public override void _Process(double delta)
+    {
+        var bar = G.Model?.Typed;
+        SetMatched(Visible && word != null && bar != null ? MatchOf(word, bar) : 0);
+    }
+
+    /// <summary>The longest start of the word that the typed text ends with.</summary>
+    static int MatchOf(string word, string bar)
+    {
+        for (int k = Math.Min(word.Length - 1, bar.Length); k > 0; k--)
+            if (bar.AsSpan().EndsWith(word.AsSpan(0, k), StringComparison.Ordinal)) return k;
+        return 0;
+    }
+
+    void SetMatched(int k)
+    {
+        if (k == Matched) return;
+        Matched = k;
+        typed.Visible = k > 0;
+        if (k == 0) return;
+        typed.Text = word![..k];
+        float width = Fonts.Word.GetStringSize(word, HorizontalAlignment.Left, -1, FontSize).X;
+        typed.Position = new Vector2(-width / 2, 0);
+    }
+
+    /// <summary>The word was typed: a copy of it swells and fades where it was.</summary>
+    public void Pop()
+    {
+        if (word == null || !IsVisibleInTree()) return;
+        var pop = new Label
+        {
+            Text = word,
+            LabelSettings = MatchSettings,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Size = label.Size,
+            PivotOffset = label.Size / 2,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        G.UI.AddChild(pop);
+        pop.GlobalPosition = label.GlobalPosition;
+        var tween = pop.CreateTween().SetParallel();
+        tween.TweenProperty(pop, "scale", Vector2.One * 1.7f, 0.3).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(pop, "modulate:a", 0f, 0.3);
+        tween.Chain().TweenCallback(Callable.From(pop.QueueFree));
     }
 
     /// <summary>Show the entity's word (none if null) at its priority. A new word is shown even if the old one was hidden.</summary>
@@ -40,6 +109,7 @@ public partial class WordLabel : Node2D
             word = text;
             label.Text = text ?? "";
             Visible = text != null;
+            SetMatched(0);
         }
         if (p != priority)
         {
@@ -60,6 +130,7 @@ public partial class SpriteView : Node2D
     protected Texture2D[]? Frames;
     int frame;
     public readonly WordLabel Word = new();
+    readonly TargetBrackets brackets = new();
 
     public SpriteView(Sprite model, Texture2D[]? frames, float scale, bool artPointsUp = true)
     {
@@ -70,6 +141,7 @@ public partial class SpriteView : Node2D
         if (artPointsUp) View.Rotation = Mathf.Pi / 2; // art points up; heading 0 points right
         EngineFlames.Attach(View);
         AddChild(View);
+        AddChild(brackets);
         AddChild(Word);
         Position = G.V(model.Position);
         Rotation = model.Rotation;
@@ -87,6 +159,17 @@ public partial class SpriteView : Node2D
         Word.Rotation = -Rotation;
     }
 
+    public override void _Process(double delta)
+    {
+        // Brackets close in on a ship as its word is spelled out, square to the screen whichever way it's flying.
+        brackets.Rotation = -Rotation;
+        float angle = Rotation + View.Rotation;
+        var size = View.Texture != null ? View.Texture.GetSize() * View.Scale * 0.85f : new Vector2(24, 24);
+        float c = Mathf.Abs(Mathf.Cos(angle)), s = Mathf.Abs(Mathf.Sin(angle));
+        brackets.HalfSize = new Vector2(size.X * c + size.Y * s, size.X * s + size.Y * c) / 2;
+        brackets.Target = Word.Matched > 0 ? (float)Word.Matched / Word.Length : 0;
+    }
+
     /// <summary>SpriteSheets.update: step an animated sprite to its next frame (every other tick).</summary>
     public void AdvanceFrame()
     {
@@ -102,6 +185,38 @@ public partial class SpriteView : Node2D
     {
         GetParent()?.RemoveChild(this);
         QueueFree();
+    }
+}
+
+/// <summary>Corner brackets around a ship whose word is being typed, tightening with each letter.</summary>
+public partial class TargetBrackets : Node2D
+{
+    public Vector2 HalfSize;
+    /// <summary>How much of the word is typed, 0-1 (0: no brackets).</summary>
+    public float Target;
+    float shown, alpha;
+
+    public override void _Process(double delta)
+    {
+        float k = 1 - Mathf.Exp(-(float)delta * 18);
+        shown = Mathf.Lerp(shown, Target, k);
+        alpha = Mathf.Lerp(alpha, Target > 0 ? 1 : 0, k);
+        Visible = alpha > 0.01f;
+        if (Visible) QueueRedraw();
+    }
+
+    public override void _Draw()
+    {
+        var half = HalfSize * (1.3f - 0.3f * shown) + new Vector2(4, 4);
+        float arm = Mathf.Clamp(Mathf.Min(half.X, half.Y) * 0.45f, 5, 14);
+        var c = WordLabel.MatchColor;
+        foreach (var (sx, sy) in new[] { (-1, -1), (1, -1), (1, 1), (-1, 1) })
+        {
+            var corner = new Vector2(sx * half.X, sy * half.Y);
+            var pts = new[] { corner + new Vector2(-sx * arm, 0), corner, corner + new Vector2(0, -sy * arm) };
+            DrawPolyline(pts, new Color(c, 0.25f * alpha), 5, true);
+            DrawPolyline(pts, new Color(c, (0.55f + 0.45f * shown) * alpha), 2, true);
+        }
     }
 }
 
@@ -195,6 +310,9 @@ public partial class ChargeGlow : Node2D
 
 public partial class EnemyShipView : SpriteView
 {
+    /// <summary>The word on the ship's turret, if it has one.</summary>
+    public WordLabel? TurretWord => turret?.Word;
+
     readonly EnemyShip ship;
     readonly ShieldView shield = new();
     readonly ChargeGlow? glow;
@@ -213,7 +331,7 @@ public partial class EnemyShipView : SpriteView
         ["ms"] = (5, Sprites.AiScale, new(35, 35, 0, 0), null),
         ["lm"] = (6, Sprites.AiScale, new(116, 82, -7, 1), null),
         ["ll"] = (7, Sprites.AiScale, new(110, 65, -8, 0), null),
-        ["xm"] = (8, 0.5f, new(50, 35, 0, 0), null),
+        ["xm"] = (8, Sprites.AiScale, new(50, 35, 0, 0), null),
         ["nl"] = (9, 1, new(50, 35, 0, 0), new(10, 0)),
     };
 
@@ -251,6 +369,8 @@ public partial class EnemyShipView : SpriteView
     public override void Sync()
     {
         base.Sync();
+        // A stealth ship fades in (its flames with it) once its ghost images have spiralled in; its word stays readable.
+        View.Modulate = new Color(1, 1, 1, ship.Alpha);
         SyncShield();
         glow?.Sync();
         if (turret != null)
@@ -517,18 +637,28 @@ static class BossShaders
     };
 }
 
-/// <summary>The scanner ring on a boss, closing in as its words are typed.</summary>
+/// <summary>
+/// The scanner on a boss: a targeting reticle that closes in as its words are typed, its brackets turning from orange
+/// to red, and snaps into a pulsing lock (with a flash) when the final long word appears.
+/// </summary>
 public partial class ScannerView : Node2D
 {
-    static readonly Color RingColor = new(0xff5500ff);
+    static readonly Color Search = new(1, 0.55f, 0.1f), Locked = new(1, 0.15f, 0.1f);
+    static readonly CanvasItemMaterial Additive = new() { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
+
     readonly Scanner scanner;
     public readonly WordLabel Word = new();
-    float ring;
+    readonly Node2D reticle = new();
+    float ring = -1, time, lockFlash;
+    bool locked;
 
     public ScannerView(Scanner scanner)
     {
         this.scanner = scanner;
         Position = G.V(scanner.Position);
+        reticle.Material = Additive;
+        reticle.Draw += DrawReticle;
+        AddChild(reticle);
         AddChild(Word);
         Sync();
     }
@@ -538,16 +668,61 @@ public partial class ScannerView : Node2D
     public void Sync()
     {
         Word.Set(scanner.Word, scanner.Priority);
-        if (scanner.Ring != ring)
-        {
-            ring = scanner.Ring;
-            QueueRedraw();
-        }
+        bool nowLocked = scanner.WordSize >= G.Model.Tuning.ScannerFinalWord;
+        if (nowLocked && !locked) lockFlash = 1;
+        locked = nowLocked;
     }
 
-    public override void _Draw()
+    public override void _Process(double delta)
     {
-        DrawArc(Vector2.Zero, ring, 0, Mathf.Tau, Math.Max(32, (int)ring / 2), RingColor, 3, true);
-        DrawCircle(Vector2.Zero, 2.5f, RingColor);
+        float d = (float)delta;
+        time += d;
+        // Glide to the rules' ring size rather than jumping 3 px a tick.
+        ring = ring < 0 ? scanner.Ring : Mathf.Lerp(ring, scanner.Ring, 1 - Mathf.Exp(-d * 12));
+        lockFlash = Mathf.Max(0, lockFlash - d * 2.5f);
+        reticle.QueueRedraw();
+    }
+
+    void DrawReticle()
+    {
+        float start = G.Model.Tuning.ScannerRing;
+        float closed = 1 - Mathf.Clamp((ring - 5) / (start - 5), 0, 1); // 0 wide open, 1 closed in
+        var c = Search.Lerp(Locked, locked ? 1 : closed * 0.7f);
+        float r = Mathf.Max(ring, 10);
+
+        if (locked)
+        {
+            float pulse = 0.5f + 0.5f * Mathf.Sin(time * 14);
+            r = 14 + 3 * pulse;
+            reticle.DrawArc(Vector2.Zero, r + 6, 0, Mathf.Tau, 32, new Color(c, 0.35f + 0.3f * pulse), 1.5f, true);
+        }
+        else
+        {
+            reticle.DrawArc(Vector2.Zero, r, 0, Mathf.Tau, Math.Max(32, (int)r / 2), new Color(c, 0.3f), 1.5f, true);
+        }
+
+        // Four brackets turning around the ring (locked: square to the target, and still).
+        float spin = locked ? Mathf.Pi / 4 : time * (0.6f + 1.4f * closed);
+        float span = locked ? 0.55f : 0.32f;
+        for (int k = 0; k < 4; k++)
+        {
+            float angle = spin + k * Mathf.Pi / 2;
+            reticle.DrawArc(Vector2.Zero, r, angle - span, angle + span, 10, c, 3, true);
+            var dir = Vector2.FromAngle(angle + Mathf.Pi / 4);
+            reticle.DrawLine(dir * (r - 5), dir * (r + 5), new Color(c, 0.7f), 1.5f, true);
+        }
+
+        // The crosshair at the weak spot.
+        float h = locked ? 6 : 4;
+        reticle.DrawLine(new Vector2(-h, 0), new Vector2(h, 0), c, 1.5f, true);
+        reticle.DrawLine(new Vector2(0, -h), new Vector2(0, h), c, 1.5f, true);
+        reticle.DrawCircle(Vector2.Zero, locked ? 2.5f : 1.8f, new Color(1, 0.9f, 0.8f));
+
+        if (lockFlash > 0)
+        {
+            float t = 1 - lockFlash;
+            reticle.DrawArc(Vector2.Zero, 14 + 50 * t, 0, Mathf.Tau, 40, new Color(1, 0.8f, 0.6f, lockFlash), 3 * lockFlash + 0.5f, true);
+            reticle.DrawCircle(Vector2.Zero, 10 * lockFlash, new Color(1, 0.9f, 0.8f, lockFlash * 0.8f));
+        }
     }
 }
