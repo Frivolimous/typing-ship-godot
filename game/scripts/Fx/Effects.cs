@@ -8,45 +8,140 @@ public interface IViewTicker
     bool Tick();
 }
 
-// A beam that fades out over ~12 ticks: red from the player, blue from enemies, white for the EMP.
-public partial class BeamEffect : Node2D, IViewTicker
+/// <summary>A beam effect: lives a few ticks in the game view behind the ships, drawn additively and interpolated.</summary>
+public abstract partial class BeamFx : Node2D, IViewTicker
 {
-    readonly Vector2 to;
-    readonly Color color, glow;
-    readonly float width;
+    static readonly CanvasItemMaterial Additive = new() { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
 
-    public BeamEffect() { }
+    protected readonly Vector2 To;
+    readonly int life;
+    int age;
 
-    public BeamEffect(Vec2 from, Vec2 to, BeamKind kind)
+    protected BeamFx() { }
+
+    protected BeamFx(Vec2 from, Vec2 to, int life)
     {
+        this.life = life;
         Position = G.V(from);
-        this.to = G.V(to) - Position;
-        (color, glow, width) = kind switch
-        {
-            BeamKind.PlayerLaser => (new Color(0xff0000ff), new Color(1, 0.47f, 0.47f, 0.5f), 1f),
-            BeamKind.EnemyLaser => (new Color(0x0000ffff), new Color(0.47f, 0.47f, 1, 0.5f), 1f),
-            _ => (Colors.White, new Color(1, 0.67f, 0.67f, 0.8f), 2f),
-        };
+        To = G.V(to) - Position;
+        Material = Additive;
         G.UI.AddToGameViewBack(this);
         ResetPhysicsInterpolation();
         G.Ctrl.AddTicker(this);
     }
 
+    /// <summary>The beam for a laser or EMP shot.</summary>
+    public static BeamFx Make(Vec2 from, Vec2 to, BeamKind kind) => kind == BeamKind.Emp
+        ? new EmpEffect(from, to)
+        : new LaserEffect(from, to, kind == BeamKind.PlayerLaser);
+
+    /// <summary>0 when fired, 1 when gone; smooth between ticks.</summary>
+    protected float T => Mathf.Clamp((age + (float)Engine.GetPhysicsInterpolationFraction()) / life, 0, 1);
+
+    public override void _Process(double delta) => QueueRedraw();
+
     public bool Tick()
     {
-        var m = Modulate;
-        m.A -= 0.08f;
-        Modulate = m;
-        if (m.A > 0) return true;
+        if (++age < life)
+        {
+            OnTick();
+            return true;
+        }
         QueueFree();
         return false;
     }
 
+    protected virtual void OnTick() { }
+}
+
+/// <summary>
+/// A laser: a soft glow, the coloured beam and a white-hot core that flash wide and then thin out, pulses of energy
+/// running down it, a flare at the gun and a burst where it hits. Red from the player, blue from enemies.
+/// </summary>
+public partial class LaserEffect : BeamFx
+{
+    readonly Color glow, beam;
+
+    public LaserEffect() { }
+
+    public LaserEffect(Vec2 from, Vec2 to, bool player) : base(from, to, 10)
+    {
+        (glow, beam) = player
+            ? (new Color(1, 0.15f, 0.25f), new Color(1, 0.45f, 0.5f))
+            : (new Color(0.15f, 0.45f, 1), new Color(0.45f, 0.8f, 1));
+    }
+
     public override void _Draw()
     {
-        DrawLine(Vector2.Zero, to, new Color(glow, glow.A * 0.5f), width + 6, true);
-        DrawLine(Vector2.Zero, to, glow, width + 2, true);
-        DrawLine(Vector2.Zero, to, color, width, true);
+        float t = T, fade = 1 - t;
+        float w = (t < 0.15f ? 1.5f : 1) * Mathf.Pow(fade, 0.7f);
+        DrawLine(Vector2.Zero, To, new Color(glow, 0.3f), 12 * w, true);
+        DrawLine(Vector2.Zero, To, new Color(beam, 0.8f), 4.5f * w, true);
+        DrawLine(Vector2.Zero, To, new Color(1, 1, 1, fade), 1.6f * w, true);
+
+        for (int k = 0; k < 3; k++)
+        {
+            float u = (t * 2.5f + k / 3f) % 1;
+            DrawCircle(To * u, 2.5f * w + 0.5f, new Color(1, 1, 1, 0.8f * fade));
+        }
+
+        DrawCircle(Vector2.Zero, 7 * w, new Color(beam, 0.6f));
+        DrawCircle(To, 11 * w, new Color(glow, 0.45f));
+        DrawCircle(To, 5 * w, new Color(1, 1, 1, fade));
+        DrawArc(To, 4 + 16 * t, 0, Mathf.Tau, 24, new Color(beam, 0.6f * fade), 1.5f, true);
+    }
+}
+
+/// <summary>An EMP: forked lightning that re-forms every tick, and a shock ring spreading from where it hits.</summary>
+public partial class EmpEffect : BeamFx
+{
+    static readonly Color Glow = new(0.5f, 0.4f, 1), Core = new(0.85f, 0.9f, 1);
+    readonly List<Vector2[]> bolts = new();
+
+    public EmpEffect() { }
+
+    public EmpEffect(Vec2 from, Vec2 to) : base(from, to, 9) => OnTick();
+
+    protected override void OnTick()
+    {
+        bolts.Clear();
+        var main = Bolt(Vector2.Zero, To, 10);
+        bolts.Add(main);
+        for (int i = 0; i < 2; i++)
+        {
+            var start = main[1 + (int)(G.Rand() * (main.Length - 2))];
+            var dir = To.Normalized().Rotated((G.Rand() - 0.5f) * 1.6f);
+            bolts.Add(Bolt(start, start + dir * To.Length() * (0.12f + G.Rand() * 0.12f), 5));
+        }
+    }
+
+    /// <summary>A jagged line: points scattered sideways, most in the middle, none at the ends.</summary>
+    static Vector2[] Bolt(Vector2 a, Vector2 b, float amplitude)
+    {
+        int n = Math.Max(5, (int)(a.DistanceTo(b) / 14));
+        var side = (b - a).Normalized().Orthogonal();
+        var pts = new Vector2[n + 1];
+        for (int i = 0; i <= n; i++)
+        {
+            float u = i / (float)n;
+            pts[i] = a.Lerp(b, u) + side * (G.Rand() * 2 - 1) * amplitude * Mathf.Sin(Mathf.Pi * u);
+        }
+        return pts;
+    }
+
+    public override void _Draw()
+    {
+        float t = T, fade = 1 - t;
+        for (int i = 0; i < bolts.Count; i++)
+        {
+            float w = i == 0 ? 1 : 0.6f;
+            DrawPolyline(bolts[i], new Color(Glow, 0.35f * fade), 7 * w, true);
+            DrawPolyline(bolts[i], new Color(Core, fade), 2 * w, true);
+        }
+        DrawCircle(Vector2.Zero, 6 * fade, new Color(Glow, 0.6f));
+        DrawCircle(To, 9 * fade, new Color(Glow, 0.5f));
+        DrawArc(To, 6 + 40 * t, 0, Mathf.Tau, 40, new Color(Core, 0.7f * fade), 2.5f * fade + 0.5f, true);
+        DrawArc(To, 3 + 22 * t, 0, Mathf.Tau, 32, new Color(Glow, 0.5f * fade), 1.5f, true);
     }
 }
 

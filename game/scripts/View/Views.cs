@@ -105,20 +105,51 @@ public partial class SpriteView : Node2D
     }
 }
 
-/// <summary>A weapon charging up on its owner: a growing glow (blue, with a random flicker of green).</summary>
+/// <summary>
+/// A weapon charging up on its owner: motes of energy spiral in to a core that grows with the charge, and a ring
+/// keeps closing in on it. Drawn additively, in stage pixels.
+/// </summary>
 public partial class ChargeGlow : Node2D
 {
-    readonly Charge charge;
-    Color color;
+    static readonly CanvasItemMaterial Additive = new() { BlendMode = CanvasItemMaterial.BlendModeEnum.Add };
 
-    public ChargeGlow(Charge charge, Vector2 at)
+    /// <summary>An enemy laser's charge, and the player's EMP.</summary>
+    public static readonly Color LaserTint = new(0.3f, 0.75f, 1), EmpTint = new(0.7f, 0.55f, 1);
+
+    readonly Charge charge;
+    readonly Color tint;
+    Color color;
+    float time;
+
+    public ChargeGlow(Charge charge, Color tint)
     {
         this.charge = charge;
-        Position = at;
+        this.tint = tint;
+        color = tint;
+        Material = Additive;
         Visible = false;
     }
 
-    public ChargeGlow() : this(null!, Vector2.Zero) { }
+    public ChargeGlow() : this(null!, Colors.White) { }
+
+    /// <summary>
+    /// Puts the glow on a sprite view: at its art's charge point (data/mounts.txt), or at <paramref name="fallback"/>
+    /// in the view's own space when the art has none.
+    /// </summary>
+    public void Mount(SpriteView view, Vector2 fallback)
+    {
+        if (Mounts.Charge(view.View.Texture) is { } at)
+        {
+            view.View.AddChild(this);
+            Position = at;
+            Scale = Vector2.One / view.View.Scale; // the art is scaled; the glow is sized in stage pixels
+        }
+        else
+        {
+            view.AddChild(this);
+            Position = fallback;
+        }
+    }
 
     /// <summary>A new random colour each tick of charging: 0x0000ff plus a random touch of green, minus a random touch of blue.</summary>
     public static Color NextColor() =>
@@ -126,17 +157,39 @@ public partial class ChargeGlow : Node2D
 
     public void SetColor(Color c) => color = c;
 
-    public void Sync()
+    public void Sync() => Visible = charge.Active;
+
+    public override void _Process(double delta)
     {
-        Visible = charge.Active;
-        QueueRedraw();
+        time += (float)delta;
+        if (Visible) QueueRedraw();
     }
 
     public override void _Draw()
     {
-        float r = 10f * charge.Fill;
-        DrawCircle(Vector2.Zero, r * 1.8f, new Color(color, 0.25f));
-        DrawCircle(Vector2.Zero, r, color);
+        float fill = charge.Fill;
+        // The original's flickering blue, pulled towards the weapon's own colour.
+        var c = tint.Lerp(color, 0.3f);
+        var hot = c.Lerp(Colors.White, 0.6f);
+
+        DrawCircle(Vector2.Zero, 5 + 14 * fill, new Color(c, 0.15f + 0.1f * fill));
+
+        float k = time * 2.2f % 1;
+        DrawArc(Vector2.Zero, 4 + 24 * (1 - k), 0, Mathf.Tau, 32, new Color(c, (0.15f + 0.45f * fill) * k), 1.5f, true);
+
+        const int Motes = 9;
+        for (int i = 0; i < Motes; i++)
+        {
+            float u = (time * 1.6f + i / (float)Motes) % 1; // 0 far out, 1 arrived
+            float r = 26 * (1 - u);
+            float angle = i * Mathf.Tau / Motes + time * 3 + u * 2.5f;
+            var at = Vector2.FromAngle(angle) * r;
+            DrawCircle(at, 1 + u, new Color(hot, 0.8f * Mathf.Sin(Mathf.Pi * u)));
+        }
+
+        float pulse = 0.85f + 0.15f * Mathf.Sin(time * 45);
+        DrawCircle(Vector2.Zero, (2.5f + 6 * fill) * pulse, new Color(c, 0.9f));
+        DrawCircle(Vector2.Zero, (1.5f + 3.5f * fill) * pulse, hot);
     }
 }
 
@@ -148,17 +201,18 @@ public partial class EnemyShipView : SpriteView
     TurretView? turret;
     bool shieldShown;
 
-    // Per hull: art index, scale, shield size and offset, and where a laser's charge glows.
+    // Per hull: art index, scale, shield size and offset, and where a laser charges if its art has no charge point
+    // in data/mounts.txt (only the invisible "nl" turret laser, which has no art).
     static readonly Dictionary<string, (int Art, float Scale, Vector4 Shield, Vector2? Charge)> Hulls = new()
     {
         ["sm"] = (0, Sprites.AiScale, new(45, 45, 0, 0), null),
-        ["sl"] = (1, Sprites.AiScale, new(55, 55, -5, 0), new(18, 0)),
+        ["sl"] = (1, Sprites.AiScale, new(55, 55, -5, 0), null),
         ["ss"] = (2, Sprites.AiScale, new(30, 30, 0, 0), null),
         ["mm"] = (3, Sprites.AiScale, new(60, 60, 0, 2), null),
-        ["ml"] = (4, Sprites.AiScale, new(70, 70, -2, 0), new(28, 1)),
+        ["ml"] = (4, Sprites.AiScale, new(70, 70, -2, 0), null),
         ["ms"] = (5, Sprites.AiScale, new(35, 35, 0, 0), null),
         ["lm"] = (6, Sprites.AiScale, new(116, 82, -7, 1), null),
-        ["ll"] = (7, Sprites.AiScale, new(110, 65, -8, 0), new(35, 3)),
+        ["ll"] = (7, Sprites.AiScale, new(110, 65, -8, 0), null),
         ["xm"] = (8, 0.5f, new(50, 35, 0, 0), null),
         ["nl"] = (9, 1, new(50, 35, 0, 0), new(10, 0)),
     };
@@ -173,9 +227,8 @@ public partial class EnemyShipView : SpriteView
         shield.SetSize(look.Shield.X, look.Shield.Y, look.Shield.Z, look.Shield.W);
         if (ship.Charge != null)
         {
-            glow = new ChargeGlow(ship.Charge, look.Charge ?? Vector2.Zero);
-            AddChild(glow);
-            MoveChild(glow, 0);
+            glow = new ChargeGlow(ship.Charge, ChargeGlow.LaserTint);
+            glow.Mount(this, look.Charge ?? Vector2.Zero);
         }
         if (ship.Turret != null)
         {
@@ -270,9 +323,8 @@ public partial class PlayerView : SpriteView
         this.ship = ship;
         Name = "Player";
         Shield.SetSize(100, 100);
-        Glow = new ChargeGlow(ship.Charge, new Vector2(0, -20));
-        AddChild(Glow);
-        MoveChild(Glow, 0);
+        Glow = new ChargeGlow(ship.Charge, ChargeGlow.EmpTint);
+        Glow.Mount(this, new Vector2(0, -20));
     }
 
     public PlayerView() : this(null!) { }

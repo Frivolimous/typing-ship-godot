@@ -122,7 +122,7 @@ public partial class Starfield : Node2D
         QueueRedraw();
     }
 
-    // Stars, drawn in stage space: far ones twinkle, near ones glow and streak.
+    // Stars, drawn in stage space: far ones twinkle, near ones glow.
     public override void _Draw()
     {
         float back = 1 - (float)Engine.GetPhysicsInterpolationFraction();
@@ -141,7 +141,6 @@ public partial class Starfield : Node2D
                     break;
                 default:
                     var c = new Vector2(s.Size, s.Size) / 2;
-                    DrawLine(at + c - new Vector2(0, v * 3), at + c, new Color(s.Colour, s.Alpha * 0.35f), s.Size * 0.7f);
                     DrawCircle(at + c, s.Size * 1.8f, new Color(s.Colour, s.Alpha * 0.18f));
                     DrawRect(new Rect2(at, new Vector2(s.Size, s.Size)), new Color(s.Colour, s.Alpha));
                     break;

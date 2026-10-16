@@ -104,7 +104,7 @@ ported, what's left, where the port deliberately differs from the original, and 
 7. **Visual overhaul:** new art and fonts, side-panel HUD and decoration, effects (shaders, particles, screen
    shake), and UI polish. Make it look as good as possible. **Started:** AI-generated placeholder art for the
    player, the enemies, the missiles and the three bosses (game/assets/sprites/ai/; the bosses are animated in code:
-   hangar doors, gun glow, cannon charge, beam); engine flames placed by data/engines.txt; new explosions (flash,
+   hangar doors, gun glow, cannon charge, beam); engine flames and laser charge points placed by data/mounts.txt; new explosions (flash,
    shockwave, fireballs, sparks, smoke) and a three-layer starfield.
 8. **Placeholder cleanup:** replace the Flash-portal leftovers ("submit high score", "display high score", the
    sponsor link and "More games") with real features or remove them. Done just before Steam, because
@@ -131,8 +131,8 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 | EnemyShip, PlayerShip, Missile, Turret | Entities.cs | View/Views.cs, View/Presenter.cs |
 | Charge, ShieldView, StealthEffect | Entities.cs (the charge timer, the shield flag, the fade-in count) | View/Views.cs (ChargeGlow), View/ShieldView.cs, Fx/Effects.cs |
 | ScrambleObject | Scramble.cs | Unused, as in the original |
-| Starfield, Star, Particle, Nebula | | Fx/Starfield.cs (stars, nebulae), Fx/Explosions.cs (the particles); engine flames in Fx/EngineFlames.cs + data/engines.txt |
-| LaserEffect, EMPEffect | | Fx/Effects.cs (BeamEffect) |
+| Starfield, Star, Particle, Nebula | | Fx/Starfield.cs (stars, nebulae), Fx/Explosions.cs (the particles); engine flames in Fx/EngineFlames.cs, placed by Fx/Mounts.cs + data/mounts.txt |
+| LaserEffect, EMPEffect | | Fx/Effects.cs (LaserEffect, EmpEffect) |
 | PopScore, Overflow | Entities.cs (Overflow); the score itself in Game | Fx/Effects.cs (PopScore) |
 | GameUI, ShipSystem, PopWarning | Entities.cs (Hull: the repair word) | UI/GameUI.cs (HUD, HullBar) |
 | SoundControl | | Audio/SoundControl.cs |

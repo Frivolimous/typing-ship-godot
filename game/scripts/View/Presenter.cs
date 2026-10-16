@@ -47,7 +47,7 @@ public sealed class Presenter : IGameEvents
         SpriteView view = s switch
         {
             EnemyShip e => new EnemyShipView(e),
-            Missile m => new SpriteView(m, m.FromPlayer ? Sprites.PMissile : Sprites.EMissile, Sprites.AiScale),
+            Missile m => new SpriteView(m, m.FromPlayer ? Sprites.PMissile : Sprites.EMissile, Sprites.MissileScale),
             Superman => new SpriteView(s, new[] { Sprites.Superman }, 0.2f),
             Boss b => new BossView(b),
             _ => new SpriteView(s, null, 0.2f), // boss 3's counter-words: just a word
@@ -89,7 +89,7 @@ public sealed class Presenter : IGameEvents
 
     public void Explosion(Vec2 at, int size) => G.Starfield.Explosion(at.X, at.Y, size);
 
-    public void Beam(Vec2 from, Vec2 to, BeamKind kind) => new BeamEffect(from, to, kind);
+    public void Beam(Vec2 from, Vec2 to, BeamKind kind) => BeamFx.Make(from, to, kind);
 
     public void ScorePopup(Vec2 at, int amount, bool inGameView)
     {

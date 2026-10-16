@@ -10,6 +10,8 @@ public static class Sprites
     // The AI-generated placeholder set in assets/sprites/ai/ (point up, drawn at AiScale) replaced the Flash ships,
     // the mine, the bomber and the missiles. The stealth ship (index 8) still uses its Flash art.
     public const float AiScale = 0.5f;
+    /// <summary>Missiles are drawn smaller than their art's AiScale size (Jeremy: they read too big).</summary>
+    public const float MissileScale = AiScale * 0.55f;
 
     public static readonly Texture2D[] Player = { T("ai/player") };
 
