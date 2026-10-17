@@ -21,7 +21,7 @@ public partial class Starfield : Node2D
     {
         (0.12f, 0.3f, 0.7f, 1, 1, 0.3f, 0.6f),
         (0.13f, 1, 2.2f, 1, 1.6f, 0.6f, 0.9f),
-        (0.05f, 3, 5, 1.6f, 2.4f, 0.85f, 1),
+        (0, 3, 5, 1.6f, 2.4f, 0.85f, 1), // the near, glowing stars: off for now (Jeremy: too distracting); rate 0.05 brings them back
     };
 
     static readonly Color[] StarColours =
