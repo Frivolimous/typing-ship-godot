@@ -93,7 +93,8 @@ tests/Core.Tests. The rest of the testing happens through the dev flags in docs/
 ## Assets
 
 `game/assets/` holds what was extracted from the original `Typing Ship.fla` (a CS6 zip), named by their AS3 linkage
-class names (`Enemy0.png`, `LaserS.wav`, `Music2.wav`). `game/assets/sprites/ai/` holds AI-generated placeholder
+class names (`Nebula0.png`, `LaserS.wav`, `Music2.wav`); only the backdrops, nebulae and the superman sprite are still the
+original art. `game/assets/sprites/ai/` holds AI-generated placeholder
 art (ships point up; the bosses are animated in code), cut out from sources in `C:\JS Projects\Typing Ship PUB\art\ai-sprites\`.
 When ship art changes, move its flames and charge point in data/mounts.txt. **Music is git-ignored** (Jeremy keeps it backed up
 elsewhere). Code must keep working when `game/assets/music/` is empty, and nothing should start tracking those files. The `.fla` and the raw art sources live outside the repo:

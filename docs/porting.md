@@ -101,7 +101,8 @@ ported, what's left, where the port deliberately differs from the original, and 
      - Ship a set of pre-selected lists, and use Steam Workshop for sharing.
      - Word packs only: no menu translation.
    - Larger word lists are needed anyway: higher densities run the current 9- and 10-letter lists dry.
-7. **Visual overhaul:** new art and fonts, side-panel HUD and decoration, effects (shaders, particles, screen
+7. **Visual overhaul** (done for now: the backdrops, nebulae and superman sprite stay the original art until an art pass;
+   the old Flash ship, missile and menu art is deleted): new art and fonts, side-panel HUD and decoration, effects (shaders, particles, screen
    shake), and UI polish. Make it look as good as possible. **Started:** AI-generated placeholder art for the
    player, the enemies, the missiles and the three bosses (game/assets/sprites/ai/; the bosses are animated in code:
    hangar doors, gun glow, cannon charge, beam); engine flames and laser charge points placed by data/mounts.txt; new explosions (flash,
