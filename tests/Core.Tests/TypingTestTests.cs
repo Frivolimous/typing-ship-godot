@@ -70,7 +70,10 @@ public class TypingTestTests
     [InlineData(25, 0)]
     [InlineData(64, 1)]
     [InlineData(65, 2)]
-    [InlineData(89, 3)]
+    [InlineData(89, 2)]
+    [InlineData(90, 3)]
+    [InlineData(119, 3)]
+    [InlineData(120, 4)]
     [InlineData(150, 4)]
     public void The_suggestion_is_the_hardest_difficulty_at_or_below_the_result(int wpm, int difficulty) =>
         Assert.Equal(difficulty, TypingTestRun.Suggest(wpm));

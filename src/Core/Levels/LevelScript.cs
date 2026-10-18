@@ -68,6 +68,9 @@ public sealed record Timing(Timing.Kind Type, double At = 0, Num? Gap = null)
 /// <summary>One line of a level file.</summary>
 public abstract record Statement(int Line)
 {
+    /// <summary>The easiest difficulty the line's ships are on (0 Easy to 4 Insane), from a tag like "normal+:".</summary>
+    public int Easiest { get; init; }
+
     public sealed record Missile(int Line, string Type, Timing When, Point From, Point[] To) : Statement(Line);
     public sealed record Laser(int Line, string Type, Timing When, Point At, Num Speed) : Statement(Line);
     public sealed record Suicide(int Line, string Type, Timing When, Point From, Point To) : Statement(Line);
@@ -79,6 +82,8 @@ public abstract record Statement(int Line)
     public sealed record Offset(int Line, Timing When, Point By, int Back) : Statement(Line);
     /// <summary>Gap in seconds between copies (the first comes that long after the line above).</summary>
     public sealed record Repeat(int Line, Num Gap, Num Times, int Count, bool Mirrored) : Statement(Line);
+    /// <summary>Copies spread evenly over Duration seconds: the last one comes Duration after the line above.</summary>
+    public sealed record RepeatOver(int Line, Num Duration, Num Times, int Count, bool Mirrored) : Statement(Line);
     public sealed record Insert(int Line, int At) : Statement(Line);
     public sealed record Wait(int Line, Timing When) : Statement(Line);
     public sealed record Jump(int Line, Timing When, Num Seconds) : Statement(Line);
@@ -116,7 +121,7 @@ public sealed class LevelScript
 
     public static readonly string[] Commands =
     {
-        "missile", "laser", "suicide", "stealth", "ship", "boss", "mirror", "clone", "offset", "repeat", "insert", "wait", "jump", "loop",
+        "missile", "laser", "suicide", "stealth", "ship", "boss", "mirror", "clone", "offset", "repeat", "repeat_over", "insert", "wait", "jump", "loop",
     };
 
     // Words that were part of the format before the time-based rewrite, with what to do instead.
@@ -140,6 +145,7 @@ public sealed class LevelScript
         ["clone"] = "[@M:SS | +GAP] clone [BACK]   e.g. +0.55 clone -2",
         ["offset"] = "[@M:SS | +GAP] offset  X,Y [BACK]   e.g. +0.8 offset  0,-2",
         ["repeat"] = "repeat GAP [TIMES [SHIPS [mirrored]]]   e.g. repeat 0.55 7 1 mirrored (GAP in seconds)",
+        ["repeat_over"] = "repeat_over SECONDS TIMES [SHIPS [mirrored]]   e.g. repeat_over 4.5 9 1 mirrored (the last copy SECONDS after the line above)",
         ["insert"] = "insert POSITION   e.g. insert -4",
         ["wait"] = "@M:SS wait   or   +GAP wait",
         ["jump"] = "[@M:SS | +GAP] jump SECONDS",
@@ -200,9 +206,15 @@ public sealed class LevelScript
             }
 
             var words = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-            if (words[0].EndsWith(':') && words[0] != "@" && !words[0].StartsWith('@'))
-                throw new DataError(file, lineNo, $"Difficulty tags like \"{words[0]}\" were removed: every line happens on every difficulty. " +
-                    "Use a per-difficulty header constant if a number needs to differ.");
+            // Difficulty tag: "normal+:" puts the line's ships on Normal and harder only.
+            int from = 0;
+            if (words[0].EndsWith(':') && !words[0].StartsWith('@'))
+            {
+                from = ParseTag(words[0], file, lineNo);
+                line = line[words[0].Length..].Trim();
+                if (line.Length == 0) throw new DataError(file, lineNo, $"Nothing follows the tag \"{words[0]}\".");
+                words = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            }
             if (Removed.TryGetValue(words[0].ToLowerInvariant(), out var why)) throw new DataError(file, lineNo, why);
 
             // Timing prefix.
@@ -227,7 +239,8 @@ public sealed class LevelScript
             else if (words[0].StartsWith('+'))
             {
                 var gap = ParseNum(words[0][1..], "gap after the line above (seconds)", constants, file, lineNo);
-                if (gap is Num.Const { Value: < 0 }) throw new DataError(file, lineNo, "A gap can't be negative.");
+                if (gap is Num.Const { Value: < 0 } || gap is Num.ByDifficulty { Values: var gv } && gv.Any(g => g < 0))
+                    throw new DataError(file, lineNo, "A gap can't be negative.");
                 timing = new Timing(Timing.Kind.After, Gap: gap);
                 rest = line[words[0].Length..].Trim();
             }
@@ -236,24 +249,30 @@ public sealed class LevelScript
             var s = ParseLine(rest, timing, constants, file, lineNo);
             if (timing.Type != Timing.Kind.Same && s.Moment == null)
                 throw new DataError(file, lineNo, $"{rest.Split(' ')[0]} can't have a time in front: it isn't a moment of its own.");
-            current.Add(s);
+            current.Add(from > 0 ? s with { Easiest = from } : s);
         }
         EndSection();
         return result;
     }
 
-    /// <summary>"3.8", "2~4" or (header only) "0.9/0.9/0.7/0.6/0.5" for Easy to Insane.</summary>
+    static readonly string[] Tags = Difficulty.Names.Select(n => n.ToLowerInvariant() + "+:").ToArray();
+
+    /// <summary>"normal+:" and the like: the easiest difficulty (0 Easy to 4 Insane) the line is on.</summary>
+    static int ParseTag(string tag, string file, int lineNo)
+    {
+        int d = Array.IndexOf(Tags, tag.ToLowerInvariant());
+        if (d < 0)
+            throw new DataError(file, lineNo, $"\"{tag}\" isn't a difficulty tag.{DataError.DidYouMean(tag.ToLowerInvariant(), Tags)} " +
+                $"The tags are {string.Join(", ", Tags.Skip(1))}: the line is on that difficulty and the harder ones.");
+        if (d == 0) throw new DataError(file, lineNo, "\"easy+:\" is every difficulty: leave the tag off.");
+        return d;
+    }
+
+    /// <summary>"3.8", "2~4" or "0.9/0.9/0.7/0.6/0.5" (Easy to Insane), named for use in the lines below.</summary>
     static Num ParseConstant(string name, string value, string file, int lineNo)
     {
-        if (value.Contains('/'))
-        {
-            var parts = value.Split('/');
-            var values = new double[parts.Length];
-            if (parts.Length == 5 && parts.Select((p, k) => double.TryParse(p.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out values[k])).All(ok => ok))
-                return new Num.ByDifficulty(name, values);
-            throw new DataError(file, lineNo, $"\"{value}\" isn't one number per difficulty for {name}; write five, Easy to Insane, like 0.9/0.9/0.7/0.6/0.5.");
-        }
-        return ParseNum(value, $"value of {name}", new Dictionary<string, Num>(), file, lineNo);
+        var n = ParseNum(value.Replace(" ", ""), $"value of {name}", new Dictionary<string, Num>(), file, lineNo);
+        return n is Num.ByDifficulty d ? d with { Name = name } : n;
     }
 
     /// <summary>Parses a level file with no sections.</summary>
@@ -297,6 +316,10 @@ public sealed class LevelScript
                 p.More ? p.Number("number of times") : One,
                 p.More ? p.Int("number of ships to repeat", 1, 1000) : 1,
                 p.More && p.Word("mirrored")),
+            "repeat_over" => new Statement.RepeatOver(lineNo, p.Number("seconds the copies are spread over"),
+                p.Number("number of times"),
+                p.More ? p.Int("number of ships to repeat", 1, 1000) : 1,
+                p.More && p.Word("mirrored")),
             "insert" => new Statement.Insert(lineNo, p.Int("position", -10000, 10000)),
             "wait" => new Statement.Wait(lineNo, when),
             "jump" => new Statement.Jump(lineNo, when, p.Number("seconds to skip")),
@@ -310,8 +333,13 @@ public sealed class LevelScript
             if (x != 0 && x != 12 && y != 0 && y != 12)
                 throw new DataError(file, lineNo, $"A laser ship has to start on the edge of the grid (x 0 or 12, or y 0 or 12), not at {at}.");
         }
-        if (s is Statement.Repeat { Times: Num.Const { Value: var times } } && (times < 0 || times > 1000 || times != Math.Floor(times)))
-            throw new DataError(file, lineNo, $"repeat's number of times must be a whole number from 0 to 1000, not {times}.\n  Usage: {Usage["repeat"]}");
+        if (s switch { Statement.Repeat r => r.Times, Statement.RepeatOver ro => ro.Times, _ => null } is { } n)
+        {
+            double[] times = n switch { Num.Const k => [k.Value], Num.ByDifficulty d => d.Values, _ => [] };
+            foreach (double t in times)
+                if (t < 0 || t > 1000 || t != Math.Floor(t))
+                    throw new DataError(file, lineNo, $"{cmd}'s number of times must be a whole number from 0 to 1000, not {t}.\n  Usage: {Usage[cmd]}");
+        }
         return s;
     }
 
@@ -330,8 +358,12 @@ public sealed class LevelScript
                 (constants.Count > 0 ? $" The header has: {string.Join(", ", constants.Keys)}." : ""));
         }
         if (s.Contains('/'))
-            throw new DataError(file, lineNo, $"\"{s}\": a number per difficulty only goes in the header, as a constant " +
-                "(like SWARM_GAP = 0.9/0.9/0.7/0.6/0.5), used by name here.");
+        {
+            var parts = s.Split('/');
+            var values = new double[parts.Length];
+            if (parts.Length == 5 && parts.Select((p, k) => TryDouble(p, out values[k])).All(ok => ok)) return new Num.ByDifficulty(s, values);
+            throw new DataError(file, lineNo, $"\"{s}\" isn't one number per difficulty for the {what}; write five, Easy to Insane, like 0.9/0.9/0.7/0.6/0.5.");
+        }
         if (s.Contains('~'))
         {
             var parts = s.Split('~');

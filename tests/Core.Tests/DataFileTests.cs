@@ -131,9 +131,92 @@ public class LevelFormatTests
     [InlineData("duration 2:15", "length is now its content")]
     [InlineData("density 50%", "density was removed")]
     [InlineData("only hard+", "were removed")]
-    [InlineData("hard+: laser sn  0,1", "Difficulty tags")]
-    [InlineData("repeat 0.5 1/2/3/3/4", "only goes in the header")]
     public void Removed_features_say_what_to_do(string line, string expected) =>
+        Assert.Contains(expected, ParseFails(line).Message);
+
+    [Fact]
+    public void Repeat_over_spreads_the_copies_so_the_last_comes_at_the_time_given()
+    {
+        Close(new[] { 1.0, 1.5, 2, 2.5, 3 }, Times("@0:01 missile sn  5,0 5,6\nrepeat_over 2 4"));
+        // A pair keeps its spacing; the last ship comes 3 s after the line above, as with repeat 0.5 3 2.
+        const string pairs = "@0:08 missile sn  0,3 7,3 12,3\n+0.5 missile sn  12,6 5,6 0,6\n";
+        Close(Times(pairs + "repeat 0.5 3 2"), Times(pairs + "repeat_over 3 3 2"));
+        Close(new[] { 8, 8.5, 11, 11.5 }, Times(pairs + "repeat_over 3 1/2/3/3/3 2", 25));
+        Close(new[] { 8, 8.5 }, Times(pairs + "repeat_over 3 0/2/3/3/3 2", 25));
+        var mirrored = Build("@0:01 missile sn  2,0 2,4\nrepeat_over 2 2 1 mirrored").Cast<SpawnEvent>().Select(e => e.X).ToArray();
+        Assert.Equal(new[] { 100f, 500f, 100f }, mirrored);
+    }
+
+    [Fact]
+    public void Repeat_over_too_short_for_its_copies_says_so()
+    {
+        var e = Assert.Throws<DataError>(() => Build("@0:08 missile sn  0,3 7,3\n+0.5 missile sn  12,6 5,6\nrepeat_over 0.6 3 2"));
+        Assert.Contains("at least 0.5 s", e.Message);
+        Assert.Equal(3, e.Line);
+        Assert.Contains("whole number", ParseFails("@0:01 laser sn  0,1\nrepeat_over 2 1.5").Message);
+        Assert.Contains("number of times", ParseFails("@0:01 laser sn  0,1\nrepeat_over 2").Message);
+    }
+
+    [Fact]
+    public void Numbers_per_difficulty_work_in_a_line()
+    {
+        const string level = "@0:01 missile sn  5,0 5,6\nrepeat 2/1/0.5/0.5/0.5 1/2/4/4/4\n+1/1/0.5/0.5/0.5 laser sn  0,1/2/3/3/3";
+        Close(new[] { 1.0, 3, 4 }, Times(level, 25));
+        Close(new[] { 1.0, 2, 3, 4 }, Times(level, 40));
+        Close(new[] { 1.0, 1.5, 2, 2.5, 3, 3.5 }, Times(level, 65));
+        Assert.Equal(1 * Playfield.GridY, Build(level, 25).Cast<SpawnEvent>().Last().Y);
+        Assert.Equal(3 * Playfield.GridY, Build(level, 90).Cast<SpawnEvent>().Last().Y);
+    }
+
+    [Theory]
+    [InlineData("@0:01 laser sn  0,1\nrepeat 0.5 1/2/3/4", "one number per difficulty")]
+    [InlineData("@0:01 laser sn  0,1\nrepeat 0.5 1/2/2.5/4/4", "whole number")]
+    [InlineData("@0:01 laser sn  0,1\n+1/1/-1/1/1 mirror", "can't be negative")]
+    public void Bad_numbers_per_difficulty_say_what_is_wrong(string text, string expected) =>
+        Assert.Contains(expected, ParseFails(text).Message);
+
+    [Fact]
+    public void Difficulty_tags_leave_ships_out_below_their_difficulty()
+    {
+        const string level = "@0:01 laser sn  0,1\nnormal+: +1 laser sn  12,1\n+1 laser sn  0,2\nhard+: +1 laser sn  12,2";
+        Close(new[] { 1.0, 3 }, Times(level, 25)); // the line after a tagged one keeps its time
+        Close(new[] { 1.0, 2, 3 }, Times(level, 40));
+        Close(new[] { 1.0, 2, 3, 4 }, Times(level, 65));
+        Close(new[] { 1.0, 2, 3, 4 }, Times(level, 90));
+    }
+
+    [Fact]
+    public void Copies_of_a_tagged_ship_go_with_it_and_a_tagged_copy_goes_alone()
+    {
+        Assert.Empty(Build("normal+: @0:01 missile sn  5,0 5,6\nmirror\nrepeat 0.5 2", 25));
+        Assert.Equal(4, Build("normal+: @0:01 missile sn  5,0 5,6\nmirror\nrepeat 0.5 2", 40).Count);
+        Assert.Single(Build("@0:01 laser sn  0,1\nnormal+: mirror", 25));
+        Assert.Equal(2, Build("@0:01 laser sn  0,1\nnormal+: mirror", 40).Count);
+        // A tagged repeat leaves out its copies, not the ship it copies.
+        Assert.Single(Build("@0:01 missile sn  5,0 5,6\nnormal+: repeat 0.5 3", 25));
+    }
+
+    [Fact]
+    public void Tags_dont_change_the_ships_that_stay()
+    {
+        // Tagged ships are still built (random numbers drawn) on every difficulty, so the rest fly the same paths.
+        const string level = "@0:01 missile sn  5,0 5,6 4,12\nhard+: missile sn  3,0 3,6\n+1 missile sn  7,0 7,6 4,12";
+        var easy = Build(level, 25).Cast<SpawnEvent>().ToList();
+        var hard = Build(level, 65).Cast<SpawnEvent>().ToList();
+        Assert.Equal(2, easy.Count);
+        foreach (var (e, h) in easy.Zip(new[] { hard[0], hard[2] }))
+        {
+            Assert.Equal(h.Time, e.Time);
+            Assert.Equal(h.Commands.Select(c => (c.X, c.Y)), e.Commands.Select(c => (c.X, c.Y)));
+        }
+    }
+
+    [Theory]
+    [InlineData("normal: laser sn  0,1", "isn't a difficulty tag")]
+    [InlineData("hard: laser sn  0,1", "Did you mean \"hard+:\"")]
+    [InlineData("easy+: laser sn  0,1", "every difficulty")]
+    [InlineData("normal+:", "Nothing follows the tag")]
+    public void Bad_tags_say_what_is_wrong(string line, string expected) =>
         Assert.Contains(expected, ParseFails(line).Message);
 
     [Fact]
@@ -165,7 +248,7 @@ public class LevelFormatTests
         int Timer(int wpm) => Build("ship lmn  3,0  halt 2  move 0,3", wpm).Cast<SpawnEvent>().Single().Commands[0].Timer;
         Assert.Equal(48, Timer(65)); // 2 s at 24 ticks a second
         Assert.Equal(Speed.FloorTicks(2 * 24 * 65 / 25.0), Timer(25)); // longer on Easy, where ships are slower too
-        Assert.Equal(Speed.FloorTicks(2 * 24 * 65 / 90.0), Timer(90));
+        Assert.Equal(Speed.FloorTicks(2 * 24 / Math.Sqrt(90 / 65.0)), Timer(90)); // above Hard, the flattened pace (tuning: pace above hard 0.5)
     }
 
     [Fact]

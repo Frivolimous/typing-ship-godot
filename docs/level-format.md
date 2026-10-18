@@ -121,10 +121,17 @@ away. The last step should take the ship off screen, or it's counted as escaping
 | `+0.8 offset  0,-2` | The ship above again, moved by 0,-2 (path and all), 0.8 s later |
 | `repeat 0.55 3 2` | The last 2 ships, again 3 times. Each pair comes 0.55 s after the one before, keeping the gap between the 2 |
 | `repeat 0.55 7 1 mirrored` | The last ship 7 more times, mirrored each time, so they alternate sides |
+| `repeat_over 4.5 9` | The last ship 9 more times, spread evenly so the last copy comes 4.5 s after the line above (every 0.5 s) |
 | `insert -4` | Moves the ship above earlier: it now arrives together with, and just before, the ship at -4 (counting the moved one as -1, as the copy commands count) |
 
 `repeat` is `repeat GAP [TIMES [SHIPS [mirrored]]]`, with the gap in seconds; times and ships default to 1. Copies
 count as ships for the copy commands after them, so `mirror` after a `repeat` mirrors the last copy.
+
+`repeat_over` is `repeat_over SECONDS TIMES [SHIPS [mirrored]]`: the same copies, but you give how long they take
+instead of the gap. The last ship of the last copy comes SECONDS after the line above, and the copies are spread
+evenly before it, each keeping the spacing its ships had (`+0.5 missile ...` then `repeat_over 3 3 2` is three more
+pairs, one every second). It's the easy way to thin a wave: change the number of times and the wave still ends
+when it did.
 
 **Other.** `@1:30 wait` marks a moment with no ship (rarely needed now that waves have times). `jump` and `loop`
 exist from the original but no level uses them.
@@ -148,8 +155,44 @@ repeat SWARM_GAP 4
 - A name is letters, digits and `_` (capitals are the convention). Set each once.
 - One value (`HOVER = 3.8`) works the same at every difficulty. A range or choice (`2~4`, `0|12`) is rolled where
   it's used.
-- **Five values separated by `/` (Easy to Insane) are allowed only in the header**, as a deliberate exception:
-  that's the one way a number can differ by difficulty. A line can't have `1/2/3/3/4` written in it directly.
+- Five values separated by `/` (Easy to Insane) work here too, for a per-difficulty number used in several places.
+
+## Difficulty tags: thinning for Easy and Normal
+
+A line can start with a tag that keeps its ships off the easier difficulties:
+
+```
+@0:31.5 laser sn  0,6
+normal+: laser sn  12,6        # Normal and harder only
+@0:40 laser sn  0,2
+hard+: +0.3 laser sn  12,2     # the tag goes first, before the time
+```
+
+- The tags are `normal+:`, `hard+:`, `extreme+:` and `insane+:`: the line is on that difficulty and every harder
+  one. A line without a tag is on every difficulty.
+- **Times don't move.** A left-out line still moves the clock, so the lines after it come at the same time on every
+  difficulty. (Every ship's points get a small random jitter, up to 10 px, drawn in file order, copies included. A
+  tagged line is still drawn on every difficulty, but a count that differs by difficulty changes how many copies
+  are drawn, so the ships after it wobble differently. It's random every play anyway.)
+- **Copies go with their ship.** A `mirror`, `clone`, `offset` or `repeat` of a tagged ship is left out wherever the
+  ship is. To keep a ship but drop its mirror, tag the `mirror` line instead. A tagged `repeat` leaves out its copies
+  and keeps the ship it copies.
+- Copy commands still count the left-out ships (`mirror -2` means the same ship on every difficulty).
+
+Tags remove ships; numbers per difficulty (below) change a wave's repeat count and gap. Together they're how Easy and
+Normal are made from Hard.
+
+## Numbers per difficulty
+
+Five numbers separated by `/` are one per difficulty, Easy to Insane, and work anywhere a number goes:
+
+```
+@0:28 missile sn  2,0 2,4 12,9
+repeat_over 4.5 3/5/9/9/9 1 mirrored   # 4 ships on Easy, 6 on Normal, 10 on Hard, all ending at 0:32.5
++1.5/0.8/0.3/0.3/0.3 laser sn  12,2
+```
+
+A number used in several places can get a name in the header instead (below).
 
 ## bosses.txt
 
@@ -164,9 +207,8 @@ Four sections, each a list of ship lines like a level:
 ## Removed
 
 These were part of the format before times moved to seconds, and the game now refuses them with a message saying
-what to do: `pace`, `duration`, `density`, difficulty tags (`hard+:`), `only` blocks, and `/` values in a line
-(use a header constant). Thinning ships within each wave for the easier difficulties will come with the difficulty
-pass, after the Hard levels are tuned.
+what to do: `pace`, `duration`, `density` and `only` blocks. Difficulty tags and `/` numbers in a line were removed
+with them and came back for the difficulty pass (above).
 
 ## Mistakes
 

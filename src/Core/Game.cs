@@ -29,6 +29,8 @@ public sealed partial class Game
     public int ScoreC, Level = -1, MissedShips, TotalShips;
     /// <summary>The difficulty, as a typing speed in characters per second (see <see cref="Speed"/>).</summary>
     public double Cps = Difficulty.Normal;
+    /// <summary>The speed things move and count down at: Cps, flattened above Hard (Tuning.Pace).</summary>
+    public double Pace => Tuning.Pace(Cps);
     public int Score;
     public List<LevelEvent> LevelData = new();
     public readonly List<Sprite> Objects = new();

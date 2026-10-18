@@ -16,6 +16,7 @@ public sealed class LevelBuilder
     double time;
     string file = "";
     int line;
+    int from; // the current line's tag: the easiest difficulty its ships are on
 
     LevelBuilder(LevelContext c, double startTime)
     {
@@ -33,6 +34,7 @@ public sealed class LevelBuilder
         foreach (var s in script.Statements)
         {
             b.line = s.Line;
+            b.from = s.Easiest;
             try
             {
                 b.Run(s);
@@ -44,7 +46,9 @@ public sealed class LevelBuilder
         }
         // Waves can overlap (an @ time can come before the end of the wave above it), but the game runs events in
         // list order, so put them in time order. The sort is stable: lines at the same moment keep their order.
-        return b.array.OrderBy(e => e.Time).ToList();
+        // Tagged ships are built on every difficulty (so the clock, the random numbers and the copy commands' counting
+        // are the same everywhere) and only left out here.
+        return b.array.Where(e => e.Easiest <= c.DifficultyIndex).OrderBy(e => e.Time).ToList();
     }
 
     double E(Num n) => n.Eval(c.Rng, c.DifficultyIndex);
@@ -119,6 +123,7 @@ public sealed class LevelBuilder
                 break;
             }
             case Statement.Repeat re: repeat(E(re.Gap), (int)E(re.Times), re.Count, re.Mirrored); break;
+            case Statement.RepeatOver ro: repeatOver(E(ro.Duration), (int)E(ro.Times), ro.Count, ro.Mirrored); break;
             case Statement.Insert ins: insert(ins.At); break;
             case Statement.Wait: Add(new MarkerEvent(time, MarkerEvent.Kind.Wait, 0)); break;
             case Statement.Jump j: Add(new MarkerEvent(time, MarkerEvent.Kind.Jump, E(j.Seconds))); break;
@@ -131,6 +136,7 @@ public sealed class LevelBuilder
     {
         e.File = file;
         e.Line = line;
+        e.Easiest = from;
         array.Add(e);
         return e;
     }
@@ -188,23 +194,26 @@ public sealed class LevelBuilder
             ?? throw new ArgumentException($"{what} copies the ship {-j} back, but that's a {(array[at] is BossEvent ? "boss" : "wait/jump/loop")}, not a ship.");
     }
 
+    /// <summary>Adds a copy of src: it's on the difficulties both its own line and src are on.</summary>
+    void Copied(SpawnEvent src, SpawnEvent copy) => Add(copy).Easiest = Math.Max(from, src.Easiest);
+
     void clone(int j = -1)
     {
         var src = At(j, "clone");
-        Add(new SpawnEvent(c, time, src.Type, src.X, src.Y, src.Commands.Select(cmd => cmd.Clone()).ToArray()));
+        Copied(src, new SpawnEvent(c, time, src.Type, src.X, src.Y, src.Commands.Select(cmd => cmd.Clone()).ToArray()));
     }
 
     void mirror(int j = -1)
     {
         var src = At(j, "mirror");
-        Add(new SpawnEvent(c, time, src.Type, Playfield.ViewWidth - src.X, src.Y, src.Commands.Select(cmd => cmd.Mirror()).ToArray()));
+        Copied(src, new SpawnEvent(c, time, src.Type, Playfield.ViewWidth - src.X, src.Y, src.Commands.Select(cmd => cmd.Mirror()).ToArray()));
     }
 
     void offset(double xOff = 0, double yOff = 0, int j = -1)
     {
         var src = At(j, "offset");
         float x = (float)(xOff * Playfield.GridX), y = (float)(yOff * Playfield.GridY);
-        Add(new SpawnEvent(c, time, src.Type, src.X + x, src.Y + y, src.Commands.Select(cmd => cmd.Offset(x, y)).ToArray()));
+        Copied(src, new SpawnEvent(c, time, src.Type, src.X + x, src.Y + y, src.Commands.Select(cmd => cmd.Offset(x, y)).ToArray()));
     }
 
     /// <summary>
@@ -221,6 +230,22 @@ public sealed class LevelBuilder
             if (reverse) mirror(-repeatC);
             else clone(-repeatC);
         }
+    }
+
+    /// <summary>
+    /// repeat, with the copies spread evenly over a time instead of a gap between them: the last ship of the last
+    /// copy comes <paramref name="seconds"/> after the line above, and each copy keeps the spacing its ships had.
+    /// </summary>
+    void repeatOver(double seconds, int repeatN, int repeatC, bool reverse)
+    {
+        if (repeatN <= 0) return;
+        if (repeatC > array.Count)
+            throw new ArgumentException($"repeat_over copies the last {repeatC} ship(s), but there {(array.Count == 1 ? "is only 1 event" : $"are only {array.Count} events")} above this line.");
+        double span = array[^1].Time - array[^repeatC].Time, step = seconds / repeatN;
+        if (step < span)
+            throw new ArgumentException($"repeat_over {seconds:0.##} {repeatN}: each copy needs at least {span:0.##} s (the time between the {repeatC} ships it copies), " +
+                $"so {repeatN} of them take at least {span * repeatN:0.##} s.");
+        repeat(step - span, repeatN, repeatC, reverse);
     }
 
     ObjectCommand move(double x, double y, bool fire = false) =>

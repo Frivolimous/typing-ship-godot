@@ -7,7 +7,7 @@
 # Units: positions and distances are pixels in the 600 x 550 game view. Times are ticks (24 a second) unless a line
 # says seconds.
 # "cps" is the difficulty's typing speed in characters per second (words per minute x 5 / 60): Easy 2.08 (25 WPM),
-# Normal 3.33 (40), Hard 5.42 (65), Extreme 6.25 (75), Insane 7.5 (90). Speeds that say "x cps" are multiplied by
+# Normal 3.33 (40), Hard 5.42 (65), Extreme 7.5 (90), Insane 10 (120). Speeds that say "x cps" are multiplied by
 # it, so everything gets faster on harder difficulties, and times that say "/ cps" are divided by it. A number can
 # be written as a fraction (100/3) when it has no exact decimal.
 #
@@ -18,6 +18,10 @@
 points = 5
 speed = 0.5               # acceleration; plus what the ship's letters add below, then multiplied by cps x speed per cps
 speed per cps = 0.12      # (wpm / 100 in the original)
+pace above hard = 0.5     # Above Hard, everything that says "x cps" or "/ cps" uses Hard's cps x (cps / Hard's)^this instead,
+                          #   so the hardest difficulties bring more ships rather than ships too fast to read: at 0.5
+                          #   Extreme moves 1.18x as fast as Hard and Insane 1.36x (about what 75 and 90 WPM did).
+                          #   1 = the full typing speed. The fire rate and scores always use the full cps.
 
 [size]
 # The ship code's 1st letter: word length, and points and speed added.

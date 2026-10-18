@@ -32,7 +32,7 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 |---|---|
 | `--level=N` | Skip the menus and start at level N (0–11; bosses on 3, 7 and 11) |
 | `--classic` | Play the Classic levels (data/levels/classic/, the original 12 as they were) instead of the game's own. A development baseline, removed before release. Scores save to the same slots, so use `--profile` to keep them apart |
-| `--wpm=N` | Difficulty as target words per minute: 25 Easy, 40 Normal (default), 65 Hard, 75 Extreme, 90 Insane. Any number works (the rules use it as characters per second, N x 5 / 60). On the menus the difficulty box sets it instead |
+| `--wpm=N` | Difficulty as target words per minute: 25 Easy, 40 Normal (default), 65 Hard, 90 Extreme, 120 Insane. Any number works (the rules use it as characters per second, N x 5 / 60). On the menus the difficulty box sets it instead |
 | `--cps=N` | The same in characters per second, as the rules and tuning.txt count it (Normal is 3.33) |
 | `--seed=N` | Fix the random seed, for repeatable runs |
 | `--autotype` | A bot types for you, at the difficulty's WPM. Skips the menus (straight into level 0) unless `--menu` is given, turns tutorial pop-ups off, and doesn't save unless `--profile` is given |

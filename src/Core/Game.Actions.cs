@@ -9,7 +9,7 @@ public sealed partial class Game
         {
             // One missile per point of the target's health, fanned out and staggered.
             // Each later missile waits n x 100 / wpm ticks (100 / 12 / cps).
-            int Stagger(int n) => Speed.CeilingTicks(n * 100 / 12.0 / Cps);
+            int Stagger(int n) => Speed.CeilingTicks(n * 100 / 12.0 / Pace);
             switch (t.Health)
             {
                 case 4:

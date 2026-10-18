@@ -72,9 +72,12 @@ ported, what's left, where the port deliberately differs from the original, and 
         rule check.
    - **Difficulty pass (after Hard).** Derive the other difficulties from Hard, then adjust by hand. Until then
      every difficulty plays Hard's wave timing (with its own ship speeds), so Easy and Normal are much too dense.
-     **TBD:** thin ships within each wave rather than dropping whole waves, so lower difficulties keep Hard's peaks
-     and lulls in the same places. If Insane still plays too hard after that, flatten its ship speed curve slightly
-     (e.g. cps^0.9) rather than cut density. Tuning times could also be written as seconds on Hard (laser charge
+     Thin ships within each wave rather than dropping whole waves, so lower difficulties keep Hard's peaks and lulls
+     in the same places. **Decided (Jeremy, for control and visibility):** by hand in the level files, not by an
+     algorithm: difficulty tags (`normal+:`, back from the old format; a tagged ship's copies go with it, and times
+     don't change) remove ships, and five-value numbers (`1.5/0.9/0.5/0.5/0.5`, back in lines as well as the header) change repeat
+     counts and gaps. **Extreme and Insane are 90 and 120 WPM** (were 75 and 90), with movement flattened above Hard
+     (tuning "pace above hard", see Deviations): the top difficulties are more ships, not faster ones. Tuning times could also be written as seconds on Hard (laser charge
      ≈ 3.8 s) to match the level files.
    - **Classic:** the original 12 levels stay available as a baseline and check during development, and are
      removed before release. **Done:** data/levels/classic/ (`--classic`, `ts 12`), converted to seconds on Hard
@@ -157,6 +160,12 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 
 ## Deviations from the original
 
+- **Extreme is 90 WPM and Insane 120** (the original had 75 and 90; Jeremy's call, 2026-10-18), so each
+  difficulty is a clear step up and fast typists have something to chase. Above Hard, everything that moves or counts
+  down with the typing speed (ship and missile speeds, halts, laser charges, stealth fades, boss 3's beam) uses a
+  flattened pace, Hard x (cps / Hard)^0.5 (tuning.txt, "pace above hard"): Extreme moves 1.18x as fast as Hard and
+  Insane 1.36x, close to what 75 and 90 WPM did, and the extra difficulty comes from more ships in the levels. The
+  enemy fire rate and the score bonus still use the full speed. Classic plays the same rules.
 - **Player missiles launch straight ahead.** The original passed the ship's rotation in degrees as radians, so
   missiles swung out at about -117° before homing. Fixed.
 - **Escape pauses and resumes.** The original paused with an on-screen button or by typing "pause". Typing

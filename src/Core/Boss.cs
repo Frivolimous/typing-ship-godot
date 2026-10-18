@@ -50,7 +50,7 @@ public sealed class Boss : Sprite
         this.c = c;
         var t = game.Tuning;
         Health = t.BossHealth;
-        five = Speed.FloorTicks(t.Boss2BeamTime / game.Cps);
+        five = Speed.FloorTicks(t.Boss2BeamTime / game.Pace);
         Index = i;
         WordSize = -1;
         if (i is < 0 or > 2) throw new ArgumentOutOfRangeException(nameof(i), $"Boss int is out of bounds: {i}");

@@ -7,6 +7,8 @@ public sealed record LevelContext(Rng Rng, Tuning Tuning, double Cps)
 {
     /// <summary>0 (easy) to 4 (insane).</summary>
     public int DifficultyIndex => Difficulty.Of(Cps) - 1;
+    /// <summary>The speed ships move and halts count down at: Cps, flattened above Hard (Tuning.Pace).</summary>
+    public double Pace => Tuning.Pace(Cps);
 }
 
 /// <summary>Something in a level that happens at Time: seconds from the start of the level, the same at every difficulty.</summary>
@@ -16,6 +18,8 @@ public abstract class LevelEvent
     /// <summary>Where it came from (for the editing overlay and "start from line N"), or 0.</summary>
     public string File = "";
     public int Line;
+    /// <summary>The easiest difficulty it's on (0 Easy to 4 Insane): its line's tag, or the tag of the ship it copies.</summary>
+    public int Easiest;
 }
 
 /// <summary>The original's LevelEvent: Loop (re-run the level from event Index), Wait, or Jump (skip ahead Index seconds).</summary>
@@ -112,7 +116,7 @@ public sealed class SpawnEvent : LevelEvent
             case 't': HasTurret = true; break;
             case 'b': Shielded = true; HasTurret = true; break;
         }
-        A *= (float)(c.Cps * tune.SpeedPerCps);
+        A *= (float)(c.Pace * tune.SpeedPerCps);
     }
 }
 
@@ -135,7 +139,7 @@ public sealed class ObjectCommand
         float j = c.Tuning.Jitter;
         X = x > 0 && x < Playfield.ViewWidth ? Math.Clamp(x + c.Rng.Rand() * (j * 2) - j, 0, Playfield.ViewWidth) : x;
         Y = y > 0 && y < Playfield.ViewHeight ? Math.Clamp(y + c.Rng.Rand() * (j * 2) - j, 0, Playfield.ViewHeight) : y;
-        Timer = Speed.FloorTicks(timer * c.Tuning.HaltScale / c.Cps);
+        Timer = Speed.FloorTicks(timer * c.Tuning.HaltScale / c.Pace);
         Move = move;
         Fire = fire;
     }
@@ -154,7 +158,7 @@ public sealed class ObjectCommand
     }
 
     // Back to halt units, rounding down (so a copy can wait a tick less, as in the original).
-    int BaseTimer => Speed.FloorTicks(Timer * c.Cps / c.Tuning.HaltScale);
+    int BaseTimer => Speed.FloorTicks(Timer * c.Pace / c.Tuning.HaltScale);
 
     public ObjectCommand Clone() => new(c, X, Y, BaseTimer, Move, Fire);
     public ObjectCommand Mirror() => new(c, Playfield.ViewWidth - X, Y, BaseTimer, Move, Fire);

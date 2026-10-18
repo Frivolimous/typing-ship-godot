@@ -25,8 +25,8 @@ public static class Weapons
 /// </summary>
 public static class Difficulty
 {
-    /// <summary>What players see: 25 Easy, 40 Normal, 65 Hard, 75 Extreme, 90 Insane.</summary>
-    public static readonly int[] Wpm = { 25, 40, 65, 75, 90 };
+    /// <summary>What players see: 25 Easy, 40 Normal, 65 Hard, 90 Extreme, 120 Insane (the original had 75 and 90).</summary>
+    public static readonly int[] Wpm = { 25, 40, 65, 90, 120 };
     /// <summary>The same in characters per second, which is what the rules use.</summary>
     public static readonly double[] Cps = Wpm.Select(w => Speed.FromWpm(w)).ToArray();
     public static readonly string[] Names = { "Easy", "Normal", "Hard", "Extreme", "Insane" };

@@ -141,7 +141,7 @@ public sealed class AutoTyper
             {
                 if (c.Remaining >= 0) return c.Remaining;
                 // Not charging yet: time to fly in and sit out the halts before the firing step, plus the charge.
-                float ticks = (float)(m.Tuning.LaserCharge / m.Cps), speed = Math.Max(s.A * 10, 0.1f);
+                float ticks = (float)(m.Tuning.LaserCharge / m.Pace), speed = Math.Max(s.A * 10, 0.1f);
                 var pos = s.Position;
                 foreach (var cmd in s.Commands)
                 {

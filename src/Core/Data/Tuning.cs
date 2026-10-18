@@ -14,6 +14,14 @@ public sealed class Tuning
     public float BaseSpeed = 0.5f;
     /// <summary>A ship's speed (BaseSpeed plus its letters') is multiplied by cps x this.</summary>
     public double SpeedPerCps = 0.12;
+    public double PaceAboveHard = 0.5;
+
+    /// <summary>
+    /// The speed things move and count down at (ships, missiles, halts, laser charges), as a cps: the typing speed up to
+    /// Hard, and above it Hard x (cps / Hard)^"pace above hard", so the hardest difficulties bring more ships rather than
+    /// ships too fast to read.
+    /// </summary>
+    public double Pace(double cps) => cps <= Difficulty.Hard ? cps : Difficulty.Hard * Math.Pow(cps / Difficulty.Hard, PaceAboveHard);
     /// <summary>Size letter (1st of the ship code) to letters, points and speed.</summary>
     public Dictionary<char, SizeStats> Sizes = new()
     {
@@ -84,6 +92,7 @@ public sealed class Tuning
         I(Ships, "points", (t, v) => t.BasePoints = v),
         F(Ships, "speed", (t, v) => t.BaseSpeed = v),
         D(Ships, "speed per cps", (t, v) => t.SpeedPerCps = v),
+        D(Ships, "pace above hard", (t, v) => t.PaceAboveHard = v),
 
         I(Weapon, "laser extra letters", (t, v) => t.LaserExtraLetters = v),
         I(Weapon, "laser points", (t, v) => t.LaserPoints = v),
