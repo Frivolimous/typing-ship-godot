@@ -160,6 +160,11 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 
 ## Deviations from the original
 
+- **Copied ships don't drift.** Every point a ship flies to gets up to 10 px of random jitter. In the original, a
+  copy (clone, mirror, offset, and so every repeat) re-rolled the jitter on top of the already-jittered point it
+  copied, and rounded its halts down again, so a long chain of copies wandered in a random walk (about ±40 px by the
+  40th) and its halts shrank a tick at a time. Copies now jitter around the point as written and keep the halt as
+  written. Classic too (its traces were re-recorded).
 - **Extreme is 90 WPM and Insane 120** (the original had 75 and 90; Jeremy's call, 2026-10-18), so each
   difficulty is a clear step up and fast typists have something to chase. Above Hard, everything that moves or counts
   down with the typing speed (ship and missile speeds, halts, laser charges, stealth fades, boss 3's beam) uses a

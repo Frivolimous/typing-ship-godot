@@ -171,7 +171,8 @@ hard+: +0.3 laser sn  12,2     # the tag goes first, before the time
 - The tags are `normal+:`, `hard+:`, `extreme+:` and `insane+:`: the line is on that difficulty and every harder
   one. A line without a tag is on every difficulty.
 - **Times don't move.** A left-out line still moves the clock, so the lines after it come at the same time on every
-  difficulty. (Every ship's points get a small random jitter, up to 10 px, drawn in file order, copies included. A
+  difficulty. (Every ship's points get a small random jitter, up to 10 px around the point as written, drawn in file
+  order, copies included. A
   tagged line is still drawn on every difficulty, but a count that differs by difficulty changes how many copies
   are drawn, so the ships after it wobble differently. It's random every play anyway.)
 - **Copies go with their ship.** A `mirror`, `clone`, `offset` or `repeat` of a tagged ship is left out wherever the

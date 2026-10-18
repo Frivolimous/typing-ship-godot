@@ -85,7 +85,7 @@ tests/Core.Tests. The rest of the testing happens through the dev flags in docs/
 
 - **Headless simulation** (fast, no window): `--headless --fixed-fps 24 --path game -- --autotype --quit-on-end
   [--wpm=N] [--botwpm=N] [--level=N] [--seed=N]` (or `--cps`, `--botcps`) prints a one-line result per level. A perfect bot should clear
-  every level on Hard and up (Easy and Normal play Hard's timing until the difficulty pass). A slow bot (`--botwpm` well below `--wpm`) should take damage.
+  every level on Hard and up (Easy and Normal are thinned from Hard in the level files). A slow bot (`--botwpm` well below `--wpm`) should take damage.
 - **Screenshots** (needs a window): `--screenshot=path.png --at=600,1200` saves frames, then quits. Look at them.
   Save into the scratchpad or `screenshots/` (ignored).
 - Feel and difficulty can only be judged by Jeremy playing. Say so instead of claiming it's verified.

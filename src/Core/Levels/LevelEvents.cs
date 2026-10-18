@@ -124,7 +124,9 @@ public sealed class SpawnEvent : LevelEvent
 /// One step of a ship's script: fly to (x, y), or wait timer ticks; optionally fire when the step starts.
 /// Halts are given in "halt units" (the original's), timer x halt scale / cps ticks; a halt written in seconds as
 /// played on Hard is <see cref="UnitsFromSeconds"/> units, so it lasts that long on Hard and scales with cps elsewhere.
-/// Targets inside the view get up to ±jitter px, as in the original (re-rolled on clone/mirror/offset).
+/// Targets inside the view get up to ±jitter px, as in the original. A copy (clone/mirror/offset) re-rolls the jitter
+/// around the point as written, and keeps the halt as written: the original copied the already-jittered point and the
+/// rounded halt, so copies of copies drifted further and further.
 /// </summary>
 public sealed class ObjectCommand
 {
@@ -132,10 +134,15 @@ public sealed class ObjectCommand
     public int Timer;
     public bool Fire, Move;
     readonly LevelContext c;
+    readonly float baseX, baseY; // the point as written, before the jitter
+    readonly double baseTimer;   // the halt as written, in halt units
 
     public ObjectCommand(LevelContext c, float x = 0, float y = 0, double timer = 0, bool move = true, bool fire = false)
     {
         this.c = c;
+        baseX = x;
+        baseY = y;
+        baseTimer = timer;
         float j = c.Tuning.Jitter;
         X = x > 0 && x < Playfield.ViewWidth ? Math.Clamp(x + c.Rng.Rand() * (j * 2) - j, 0, Playfield.ViewWidth) : x;
         Y = y > 0 && y < Playfield.ViewHeight ? Math.Clamp(y + c.Rng.Rand() * (j * 2) - j, 0, Playfield.ViewHeight) : y;
@@ -157,12 +164,9 @@ public sealed class ObjectCommand
         return false;
     }
 
-    // Back to halt units, rounding down (so a copy can wait a tick less, as in the original).
-    int BaseTimer => Speed.FloorTicks(Timer * c.Pace / c.Tuning.HaltScale);
-
-    public ObjectCommand Clone() => new(c, X, Y, BaseTimer, Move, Fire);
-    public ObjectCommand Mirror() => new(c, Playfield.ViewWidth - X, Y, BaseTimer, Move, Fire);
-    public ObjectCommand Offset(float xOff, float yOff) => new(c, X + xOff, Y + yOff, BaseTimer, Move, Fire);
+    public ObjectCommand Clone() => new(c, baseX, baseY, baseTimer, Move, Fire);
+    public ObjectCommand Mirror() => new(c, Playfield.ViewWidth - baseX, baseY, baseTimer, Move, Fire);
+    public ObjectCommand Offset(float xOff, float yOff) => new(c, baseX + xOff, baseY + yOff, baseTimer, Move, Fire);
 
     /// <summary>Halt units for a halt of this many seconds on Hard.</summary>
     public static double UnitsFromSeconds(double seconds, Tuning t) => seconds * Playfield.TickRate * Difficulty.Hard / t.HaltScale;

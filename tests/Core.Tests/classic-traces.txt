@@ -1,180 +1,180 @@
-level 0 wpm 25 seed 1: 8BBF44BEB6AA9B0E
-level 0 wpm 25 seed 2: 112C8C6547C86DA6
-level 0 wpm 25 seed 1 slow: 0B1E77BA5E178989
-level 0 wpm 40 seed 1: 10C5B91C9172F6E5
-level 0 wpm 40 seed 2: 182CD359883452D0
-level 0 wpm 40 seed 1 slow: 4E7379C9DE0E0327
-level 0 wpm 65 seed 1: 5CBFB6994A1AEA16
-level 0 wpm 65 seed 2: EC77DA19E689E564
-level 0 wpm 65 seed 1 slow: 431516E97D501C1D
-level 0 wpm 90 seed 1: 3559254FECE55370
-level 0 wpm 90 seed 2: 9D5467EEAEC60FDC
-level 0 wpm 90 seed 1 slow: 0E65EE7BF2AE10AD
-level 0 wpm 120 seed 1: 4A183803B4248DC3
-level 0 wpm 120 seed 2: 08A8B2953426ADBF
-level 0 wpm 120 seed 1 slow: BCF55DE3025D8CBB
-level 1 wpm 25 seed 1: 67D37939AAAEBA90
-level 1 wpm 25 seed 2: 101BCC381A981707
-level 1 wpm 25 seed 1 slow: 8B9B6077278F19FC
-level 1 wpm 40 seed 1: 7A8A7B279A75EEE6
-level 1 wpm 40 seed 2: 1E38AF00B994691F
-level 1 wpm 40 seed 1 slow: D5582B8CF26C956C
-level 1 wpm 65 seed 1: 816B29160B38A1A5
-level 1 wpm 65 seed 2: 63EE16641A653FBF
-level 1 wpm 65 seed 1 slow: 3713E1331D8C8A69
-level 1 wpm 90 seed 1: CDB563080C2FEE39
-level 1 wpm 90 seed 2: A6D355E089C6CBD7
-level 1 wpm 90 seed 1 slow: 7CFF6C8BC8E83D82
-level 1 wpm 120 seed 1: 8672DB83DE156E99
-level 1 wpm 120 seed 2: 9963257EDFAAEB67
-level 1 wpm 120 seed 1 slow: B17362ABEEED9079
-level 2 wpm 25 seed 1: 93034A492E936CA6
-level 2 wpm 25 seed 2: 2284C19970FFD1EE
-level 2 wpm 25 seed 1 slow: B19C24B2B060AE95
-level 2 wpm 40 seed 1: 545496AD2C49FCCF
-level 2 wpm 40 seed 2: 54723DEE3ACF64A7
-level 2 wpm 40 seed 1 slow: 34CE3687885D693C
-level 2 wpm 65 seed 1: 597F83EB9D771FE7
-level 2 wpm 65 seed 2: 9FA7D9D7123A7EFB
-level 2 wpm 65 seed 1 slow: 0549FE14B1D25126
-level 2 wpm 90 seed 1: 9218C596318E6D48
-level 2 wpm 90 seed 2: 8C6141838C5B9B1F
-level 2 wpm 90 seed 1 slow: B6FCD672D08532FC
-level 2 wpm 120 seed 1: 606B6FB7B8EE1DA5
-level 2 wpm 120 seed 2: 0DDB762E56F19152
-level 2 wpm 120 seed 1 slow: F3E3D762ECF23600
-level 3 wpm 25 seed 1: 07E471540C46639F
-level 3 wpm 25 seed 2: 3B02795D61FCEA63
-level 3 wpm 25 seed 1 slow: 43AF69CCB934FD09
-level 3 wpm 40 seed 1: 4B97B704BB906619
-level 3 wpm 40 seed 2: A3398FEC98201380
-level 3 wpm 40 seed 1 slow: D81E042B3B29BFC8
-level 3 wpm 65 seed 1: 2EF919CB3DAFBF9A
-level 3 wpm 65 seed 2: 692812C94D912EBE
-level 3 wpm 65 seed 1 slow: FF0938B96CD5BF1D
-level 3 wpm 90 seed 1: A96947D312134926
-level 3 wpm 90 seed 2: 76A0E1354A67231D
-level 3 wpm 90 seed 1 slow: 5C65B02608581D44
-level 3 wpm 120 seed 1: DF4F2D4D133FC277
-level 3 wpm 120 seed 2: 497BCAA684847481
-level 3 wpm 120 seed 1 slow: F788340355E6C831
-level 4 wpm 25 seed 1: 6449DA47EF87F6FF
-level 4 wpm 25 seed 2: 6926DFC771AB6F95
-level 4 wpm 25 seed 1 slow: 68F73522B5651D6E
-level 4 wpm 40 seed 1: AB4DA2CFC7288A91
-level 4 wpm 40 seed 2: 7D1D635C3916273E
-level 4 wpm 40 seed 1 slow: F88F52E6AE53C1DD
-level 4 wpm 65 seed 1: BE116AFC6D068CBD
-level 4 wpm 65 seed 2: 7D6C860B5EEBD2ED
-level 4 wpm 65 seed 1 slow: E28D7DBD1D9DD9AA
-level 4 wpm 90 seed 1: E6C67C1126125CDE
-level 4 wpm 90 seed 2: 24A0AA11997E9CA3
-level 4 wpm 90 seed 1 slow: EB92E378B3E7B03E
-level 4 wpm 120 seed 1: 98BB78201B0E28F4
-level 4 wpm 120 seed 2: 3DEE6CDABEC162F6
-level 4 wpm 120 seed 1 slow: 6A62B65F91D2E3F8
-level 5 wpm 25 seed 1: 14741006B0AB044E
-level 5 wpm 25 seed 2: 4DF3BF4B08E4635F
-level 5 wpm 25 seed 1 slow: 413D8A187A9C29EE
-level 5 wpm 40 seed 1: D7C8ADD09D6A68ED
-level 5 wpm 40 seed 2: DDDB30DE93857423
-level 5 wpm 40 seed 1 slow: 5C1314B09BAD2FD3
-level 5 wpm 65 seed 1: E2F9DDCECDFEA4C0
-level 5 wpm 65 seed 2: 4BEEE5578F908E4D
-level 5 wpm 65 seed 1 slow: B4BF7D64B52D50C1
-level 5 wpm 90 seed 1: C6219E82C2912E52
-level 5 wpm 90 seed 2: C4E11033D638BFDB
-level 5 wpm 90 seed 1 slow: 3C6B4CD9CC89D1D6
-level 5 wpm 120 seed 1: 8C93ECAECDB740C3
-level 5 wpm 120 seed 2: C31D09F8573DD2FF
-level 5 wpm 120 seed 1 slow: 7BDD36E64C7C676A
-level 6 wpm 25 seed 1: 3B2F6F4B4F89E80C
-level 6 wpm 25 seed 2: 242BA883F3422B34
-level 6 wpm 25 seed 1 slow: 9FD4CBBD1FE845B9
-level 6 wpm 40 seed 1: 54212B1FC3D6FF42
-level 6 wpm 40 seed 2: 7A5639FA1E1B9220
-level 6 wpm 40 seed 1 slow: 7C943169FEC82283
-level 6 wpm 65 seed 1: FA89A8E667485B7E
-level 6 wpm 65 seed 2: B2B6807227F34A48
-level 6 wpm 65 seed 1 slow: 2943988BE20DF79D
-level 6 wpm 90 seed 1: 1EC7314D8092FC4B
-level 6 wpm 90 seed 2: FA4805D7B3947172
-level 6 wpm 90 seed 1 slow: 6B3FE2BC8105E914
-level 6 wpm 120 seed 1: 60313F204F274834
-level 6 wpm 120 seed 2: 23F9E66413CAD5FF
-level 6 wpm 120 seed 1 slow: 1736B71A9E9DC4DF
-level 7 wpm 25 seed 1: 4E383E0724F560D6
-level 7 wpm 25 seed 2: D7543F1FF1DD503E
-level 7 wpm 25 seed 1 slow: 88CABB8C70B3A8F4
-level 7 wpm 40 seed 1: A87AD466DD46DFD8
-level 7 wpm 40 seed 2: EFB697E5C5B1D056
-level 7 wpm 40 seed 1 slow: 9FB49A59E87A8D6E
-level 7 wpm 65 seed 1: 6DF533E298CC77BF
-level 7 wpm 65 seed 2: 8F08379AFE42C2E6
-level 7 wpm 65 seed 1 slow: 381339901AF6D2CC
-level 7 wpm 90 seed 1: 0F33C53855EC8346
-level 7 wpm 90 seed 2: FEF496DEE212B150
-level 7 wpm 90 seed 1 slow: E0C58DDA7F02628F
-level 7 wpm 120 seed 1: F6D9897AF4B6D672
-level 7 wpm 120 seed 2: CE9BEB1648C4A076
-level 7 wpm 120 seed 1 slow: D95DE4AC6A830389
-level 8 wpm 25 seed 1: A6E49F0650447E54
-level 8 wpm 25 seed 2: BDAE27C4E1D7CE45
-level 8 wpm 25 seed 1 slow: CB952CB6F56C3370
-level 8 wpm 40 seed 1: E06AEC34F4005598
-level 8 wpm 40 seed 2: F7587C666671F1BB
-level 8 wpm 40 seed 1 slow: 3919DB7B8171CCED
-level 8 wpm 65 seed 1: 33065FDF2372B1F4
-level 8 wpm 65 seed 2: F1556AF42E085507
-level 8 wpm 65 seed 1 slow: 537BCBFD775E44B7
-level 8 wpm 90 seed 1: 8C4E013E1FFBFCAD
-level 8 wpm 90 seed 2: 43489C6889951E6E
-level 8 wpm 90 seed 1 slow: 21664DD56FEDE8B0
-level 8 wpm 120 seed 1: 6E70AC879EC0BC83
-level 8 wpm 120 seed 2: 3FFFC012E44F1A78
-level 8 wpm 120 seed 1 slow: 899BFE5DE39E4629
-level 9 wpm 25 seed 1: 321B4DA929FAB05B
-level 9 wpm 25 seed 2: 1AABD690707BEEE2
-level 9 wpm 25 seed 1 slow: 69C1C8643F639920
-level 9 wpm 40 seed 1: FAC0150DEA457179
-level 9 wpm 40 seed 2: 31754C87A6B6E85B
-level 9 wpm 40 seed 1 slow: BA654DDDD6CA6DE5
-level 9 wpm 65 seed 1: 4E5C44481ED17921
-level 9 wpm 65 seed 2: 267A436945493B52
-level 9 wpm 65 seed 1 slow: B00022A053291889
-level 9 wpm 90 seed 1: 521CE544270C1436
-level 9 wpm 90 seed 2: EC9316B1E43092FC
-level 9 wpm 90 seed 1 slow: F9B6272137397A91
-level 9 wpm 120 seed 1: 3018179D6DAF14CA
-level 9 wpm 120 seed 2: 0F9C667FD5553469
-level 9 wpm 120 seed 1 slow: 78FF0027722E114A
-level 10 wpm 25 seed 1: 779DB5A7615EC485
-level 10 wpm 25 seed 2: 40D8A69433E60BE4
-level 10 wpm 25 seed 1 slow: 93927D57FC5BCDD7
-level 10 wpm 40 seed 1: 2C663EB7D20B3DFF
-level 10 wpm 40 seed 2: 731FEC27993A9416
-level 10 wpm 40 seed 1 slow: 8A8FD77C2044ABF9
-level 10 wpm 65 seed 1: B9EFCDD0500D4C50
-level 10 wpm 65 seed 2: 2CC984415414F188
-level 10 wpm 65 seed 1 slow: B0C7F55B2C76C35C
-level 10 wpm 90 seed 1: AE65C1A0FD4CAF5B
-level 10 wpm 90 seed 2: 943686BA34FB9271
-level 10 wpm 90 seed 1 slow: 514A583149EC48E5
-level 10 wpm 120 seed 1: FB767C66DEC2CADB
-level 10 wpm 120 seed 2: 4F469235E514D361
-level 10 wpm 120 seed 1 slow: 9D3F9D456E3C7E1D
-level 11 wpm 25 seed 1: 5159601B3EE25D19
-level 11 wpm 25 seed 2: 050DDB8D9AF49538
-level 11 wpm 25 seed 1 slow: 9AEF893659AB64A0
-level 11 wpm 40 seed 1: 448F356F271D1C9A
-level 11 wpm 40 seed 2: 9328113BC209D319
-level 11 wpm 40 seed 1 slow: F851B1262581EB65
-level 11 wpm 65 seed 1: 156CA6D0D5D65F16
-level 11 wpm 65 seed 2: 781FBAA81AC46578
-level 11 wpm 65 seed 1 slow: F4CF3397A6B7AC19
-level 11 wpm 90 seed 1: FE7913F011D70C3F
-level 11 wpm 90 seed 2: 6964B3C2EDF1E5D9
-level 11 wpm 90 seed 1 slow: E391B843F6BD1C9C
-level 11 wpm 120 seed 1: 437044D407D95695
-level 11 wpm 120 seed 2: F106727D578CFF37
-level 11 wpm 120 seed 1 slow: 73207D71D3F3906E
+level 0 wpm 25 seed 1: FD5DFC7E2FB4350E
+level 0 wpm 25 seed 2: 5616C0ED95A96A55
+level 0 wpm 25 seed 1 slow: B8B26630729CDACF
+level 0 wpm 40 seed 1: F364BC9BDE5EA84C
+level 0 wpm 40 seed 2: 7B7EE2DF5F27BF26
+level 0 wpm 40 seed 1 slow: 4E70B01038EE65D7
+level 0 wpm 65 seed 1: E85C166FCFBC7B53
+level 0 wpm 65 seed 2: 2C641B14994D9F42
+level 0 wpm 65 seed 1 slow: 83C0859A6A41AEBA
+level 0 wpm 90 seed 1: 2A2664D05B72511D
+level 0 wpm 90 seed 2: D9363A6EBE96391A
+level 0 wpm 90 seed 1 slow: 123A1933EA290060
+level 0 wpm 120 seed 1: 55FFFD9E6B2A9834
+level 0 wpm 120 seed 2: 6161EB3F3DB305C3
+level 0 wpm 120 seed 1 slow: 6CB783225A6E2007
+level 1 wpm 25 seed 1: 8C47E378A85DE9D0
+level 1 wpm 25 seed 2: 4E320516DCFEA77D
+level 1 wpm 25 seed 1 slow: 0A989A69B7CCF901
+level 1 wpm 40 seed 1: E7C6967FE4C6367E
+level 1 wpm 40 seed 2: C827445952FC69CD
+level 1 wpm 40 seed 1 slow: 6C84B28F15664C2D
+level 1 wpm 65 seed 1: D83D4AD54A6E9255
+level 1 wpm 65 seed 2: 20A507EE78E47135
+level 1 wpm 65 seed 1 slow: 1B7CFE76B45DA435
+level 1 wpm 90 seed 1: BF1BE3EBE18A57F0
+level 1 wpm 90 seed 2: 0691D87EF0823A93
+level 1 wpm 90 seed 1 slow: 72E9E08F3A42DA9B
+level 1 wpm 120 seed 1: 9E3FC86AFCA8759F
+level 1 wpm 120 seed 2: C382BC33013EF0B5
+level 1 wpm 120 seed 1 slow: 7F21C0BA1E5726E9
+level 2 wpm 25 seed 1: EBF87C83A1EE3A0A
+level 2 wpm 25 seed 2: C1F790FB8AC49444
+level 2 wpm 25 seed 1 slow: 105B2667E3D4E8CE
+level 2 wpm 40 seed 1: 896D99B716DFC143
+level 2 wpm 40 seed 2: 620F786F8766E0B1
+level 2 wpm 40 seed 1 slow: 91DC8E0B21ECC50A
+level 2 wpm 65 seed 1: AC161680A14D6E34
+level 2 wpm 65 seed 2: 577382575C8C08E0
+level 2 wpm 65 seed 1 slow: 15B37D1B4EEACEDB
+level 2 wpm 90 seed 1: C5F86254356CABCC
+level 2 wpm 90 seed 2: 9BD4FA93DFDE7AA4
+level 2 wpm 90 seed 1 slow: 7E927C5A87C0F59B
+level 2 wpm 120 seed 1: 0EA5F3645B626DD4
+level 2 wpm 120 seed 2: 0BC36E27DAF87D67
+level 2 wpm 120 seed 1 slow: 1EE0736CAD385E5E
+level 3 wpm 25 seed 1: 7EE8D8C953DE8223
+level 3 wpm 25 seed 2: 79BA104262092BB2
+level 3 wpm 25 seed 1 slow: D3B83B2DBA63CE22
+level 3 wpm 40 seed 1: 6D3279EDAD582707
+level 3 wpm 40 seed 2: B4D412A58D5503A9
+level 3 wpm 40 seed 1 slow: 1FDCD5634A620883
+level 3 wpm 65 seed 1: 7CAC093963AFB366
+level 3 wpm 65 seed 2: 7FDA5886DD1BE406
+level 3 wpm 65 seed 1 slow: AD5DA7E46DC23D3B
+level 3 wpm 90 seed 1: D961CB22199F3CA0
+level 3 wpm 90 seed 2: A2C884E35624D464
+level 3 wpm 90 seed 1 slow: 043AA9F979240429
+level 3 wpm 120 seed 1: 661E770E82274658
+level 3 wpm 120 seed 2: 596E9021CEC01F90
+level 3 wpm 120 seed 1 slow: 94C113669D47E603
+level 4 wpm 25 seed 1: 6C21931254C0F053
+level 4 wpm 25 seed 2: 1E8A2B3AB32A21CC
+level 4 wpm 25 seed 1 slow: F81CAF2AF88EE087
+level 4 wpm 40 seed 1: 8DA57D131C7FF6F3
+level 4 wpm 40 seed 2: 7662FF3C56EF8F95
+level 4 wpm 40 seed 1 slow: 8D266DDD4F54095D
+level 4 wpm 65 seed 1: B346834C30A0C6E9
+level 4 wpm 65 seed 2: 19B0D081BCE06AB6
+level 4 wpm 65 seed 1 slow: 7D45DE60EBE9433D
+level 4 wpm 90 seed 1: DF370A8977F49186
+level 4 wpm 90 seed 2: DE9004BD21DFD7A3
+level 4 wpm 90 seed 1 slow: B245EAC4839A8627
+level 4 wpm 120 seed 1: 30F1FC102C3F4400
+level 4 wpm 120 seed 2: 5F978A0A2E83AD94
+level 4 wpm 120 seed 1 slow: E0733C6EBCAA11F4
+level 5 wpm 25 seed 1: 498B446965C3C55E
+level 5 wpm 25 seed 2: E00D8836E1314FD7
+level 5 wpm 25 seed 1 slow: F28767763946D604
+level 5 wpm 40 seed 1: 8D35F294A8EE39DA
+level 5 wpm 40 seed 2: A4DCED8588A3FBA3
+level 5 wpm 40 seed 1 slow: 0C9CDDBB1567BFB5
+level 5 wpm 65 seed 1: FC96498CE765D345
+level 5 wpm 65 seed 2: DBDD5E77A250A338
+level 5 wpm 65 seed 1 slow: E14F62BF150E86FA
+level 5 wpm 90 seed 1: 895E88A8BBD6910B
+level 5 wpm 90 seed 2: 59EFAF22A8C93A59
+level 5 wpm 90 seed 1 slow: 147635EE5D5611C9
+level 5 wpm 120 seed 1: 8926AB333C697E4F
+level 5 wpm 120 seed 2: E5B8F252DA44D97D
+level 5 wpm 120 seed 1 slow: AE5085B2053576F4
+level 6 wpm 25 seed 1: 28FFDE35EC5604EC
+level 6 wpm 25 seed 2: 8D69739DEFB00A74
+level 6 wpm 25 seed 1 slow: 2B18604E24E45A98
+level 6 wpm 40 seed 1: 6E887ED8FD7E86E5
+level 6 wpm 40 seed 2: 000148DAB8C6EE70
+level 6 wpm 40 seed 1 slow: DABD5E8DEC044DEF
+level 6 wpm 65 seed 1: 9944C39808638A35
+level 6 wpm 65 seed 2: DE8D4B6900D3FAB8
+level 6 wpm 65 seed 1 slow: BACA3AF715AC4C6F
+level 6 wpm 90 seed 1: 7FE0DA23B70CD12F
+level 6 wpm 90 seed 2: B7C529625603A494
+level 6 wpm 90 seed 1 slow: 15D103348844C0BB
+level 6 wpm 120 seed 1: 2B206EAEE61C1A7A
+level 6 wpm 120 seed 2: 2A4549C5C10FC23A
+level 6 wpm 120 seed 1 slow: C0039BBBF39D45B3
+level 7 wpm 25 seed 1: DE2CADECF1D5EBFF
+level 7 wpm 25 seed 2: 5DBCFAEC41B3DC06
+level 7 wpm 25 seed 1 slow: 68F0E7CC0661BAD5
+level 7 wpm 40 seed 1: 70EF28A483E335F8
+level 7 wpm 40 seed 2: E2DBB0554F0E8F76
+level 7 wpm 40 seed 1 slow: 5F4D0461EB2AE03C
+level 7 wpm 65 seed 1: 071A3D1B68E11949
+level 7 wpm 65 seed 2: E8030A15D3977BEF
+level 7 wpm 65 seed 1 slow: B8D3B030702CC837
+level 7 wpm 90 seed 1: BB5FC480863AE13A
+level 7 wpm 90 seed 2: 8774B49200DEA84B
+level 7 wpm 90 seed 1 slow: 23E54E652365FCD1
+level 7 wpm 120 seed 1: 5CE1AD5058862E22
+level 7 wpm 120 seed 2: 2E9DA41CE3FF421F
+level 7 wpm 120 seed 1 slow: 42A7270768C01A0E
+level 8 wpm 25 seed 1: 16EA08A5F9ED6FB0
+level 8 wpm 25 seed 2: 7D952F878BD44C8F
+level 8 wpm 25 seed 1 slow: 08ECB57B21329638
+level 8 wpm 40 seed 1: 41CC2EC644DD87B4
+level 8 wpm 40 seed 2: 8C07439AD009982E
+level 8 wpm 40 seed 1 slow: EB963D2D296A2AD2
+level 8 wpm 65 seed 1: 98C5C29CBF8AE5C5
+level 8 wpm 65 seed 2: 1D14D0327B4AFB7A
+level 8 wpm 65 seed 1 slow: 5A913D46A9E710B8
+level 8 wpm 90 seed 1: D386FA4D3349C639
+level 8 wpm 90 seed 2: 22B495BBA5305C61
+level 8 wpm 90 seed 1 slow: 46FB8BA33BB39039
+level 8 wpm 120 seed 1: 2D07DAF5CA11BE69
+level 8 wpm 120 seed 2: EE2BB452CDEC1921
+level 8 wpm 120 seed 1 slow: CC65EFBFE789B473
+level 9 wpm 25 seed 1: 8D55A88EBC87E208
+level 9 wpm 25 seed 2: BD76F8C9BD752798
+level 9 wpm 25 seed 1 slow: 061FE2B8606D1B22
+level 9 wpm 40 seed 1: E7B2BD6DD2803837
+level 9 wpm 40 seed 2: FC30AC725C07F9B1
+level 9 wpm 40 seed 1 slow: 96B32BA9748BA9DA
+level 9 wpm 65 seed 1: CC19B77C94891933
+level 9 wpm 65 seed 2: 2CFDA8F54C6EBA46
+level 9 wpm 65 seed 1 slow: 810A42DED4826394
+level 9 wpm 90 seed 1: 8254989986D61217
+level 9 wpm 90 seed 2: 8B655FF01CF78DDF
+level 9 wpm 90 seed 1 slow: 5553D529375373E6
+level 9 wpm 120 seed 1: D64F799DA8F53696
+level 9 wpm 120 seed 2: 744639571C6F5834
+level 9 wpm 120 seed 1 slow: 41722BEB20B8AB3A
+level 10 wpm 25 seed 1: 05EA06B26F937FAF
+level 10 wpm 25 seed 2: C31F226E36983900
+level 10 wpm 25 seed 1 slow: 4DA827D5BFC8F929
+level 10 wpm 40 seed 1: DE78FAC30FDC18D5
+level 10 wpm 40 seed 2: F8D9C779120A74FF
+level 10 wpm 40 seed 1 slow: B6E7D6E96BDE3ECB
+level 10 wpm 65 seed 1: 4E29F966200C4FB8
+level 10 wpm 65 seed 2: 1E491C6EFB048EBB
+level 10 wpm 65 seed 1 slow: FC64C3B03BAD6A8B
+level 10 wpm 90 seed 1: EA58637D00373D6B
+level 10 wpm 90 seed 2: 4F90C6C566C870EC
+level 10 wpm 90 seed 1 slow: CEBB9ED6A681B26D
+level 10 wpm 120 seed 1: B223C7ED7DBFDA21
+level 10 wpm 120 seed 2: 0A80458B7F068F88
+level 10 wpm 120 seed 1 slow: 2A8E48DEC28FA949
+level 11 wpm 25 seed 1: 34351FEC4C5B536F
+level 11 wpm 25 seed 2: 59598CC06FC2B2C0
+level 11 wpm 25 seed 1 slow: 5B43444D9E4E366C
+level 11 wpm 40 seed 1: 1FC6F31E478A49FD
+level 11 wpm 40 seed 2: 6B52E027175B6B85
+level 11 wpm 40 seed 1 slow: 9DD27E0CCC68520C
+level 11 wpm 65 seed 1: 16C555A17D36E1E9
+level 11 wpm 65 seed 2: 9F4E5163896611DB
+level 11 wpm 65 seed 1 slow: 7A34524E95279277
+level 11 wpm 90 seed 1: D3B944FE586EECD0
+level 11 wpm 90 seed 2: 47F993B9040294C7
+level 11 wpm 90 seed 1 slow: 5928FCF4C0959A81
+level 11 wpm 120 seed 1: FDC37F64C2389AC7
+level 11 wpm 120 seed 2: 8F87C6D5AA70EF78
+level 11 wpm 120 seed 1 slow: EA58BDB6F8E905FE

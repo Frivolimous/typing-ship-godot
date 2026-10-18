@@ -135,6 +135,27 @@ public class LevelFormatTests
         Assert.Contains(expected, ParseFails(line).Message);
 
     [Fact]
+    public void Copies_of_copies_jitter_around_the_written_point_without_drifting()
+    {
+        // 40 generations of copies (each repeat copies the copy before it) and an offset chain: every point stays
+        // within the jitter of where it was written, and every halt is as long as the first.
+        var ships = Build("@0:01 ship mmn  3,0  move 3,4  halt 2  move 6,8\nrepeat 0.2 40 1 mirrored\n" +
+                          "@0:20 ship mmn  1,0  move 1,4  move 1,13\n+0.5 offset  1,0\n+0.5 offset  1,0\n+0.5 offset  1,0\n+0.5 offset  1,0")
+            .Cast<SpawnEvent>().ToList();
+        float j = TestData.Tuning.Jitter;
+        for (int i = 0; i <= 40; i++)
+        {
+            var cmd = ships[i].Commands;
+            float x = (i % 2 == 0 ? 3 : 9) * Playfield.GridX;
+            Assert.InRange(cmd[0].X, x - j, x + j);
+            Assert.InRange(cmd[0].Y, 4 * Playfield.GridY - j, 4 * Playfield.GridY + j);
+            Assert.Equal(ships[0].Commands[1].Timer, cmd[1].Timer);
+        }
+        for (int k = 0; k < 5; k++)
+            Assert.InRange(ships[41 + k].Commands[0].X, (1 + k) * Playfield.GridX - j, (1 + k) * Playfield.GridX + j);
+    }
+
+    [Fact]
     public void Repeat_over_spreads_the_copies_so_the_last_comes_at_the_time_given()
     {
         Close(new[] { 1.0, 1.5, 2, 2.5, 3 }, Times("@0:01 missile sn  5,0 5,6\nrepeat_over 2 4"));
