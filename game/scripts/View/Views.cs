@@ -7,7 +7,8 @@ namespace TypingShip;
 
 /// <summary>
 /// The word carried by a ship, missile, scanner or the hull bar, coloured by how urgent it is (priority 0-3). The
-/// letters the typing bar ends with light up as they're typed, and the word pops when it's fired.
+/// letters the typing bar ends with light up as they're typed, and the word pops when it's fired. A wrong letter (one
+/// that leaves no word on screen matching) flashes the letters that were lit red, with a little shake.
 /// </summary>
 public partial class WordLabel : Node2D
 {
@@ -24,6 +25,13 @@ public partial class WordLabel : Node2D
     public static readonly Color MatchColor = new(0.35f, 1, 0.75f);
     static readonly LabelSettings MatchSettings =
         Fonts.Settings(Fonts.Word, FontSize, MatchColor, outline: 5, outlineColor: new Color(0, 0.12f, 0.06f, 0.95f));
+    static readonly LabelSettings MissSettings =
+        Fonts.Settings(Fonts.Word, FontSize, new Color(1, 0.3f, 0.25f), outline: 5, outlineColor: new Color(0.15f, 0, 0, 0.95f));
+    const float MissTime = 0.35f;
+
+    // Every word on screen, to tell a wrong letter (no word matches any more) from one that just picks another word.
+    static readonly HashSet<WordLabel> live = new();
+    static string checkedBar = "";
 
     readonly Label label = new()
     {
@@ -42,6 +50,8 @@ public partial class WordLabel : Node2D
     };
     string? word;
     int priority = -1;
+    Vector2 typedHome;
+    float miss; // seconds left of a wrong-letter flash
 
     public WordLabel()
     {
@@ -50,13 +60,66 @@ public partial class WordLabel : Node2D
         Visible = false;
     }
 
+    public override void _EnterTree() => live.Add(this);
+    public override void _ExitTree() => live.Remove(this);
+
     // How many of the word's letters the typing bar ends with (0 when none, and never all of them).
     int matched;
 
+    bool Matches(string bar) => Visible && word != null && MatchOf(word, bar) > 0;
+
     public override void _Process(double delta)
     {
-        var bar = G.Model?.Typed;
-        SetMatched(Visible && word != null && bar != null ? MatchOf(word, bar) : 0);
+        var bar = G.Model?.Typed ?? "";
+        CheckMiss(bar);
+        int k = Visible && word != null ? MatchOf(word, bar) : 0;
+        if (miss > 0 && k > 0) EndMiss(); // a new start on this word
+        SetMatched(k);
+        if (miss <= 0) return;
+        miss -= (float)delta;
+        if (miss <= 0)
+        {
+            EndMiss();
+            return;
+        }
+        float t = miss / MissTime;
+        var shake = new Vector2(Mathf.Sin(miss * 70) * 3 * t, 0);
+        label.Position = new Vector2(-100, 0) + shake;
+        typed.Position = typedHome + shake;
+        typed.Modulate = new Color(1, 1, 1, Mathf.Min(1, t * 1.5f));
+    }
+
+    /// <summary>
+    /// Once per change of the typing bar (whichever word looks first): if a letter was typed and now no word matches,
+    /// every word that had letters lit flashes them red.
+    /// </summary>
+    static void CheckMiss(string bar)
+    {
+        if (bar == checkedBar) return;
+        // A letter typed, not a backspace or a fired word (both of which only take letters off the end).
+        bool letterTyped = !checkedBar.StartsWith(bar, StringComparison.Ordinal);
+        checkedBar = bar;
+        if (!letterTyped || live.Any(l => l.Matches(bar))) return;
+        foreach (var l in live)
+            if (l.matched > 0 && l.Visible) l.Miss();
+    }
+
+    void Miss()
+    {
+        miss = MissTime;
+        typed.Text = word![..matched];
+        typed.LabelSettings = MissSettings;
+        typed.Visible = true;
+    }
+
+    void EndMiss()
+    {
+        miss = 0;
+        label.Position = new Vector2(-100, 0);
+        typed.Position = typedHome;
+        typed.Modulate = Colors.White;
+        typed.LabelSettings = MatchSettings;
+        typed.Visible = matched > 0;
     }
 
     /// <summary>The longest start of the word that the typed text ends with.</summary>
@@ -71,11 +134,15 @@ public partial class WordLabel : Node2D
     {
         if (k == matched) return;
         matched = k;
-        typed.Visible = k > 0;
-        if (k == 0) return;
+        if (k == 0)
+        {
+            typed.Visible = miss > 0; // a wrong letter's flash stays up
+            return;
+        }
+        typed.Visible = true;
         typed.Text = word![..k];
         float width = Fonts.Word.GetStringSize(word, HorizontalAlignment.Left, -1, FontSize).X;
-        typed.Position = new Vector2(-width / 2, 0);
+        typed.Position = typedHome = new Vector2(-width / 2, 0);
     }
 
     /// <summary>The word was typed: a copy of it swells and fades where it was.</summary>
@@ -107,6 +174,7 @@ public partial class WordLabel : Node2D
             word = text;
             label.Text = text ?? "";
             Visible = text != null;
+            if (miss > 0) EndMiss();
             SetMatched(0);
         }
         if (p != priority)

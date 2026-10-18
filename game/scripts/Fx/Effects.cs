@@ -75,14 +75,15 @@ public partial class LaserEffect : BeamFx
     {
         float t = T, fade = 1 - t;
         float w = (t < 0.15f ? 1.5f : 1) * Mathf.Pow(fade, 0.7f);
-        DrawLine(Vector2.Zero, To, new Color(glow, 0.3f), 12 * w, true);
-        DrawLine(Vector2.Zero, To, new Color(beam, 0.8f), 4.5f * w, true);
-        DrawLine(Vector2.Zero, To, new Color(1.6f, 1.6f, 1.6f, fade), 1.6f * w, true); // overbright: it blooms
+        // The beam itself is slim (Jeremy: half its first width); the flare and burst at its ends stay as they were.
+        DrawLine(Vector2.Zero, To, new Color(glow, 0.3f), 6 * w, true);
+        DrawLine(Vector2.Zero, To, new Color(beam, 0.8f), 2.25f * w, true);
+        DrawLine(Vector2.Zero, To, new Color(1.6f, 1.6f, 1.6f, fade), 0.8f * w + 0.2f, true); // overbright: it blooms
 
         for (int k = 0; k < 3; k++)
         {
             float u = (t * 2.5f + k / 3f) % 1;
-            DrawCircle(To * u, 2.5f * w + 0.5f, new Color(1, 1, 1, 0.8f * fade));
+            DrawCircle(To * u, 1.25f * w + 0.5f, new Color(1, 1, 1, 0.8f * fade));
         }
 
         DrawCircle(Vector2.Zero, 7 * w, new Color(beam, 0.6f));

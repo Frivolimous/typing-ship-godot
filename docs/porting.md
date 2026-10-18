@@ -215,7 +215,8 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   the previous beam if that one ended with counter-words left over.
 - **Typing "pause" on the pause screen resumes** (as Escape does). The original only offered MENU there.
 - **Typing feedback** (new, in Classic too): on every word that the typing bar ends with the start of, the typed
-  letters light up, and a typed word pops as it fires. The original showed nothing until a whole word matched.
+  letters light up, and a typed word pops as it fires. A wrong letter (one that leaves no word matching) flashes the
+  lit letters red with a shake. The original showed nothing until a whole word matched.
 - **The bosses' new art moves where things happen**, in Classic too (Jeremy's call: the old positions aren't kept,
   not even for reference). The scanner and death explosions land on the new art, the turrets drop from boss 1's six
   gun muzzles, boss 0's ships launch from inside its two hangars (data/levels/*/bosses.txt), and the bosses' sizes
