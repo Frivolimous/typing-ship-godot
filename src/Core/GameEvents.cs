@@ -26,6 +26,8 @@ public interface IGameEvents
     /// <summary>The player's ship was destroyed: the presentation plays its death (the level ends 100 ticks later).</summary>
     void PlayerDestroyed() { }
     void Beam(Vec2 from, Vec2 to, BeamKind kind) { }
+    /// <summary>The player was hit (or would have been, if invincible) by this sprite, or by something unnamed.</summary>
+    void PlayerHit(Sprite? by) { }
     /// <summary>The score changed by amount: a floating number at a point in the game view, or by the typing bar.</summary>
     void ScorePopup(Vec2 at, int amount, bool inGameView) { }
     void Sound(GameSound sound) { }

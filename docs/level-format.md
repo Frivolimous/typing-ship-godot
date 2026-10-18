@@ -58,6 +58,7 @@ on. Edit the file, save, and press **F5** in the game: it reloads the files and 
 | F9 | Show or hide the grid and the ships' flight paths. Each ship is labelled with its line in the file and the time it came in (`L23 1:37.4`) |
 | F10 | Invincible on or off, to watch a whole level |
 | F11 | The bot on or off: let it play a stretch, then switch it off and type yourself (or the other way round). It types at the difficulty's speed (or `--botwpm`) |
+| F12 | Which bot: the perfect typist, or a realistic one (80% of the difficulty's speed with 3.5% mistakes, the pacing report's realistic bot). The banner shows "BOT (realistic)" |
 
 The start point can be a time (`1:37`), a percentage of the level (`50`, as on the in-game progress meter) or a
 line of the file (`L40` starts with the first ship that line makes). The banner shows the level's time and the

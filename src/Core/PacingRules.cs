@@ -13,7 +13,7 @@ public sealed class PacingRules
     public const string FileName = "pacing-rules.txt";
 
     /// <summary>The rule names an "exempt" line can use, in the order they're checked.</summary>
-    public static readonly string[] RuleNames = { "duration", "average", "lulls", "earned", "intensity", "peaks", "arc" };
+    public static readonly string[] RuleNames = { "duration", "average", "lulls", "earned", "intensity", "peaks", "arc", "pressure" };
 
     public double Burst = 0.5;
     public double LullFloor = 0.3, LullFloorSeconds = 7, EmptySeconds = 3, LullShare = 0.25;
@@ -21,6 +21,7 @@ public sealed class PacingRules
     public double Intense = 1.0, IntenseSeconds = 13, VeryIntense = 1.2, VeryIntenseShare = 0.2;
     public double PeakCap = 1.5, SpikeCap = 1.6, SpikeSeconds = 5, Release = 0.65, ReleaseWithin = 5, ReleaseHold = 5;
     public double Intro = 8;
+    public double PressureMax = 1.0, PressureWarn = 0.85;
     public double DurationBase = 90, DurationPerLevel = 9, DurationTolerance = 3;
     public double AverageMin = 0.65, AverageMax = 0.8, AverageTargetBase = 0.65, AverageTargetPerLevel = 0.015,
         AverageTargetTolerance = 0.03;
@@ -57,6 +58,8 @@ public sealed class PacingRules
         ("release within", (r, v) => r.ReleaseWithin = v),
         ("release hold", (r, v) => r.ReleaseHold = v),
         ("intro seconds", (r, v) => r.Intro = v),
+        ("pressure max", (r, v) => r.PressureMax = v),
+        ("pressure warn", (r, v) => r.PressureWarn = v),
         ("duration base", (r, v) => r.DurationBase = v),
         ("duration per level", (r, v) => r.DurationPerLevel = v),
         ("duration tolerance", (r, v) => r.DurationTolerance = v),
@@ -281,6 +284,26 @@ public sealed class PacingRules
             }
             else if (early.Count > 0 && final.Second <= half)
                 Add("arc", final.Second, $"the last peak is in the first half (half-way is {Time((int)half)})");
+        }
+
+        // 8. Pressure: the typing speed needed to stop every threat before it hits (a stretch of time, from a run where
+        // nobody types). Above the max even a perfect typist at P gets hit; above the warning level, a slightly slower one.
+        if (run.Pressure is { } pressure)
+        {
+            int[][] lines = run.PressureLines ?? Array.Empty<int[]>();
+            foreach (var (limit, warning) in new[] { (PressureMax, false), (PressureWarn, true) })
+            {
+                foreach (var r in Runs(1, pressure.Length, s => pressure[s - 1] > limit + 1e-9))
+                {
+                    // A stretch over the max also shows up over the warning level: only warn about what isn't already a failure.
+                    if (warning && Enumerable.Range(r.Start, r.Length).Any(s => pressure[s - 1] > PressureMax + 1e-9)) continue;
+                    int at = Enumerable.Range(r.Start, r.Length).Aggregate((x, y) => pressure[y - 1] > pressure[x - 1] ? y : x);
+                    var involved = at - 1 < lines.Length ? lines[at - 1] : Array.Empty<int>();
+                    Add("pressure", r.Start,
+                        $"stopping every threat needs {P(pressure[at - 1])} at {Time(at - 1)} ({r.Length} s over {P(limit)})" +
+                        (involved.Length > 0 ? $"; lines {string.Join(", ", involved)}" : ""), warning);
+                }
+            }
         }
         return found;
     }

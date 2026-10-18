@@ -243,7 +243,7 @@ public sealed class Boss : Sprite
                 }
                 else
                 {
-                    Game.HitTarget(player, Weapons.Suicide);
+                    Game.HitTarget(player, Weapons.Suicide, this);
                 }
             }
             if (delay == 0)

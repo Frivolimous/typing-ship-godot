@@ -113,6 +113,24 @@ max_lull_seconds = min(10, 4 + seconds_previous_burst_spent_above_1.0P)
 - The level's **final peak** must be **higher than every peak in the first half**.
 - Early peaks can be high (early challenge is fine); the ending just has to top them.
 
+### 8. Pressure
+
+Added after the Hard pass (2026-10-18), because load can't see threats bunching up: a wave of mines with 3-letter
+words barely moves load, but if they all dive at once they all have to be typed in the same few seconds.
+
+- **Threats** are what hurts the player: enemy missiles, suicide ships (mines included) and laser shots. They're
+  measured in a run where nobody types, so every threat plays out: when its word first shows on screen, when it hits,
+  and the letters it takes to stop (its word, plus the main word under a shield).
+- **Pressure** is the slowest steady typing speed that stops every threat before it hits, typing the most urgent first:
+  over each stretch of time, the letters of the threats that both appear and hit inside it, divided by its length. Each
+  second shows the worst stretch of up to 20 s around it, as a share of P. A typist slower than that gets hit there.
+- **Pressure above 1.0P** fails: even a perfect typist at P can't stop everything in time.
+- **Pressure above 0.85P** warns: a typist a little under P, or one who mistypes, gets hit there.
+
+It's an upper bound in one way (ships aren't shot down before they fire, so every missile they'd launch counts) and
+generous in another (no reaction time, and no missile flight time after a laser ship's word is typed). Checked against
+the realistic bot on the Hard pass levels: where pressure rose above the bot's share of P, the bot took its hits.
+
 ## Validation
 
 Add a rule-check report to the pacing sim:

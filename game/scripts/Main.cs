@@ -99,6 +99,7 @@ public partial class Main : Node2D
             GD.Print(G.Model.ResultLine(cleared));
         };
         if (args.ContainsKey("quit-on-end")) G.Ctrl.LevelOver += _ => GetTree().Quit();
+        if (args.ContainsKey("realistic")) DevAutoTyper.Realistic = true; // the bot types like a real player (F12 switches)
         if (bot)
         {
             double botCps = args.TryGetValue("botcps", out var bc) ? double.Parse(bc, CultureInfo.InvariantCulture)

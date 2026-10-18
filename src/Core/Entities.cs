@@ -222,7 +222,7 @@ public sealed class EnemyShip : Sprite
 
         if (Fires == Weapons.Suicide)
         {
-            Game.HitTarget(Game.Player, Weapons.Suicide);
+            Game.HitTarget(Game.Player, Weapons.Suicide, this);
             Game.Events.Explosion(Position, 10);
         }
         Remove();
@@ -351,6 +351,8 @@ public sealed class Missile : Sprite
     int delay;
     /// <summary>Fired by the player (no word), or by an enemy (a 3-letter word to shoot it down).</summary>
     public bool FromPlayer;
+    /// <summary>The level file line of the enemy ship that fired it (0 if none), for the pacing report.</summary>
+    public int SourceLine;
 
     public Missile(Game game) : base(game) { }
 
@@ -361,6 +363,7 @@ public sealed class Missile : Sprite
     {
         this.target = target;
         float speed, heading;
+        if (origin is EnemyShip ship) SourceLine = ship.Line;
         var t = Game.Tuning;
         if (origin == Game.Player)
         {
@@ -401,7 +404,7 @@ public sealed class Missile : Sprite
         if ((Math.Abs(d.X) <= Math.Abs(VX * 1.5f) && Math.Abs(d.Y) <= Math.Abs(VY * 1.5f)) ||
             (Math.Abs(d.X) <= range && Math.Abs(d.Y) <= range))
         {
-            Game.HitTarget(target, Weapons.Missile);
+            Game.HitTarget(target, Weapons.Missile, this);
             if (target == Game.Player) Game.Events.Explosion(Position, 10);
             Remove();
             return false;

@@ -11,6 +11,9 @@ public static class Pacing
 {
     public const int Window = 10; // seconds, for the rolling demand figure
 
+    /// <summary>The realistic bot: this share of the difficulty's speed, mistyping this share of its keystrokes.</summary>
+    public const double RealisticSpeed = 0.8, RealisticErrors = 0.035;
+
     // The part of the game view the player sees (the 550 px stage sits at 25,25 in game-view space).
     const float ViewLeft = 25, ViewRight = 575, ViewTop = 25, ViewBottom = 575;
 
@@ -25,8 +28,16 @@ public static class Pacing
         int VisibleWords);
 
     /// <param name="Tail">Seconds after the last spawn that still count as the level (the pacing rules' "duration tail").</param>
-    public sealed record Run(int Level, double Cps, bool Cleared, string Line, IReadOnlyList<Sample> Samples, double Tail = 5)
+    /// <param name="Pressure">Per second (index 0 = second 1): the typing speed needed to stop every threat in time, as a
+    /// share of cps (see <see cref="Core.Pressure"/>), from a run where nobody types.</param>
+    /// <param name="PressureLines">Per second: the level file lines behind that second's pressure.</param>
+    public sealed record Run(int Level, double Cps, bool Cleared, string Line, IReadOnlyList<Sample> Samples, double Tail = 5,
+        double[]? Pressure = null, int[][]? PressureLines = null)
     {
+        /// <summary>The highest pressure in the level, and the second (1-based) it comes at.</summary>
+        public (double Value, int Second) PeakPressure => Pressure is { Length: > 0 } p
+            ? (p.Max(), Array.IndexOf(p, p.Max()) + 1) : (0, 0);
+
         public int Seconds => Samples.Count;
         public int TotalChars => Samples.Sum(s => s.NewChars);
         /// <summary>The level's length for averages: start to the last spawn plus the tail (not the time the last ships
@@ -55,7 +66,7 @@ public static class Pacing
     /// some letters (each mistake costs a Backspace too). Shows where real players are likely to struggle.
     /// </summary>
     public static Outcome Realistic(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1,
-        double speedShare = 0.8, double errorRate = 0.035, bool classic = false)
+        double speedShare = RealisticSpeed, double errorRate = RealisticErrors, bool classic = false)
     {
         int hits = 0, health = -1;
         var result = Simulator.Run(data, art, level, cps, seed, botCps: cps * speedShare, classic: classic, errorRate: errorRate,
@@ -70,7 +81,7 @@ public static class Pacing
     }
 
     public static Run Measure(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1, bool classic = false,
-        double tail = 5)
+        double tail = 5, bool pressure = true)
     {
         var samples = new List<Sample>();
         var seen = new HashSet<(object, string)>();
@@ -108,6 +119,10 @@ public static class Pacing
             samples.Add(new Sample(perSecond.Count, progress, newChars, demand, current.Count, chars, visible));
             newChars = 0;
         });
-        return new Run(level, cps, result.Cleared, result.Line, samples, tail);
+        if (!pressure) return new Run(level, cps, result.Cleared, result.Line, samples, tail);
+        var threats = Core.Pressure.Collect(data, art, level, cps, seed, classic, maxSeconds: Math.Max(samples.Count + 60, 120));
+        int seconds = Math.Max(samples.Count, threats.Count == 0 ? 0 : (int)Math.Ceiling(threats.Max(t => t.Hit)));
+        var (ratio, lines) = Core.Pressure.Curve(threats, cps, seconds);
+        return new Run(level, cps, result.Cleared, result.Line, samples, tail, ratio, lines);
     }
 }

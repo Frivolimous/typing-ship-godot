@@ -51,8 +51,15 @@ release hold = 5                 # and staying there at least this long
 
 # ---- 7. level arc: no numbers; the highest peak comes in the second half, and the final peak tops the first half ----
 
+# ---- 8. pressure: the typing speed needed to stop every threat (missile, mine, suicide ship, laser shot) before it
+# hits, over the worst stretch of up to 20 s around each second, from a run where nobody types. Unlike load, it sees
+# threats bunching up: a wave of mines with 3-letter words that all dive at once. A typist slower than this share of P
+# gets hit there. ----
+pressure max = 1.0               # fail above this: even a perfect typist at P can't stop everything in time
+pressure warn = 0.85             # warn above this: a typist a little under P (or one who mistypes) gets hit
+
 # ---- exemptions: "exempt LEVEL: RULE, RULE" (levels as on the map; rules: duration, average, lulls, earned,
-# intensity, peaks, arc, or all) ----
+# intensity, peaks, arc, pressure, or all) ----
 exempt 4: all                    # boss levels keep their own pacing
 exempt 8: all
 exempt 12: all

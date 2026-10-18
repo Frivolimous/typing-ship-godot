@@ -13,6 +13,7 @@ namespace TypingShip;
 //   F9  show or hide the 12 x 12 grid, the ships' flight paths, and each ship's line and time (--overlay starts with it on)
 //   F10 invincible on or off
 //   F11 the auto-typing bot on or off (at the difficulty's speed, or --botwpm), so you can type parts yourself
+//   F12 the bot types perfectly, or like a real player (80% of the speed, 3.5% mistakes: the pacing report's realistic bot)
 public partial class LevelEditor : Node
 {
     readonly string? from, line;
@@ -118,7 +119,11 @@ public partial class LevelEditor : Node
             case Key.F8: Restart(m.Time + 10); break;
             case Key.F9: overlay.Visible = !overlay.Visible; break;
             case Key.F10: m.Invincible = !m.Invincible; break;
-            case Key.F11: Warn(DevAutoTyper.Toggle(GetParent()) ? "Bot on." : "Bot off: your turn.", 48); break;
+            case Key.F11: Warn(DevAutoTyper.Toggle(GetParent()) ? $"Bot on ({DevAutoTyper.Mode})." : "Bot off: your turn.", 48); break;
+            case Key.F12:
+                DevAutoTyper.Realistic = !DevAutoTyper.Realistic;
+                Warn($"Bot: {DevAutoTyper.Mode}.", 48);
+                break;
             default: return;
         }
         GetViewport().SetInputAsHandled();
@@ -140,8 +145,9 @@ public partial class LevelEditor : Node
         var next = m.LevelData.FirstOrDefault(e => e.Line > 0);
         banner.Text = $"EDIT  {m.Set.LevelFile(m.Level)}  {Clock(m.Time)} of {Clock(m.MaxTime)}  " +
             (next != null ? $"next: line {next.Line} at {Clock(next.Time)}" : m.BossMode ? "boss escorts" : "no more ships") +
-            (m.Invincible ? "  INVINCIBLE" : "") + (DevAutoTyper.IsOn(GetParent()) ? "  BOT" : "") +
-            "\nF5 reload  F6 restart  F7/F8 back/ahead 10 s  F9 grid  F10 invincible  F11 bot";
+            (m.Invincible ? "  INVINCIBLE" : "") +
+            (DevAutoTyper.IsOn(GetParent()) ? DevAutoTyper.Realistic ? "  BOT (realistic)" : "  BOT" : "") +
+            "\nF5 reload  F6 restart  F7/F8 back/ahead 10 s  F9 grid  F10 invincible  F11 bot  F12 perfect/realistic";
     }
 
     /// <summary>m:ss.s, the way level files write times.</summary>

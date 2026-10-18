@@ -76,7 +76,7 @@ public sealed partial class Game
         else if (fire)
         {
             Events.Beam(o.P, t.P, BeamKind.EnemyLaser);
-            HitTarget(t, Weapons.Laser);
+            HitTarget(t, Weapons.Laser, o);
             Events.Explosion(t.P, 10);
             Events.Sound(GameSound.Laser);
             o.Priority = 0;
@@ -159,10 +159,12 @@ public sealed partial class Game
         Events.ScorePopup(at, amount, true);
     }
 
-    public void HitTarget(Sprite t, int s)
+    /// <param name="by">What hit, when it's the player being hit (for the pacing report's pressure measure).</param>
+    public void HitTarget(Sprite t, int s, Sprite? by = null)
     {
         if (t == Player)
         {
+            Events.PlayerHit(by);
             DamagePlayer();
             ShowTutorial(8, new Vec2(300, 528), PointerDir.Down); // the hull screen in the middle of the cockpit
             return;
