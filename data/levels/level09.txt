@@ -2,75 +2,97 @@
 # How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
 @0:02 missile lt  6,-1 5,6 13,13
+extreme+: +2 mirror
 
 @0:09 missile lt  0,1 9,3 0,6
-+1.4 missile lt  12,8 3,6 12,3
-repeat 1.4 1 2
+normal+: +1.4 missile lt  12,8 3,6 12,3
+repeat 1.4 0/0/1/2/3 2
 
-@0:14 missile ln  -1,3 6,5 13,3
+normal+: @0:14 missile ln  -1,3 6,5 13,3
 missile ln  13,5 6,3 -1,4
 
 @0:17 laser lb  4.5,0
-+0.5 laser lb  7.5,0
+hard+: +0.5 laser lb  7.5,0
+
+extreme+: @0:22 missile lb  0,1 9,3 0,6
+insane+: +1.4 mirror
 
 @0:27 missile ln  3,-1 3,5 3,13
-+4 missile ln  -1,1 6,3 9,13
-+4 laser lt  0,5
-mirror
+hard+: +4 missile ln  -1,1 6,3 9,13
++4 laser lt  12,5
+normal+: mirror
+extreme+: +2 missile lt  13,-1 9,5 9,13
 
 @0:41 missile mn  0,1 5,5 12,1
-missile mn  0,9 6,6 0,3
+hard+: missile mn  0,9 6,6 0,3
 missile mn  12,9 7,5 0,9
-missile mn  12,1 6,4 12,10
+hard+: missile mn  12,1 6,4 12,10
+extreme+: +1.5 missile ms  0,5 6,6 12,5
+insane+: mirror
 
 @0:47 missile ss  2,12 2,3 9,2.5 10,12
-repeat 0.7 7
+repeat_over 4.9 1/2/7/12/15
 
 @0:58 missile ls  -1,6 8,6 13,6
-offset  0,2
+hard+: offset  0,2
+extreme+: repeat 4 0/0/0/1/4 2
 
 @1:02 ship lmt  3,0  move 3,3  halt 3.85 halt 2.57 fire  move 0,3
-mirror
-+6 ship lmt  5,0  move 5,3  halt 3.85 halt 2.57 fire  move 0,3
+normal+: mirror
+hard+: +6 ship lmt  5,0  move 5,3  halt 3.85 halt 2.57 fire  move 0,3
 mirror
 +8 missile mn  0,12 4,7 4,0
 mirror
-+8 missile mn  6,0 6,5 1,12
+hard+: +8 missile mn  6,0 6,5 1,12
 mirror
+extreme+: repeat 2 0/0/0/2/4 2
 
 @1:16 missile ms  2,0 2,6 6,4 10,12
-+2 mirror
+hard+: +2 mirror
 +2 missile mn  2,0 2,6 6,4 10,12
-repeat 2 5 1 mirrored
+repeat_over 10 0/2/5/9/12 1 mirrored
 
-@1:32 missile ln  -1,-1 2,3 -1,13
-mirror
+@1:32 missile ln  13,-1 10,3 13,13
+normal+: mirror
 
 @1:33 laser lt  2,0
-mirror
+normal+: mirror
 
-@1:43 laser lt  4,0
-mirror
+@1:43 laser lt  8,0
+normal+: mirror
 
 @1:48 stealth  3,5 0,12
-+0.9 mirror
-+0.9 stealth  6,4 6,0
+hard+: +0.9 mirror
+normal+: +0.9 stealth  6,4 6,0
+extreme+: +0.3 stealth  9,3 12,12
+insane+: +0.3 stealth  3,3 0,0
 
-@2:00 laser lt 6,0
+hard+: @2:00 laser lt 6,0
 +2 laser ms 0,3
-mirror
+normal+: mirror
 +5 stealth 4,4 0,2
-+2 stealth 7,5 3,0
+hard+: +2 stealth 7,5 3,0
+extreme+: +0.3 stealth  9,3 12,12
+insane+: +0.3 stealth  2,5 0,0
+
 
 @2:13 missile ms 0,0 7,4 12,0
 +1.2 mirror
-+1.2 missile ss 0,5 3,5 0,2
+normal+: +1.2 missile ss 0,5 3,5 0,2
 +1.2 mirror
-repeat 5 2 4 mirrored
-+1.5 missile ms 0,0 7,4 12,0
+hard+: repeat 5 2 4 mirrored
+normal+: +1.5 missile ms 0,0 7,4 12,0
 +1.5 mirror
 
+extreme+: @2:14 laser lb 0,7
+extreme+: mirror
+insane+: +4 laser lb 0,3
+insane+: mirror
+
 @2:30 stealth 4,6 0,12
-+5 stealth 5,2 0,2
-+5 stealth 9,4 12,6
-+5 stealth 3,5 12,6
+extreme+: +2.5 stealth 8,5 12,12
+hard+: +2.5 stealth 5,2 0,2
+insane+: +2.5 stealth 2,3 0,0
++2.5 stealth 9,4 12,6
+extreme+: +0.5 stealth 6,6 6,0
+hard+: +4.5 stealth 3,5 12,6

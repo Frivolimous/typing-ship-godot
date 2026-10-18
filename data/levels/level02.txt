@@ -2,79 +2,96 @@
 # How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
 @0:04 missile sn  6,0 6,5 0,9
-repeat 0.6 5 1 mirrored
+repeat_over 3 1/3/5/9/12 1 mirrored
 
 @0:11 missile sn  0,1 5,4 0,8
-mirror
-repeat 1.66 2 2 mirrored
+hard+: mirror
+repeat 1.66 1/2/2/4/6 2 mirrored
 
 @0:11 laser sn  0,6
 +1.66 laser sn  12,6
-+1.66 laser mn  6,0
+normal+: +1.66 laser mn  6,0
+extreme+: @0:18 missile sn  6,0 6,5 12,9
+repeat_over 2 0/0/0/2/4 1 mirrored
 
 @0:23 missile sn  3,0 3,4 12,11
-missile sn  4,0 5,4 8,0
-repeat 1.3 2 2
-+0.55 laser sn  2,0
-mirror
+normal+: missile sn  4,0 5,4 8,0
+repeat 1.3 1/1/2/4/5 2
++0.55 laser sn  12,2
+normal+: mirror
+
+extreme+: @0:25 laser sn 12,6
+extreme+: +0.5 mirror
+extreme+: +0.5 offset 0,2
 
 @0:33 missile sn  12,3 8,3 1,12
-missile sn  12,4 8,5 12,8
-repeat 1.3 2 2
-+0.55 laser sn  0,6
-mirror
+normal+: missile sn  12,4 8,5 12,8
+repeat 1.3 1/1/2/4/5 2
++0.55 laser sn  12,6
+normal+: mirror
 
 @0:43 suicide mn  0,3 3,3
-repeat 0.7 3
+repeat_over 2.1 1/2/3/7/7
 
-@0:47 laser sn  0,3
+insane+: @0:43 suicide mn  12,3 9,3
+repeat_over 2.1 0/0/0/0/6
+
+@0:47 laser sn  0,5
 mirror
-+1 laser mn  6,0
+normal+: +1 laser mn  6,0
 
 @0:52 missile sn  3,0 3,7 2,12
-offset  1,0
-repeat 1 1 2
-repeat 1.6 1 4 mirrored
+normal+: offset  1,0
+repeat 1 0/0/1/1/1 2
+repeat 1.6 1/1/1/2/3 4 mirrored
 laser mn  0,4
 
 @1:02 missile sn  0,2 7,2 12,2
-offset  0,1
-repeat 0.85 1 2
+normal+: offset  0,1
+repeat 0.85 0/0/1/2/3 2
 laser mn  12,4
 
 @1:06 missile sn  12,5 5,5 0,5
-offset  0,1
-repeat 0.8 1 2
+normal+: offset  0,1
+repeat 0.8 0/0/1/2/3 2
 
 @1:11 missile sn  0,12 4,4 12,9
-repeat 0.33 3 1 mirrored
+repeat_over 0.99 1/1/3/5/7 1 mirrored
 +0.55 laser mn  4,0
-+0.55 mirror
+normal+: +0.55 mirror
 
 @1:15 suicide mn  0,3 3,3
-repeat 1 5 1 mirrored
+repeat_over 5 1/3/5/9/12 1 mirrored
 
 @1:22 laser mn  0,7
 mirror
-+1 laser sn  0,4
+hard+: +1 laser sn  0,4
 mirror
-+2 laser mn  3,0
+normal+: +2 laser mn  3,0
+normal+: mirror
+hard+: +1 laser sn  5,0
 mirror
-+1 laser sn  5,0
+extreme+: +1 laser sn  0,9
+mirror
+insane+: +1 laser sn  2,0
 mirror
 
 @1:32 missile sn  6,0 6,4 0,0
-+1.55 mirror
-+1.55 missile sn  6,0 6,6 0,9
-+1.55 mirror
-repeat 1.55 4 4
++1.55/1.55/1.55/1.2/0.8 mirror
++1.55/1.55/1.55/1.2/0.8 missile sn  6,0 6,6 0,9
++1.55/1.55/1.55/1.2/0.8 mirror
+repeat 1.55/1.55/1.55/1.2/0.8 0/1/4/5/8 4
 
 @1:37 laser sn  0,3
-+4 laser sn  12,3
-+4 laser sn  0,6
-+4 laser sn  12,6
-+4 laser mn  3,0
+extreme+: +2 laser sn  12,9
+normal+: +2 laser sn  12,3
+insane+: +2 laser sn  0,9
+normal+: +2 laser sn  0,6
+extreme+: +2 laser sn  6,0
++2 laser sn  12,6
+insane+: +2 laser sn  12,9
++2 laser mn  3,0
 +4 laser mn  9,0
 
 @2:03 suicide ms  0,12 3,4
-repeat 0.8 5 1 mirrored
+repeat_over 4 2/3/5/6/10 1 mirrored

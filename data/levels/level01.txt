@@ -2,70 +2,81 @@
 # How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
 @0:04 missile sn  4,0 4,7 0,12
-missile sn  2,0 2,6 0,9
+normal+: missile sn  2,0 2,6 0,9
 repeat 0 1 2 mirrored
 
 @0:09 missile sn  0,3 7,3 12,3
-offset  0,1
-repeat 1 1 2
+normal+: offset  0,1
+repeat 1 0/0/1/2/4 2
 +1.3 missile sn  12,5 5,5 0,5
-offset  0,1
-repeat 1 1 2
+normal+: offset  0,1
+repeat 1 0/0/1/2/4 2
 laser ss  6,0
 
 @0:20 suicide mn  3,0 3,3
-repeat 0.4 3 1 mirrored
+repeat_over 1.2 1/1/3/4/5 1 mirrored
+extreme+: @0:21 suicide mn 0,4 3,5
+extreme+: repeat_over 2.4 0/0/0/4/8 1 mirrored
 
-@0:24 suicide mn  0,2 8,2
+normal+: @0:24 suicide mn  0,2 8,2
 +0.28 mirror
 
 @0:26 suicide mn  3,0 3,3
 +0.06 mirror
-repeat 0.55 4 4
+repeat 0.55 2/2/4/5/7 4
+
+extreme+: @0:27 suicide mn 0,8 4,7
+extreme+: repeat_over 8 0/0/0/8/16 1 mirrored
 
 @0:39 missile sn  0,3 7,4 12,7
-repeat 1.1 9 1 mirrored
+repeat_over 9.9 3/4/9/12/16 1 mirrored
 
 @0:44.5 laser ss  4,0
 +4.4 laser ss  8,0
 
 @0:52 suicide mn  1,0 4,4
-repeat 0.55 3 1 mirrored
+repeat_over 1.65 1/1/3/5/9 1 mirrored
 
 @0:56 laser ss  0,3
-+0.28 laser ss  12,3
-+0.55 laser ss  0,6
+normal+: +0.28 laser ss  12,3
+hard+: +0.55 laser ss  0,6
 +0.28 laser ss  12,6
+extreme+: +0.55 laser ss  0,9
+extreme+: +0.28 laser ss  12,9
 
 @1:03 missile sn  2,0 2,6 0,7
-missile sn  3,0 3,6 12,9
-repeat 1.6 4 2 mirrored
+normal+: missile sn  3,0 3,6 12,9
+repeat 1.6 1/2/4/6/8 2 mirrored
 
 @1:11 suicide mn  0,3 4,5
-repeat 0.6 3 1 mirrored
+repeat_over 1.8 1/1/3/5/9 1 mirrored
 
 @1:18 laser sn  0,3
-+0.28 laser sn  12,3
-+0.55 laser sn  0,6
+normal+: +0.28 laser sn  12,3
+hard+: +0.55 laser sn  0,6
 +0.28 laser sn  12,6
 +2 suicide mn  2,12 3,4
-repeat 0.3 7 1 mirrored
+repeat_over 2.1 1/3/7/10/16 1 mirrored
 
 @1:29 suicide mn  0,7 3,6
 mirror
-+0.5 suicide mn  0,2 6,3
+normal+: +0.5 suicide mn  0,2 6,3
 mirror
-+0.5 suicide mn  0,4 4,3
+hard+: +0.5 suicide mn  0,4 4,3
 mirror
 +0.5 suicide mn  5,0 5,1
 mirror
+extreme+: +0.5 suicide mn  0,5 5,3
+mirror
+insane+: +0.5 suicide mn  0,1 4,2
+mirror
 
 @1:35 missile sn  3,0 6,7 12,8
-repeat 1.2 9 1 mirrored
+repeat_over 10.8 3/4/9/15/20 1 mirrored
 
 @1:39.8 laser ss  0,6
 +4.8 laser ss  12,6
-+1.2 laser mn  6,0
+normal+: +1.2 laser mn  6,0
 
 @1:44 suicide mn  0,2 6,3
-repeat 1 3 1 mirrored
+repeat_over 3 1/1/3/5/9 1 mirrored

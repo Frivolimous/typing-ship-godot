@@ -2,68 +2,78 @@
 # How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
 @0:03 missile sn  0,2 4,2 0,7
-repeat 0.4 5 1 mirrored
+repeat_over 2 1/3/5/7/9 1 mirrored
 
 @0:08 missile sn  0,3 5,4 12,8
-repeat 1 9 1 mirrored
+repeat_over 9 2/5/9/13/17 1 mirrored
 
 @0:10 laser ln  3,0
 +4 laser ln  9,0
-+4 laser ln  6,0
-+4 laser ln  6,0
+normal+: +4 laser ln  6,0
+hard+: +4 laser ln  6,0
 
 @0:20 missile sn  1,12 4,6 12,2
-repeat 1 7 1 mirrored
+repeat_over 7 1/4/7/10/13 1 mirrored
 
 @0:30 missile sn  12,12 8,3 2,6 12,7
-repeat 0.5 12
+repeat_over 6 3/6/12/9/12
+
+extreme+: @0:30 missile sn  0,12 4,3 10,6 0,7
+extreme+: repeat_over 6 0/0/0/9/12
 
 @0:38 laser ln  0,6
+extreme+: +2 laser ln  12,6
 
 @0:42 suicide mn  0,0 3,4
-repeat 0.8 9
+repeat_over 7.2 2/5/9/14/18
 
 @0:50 laser ms  4,0
-+1 mirror
-+2 laser ls  6,0
+normal+: +1 mirror
+hard+: +2 laser ls  6,0
 +2 laser ss  0,4
 +1 mirror
-+2 offset  0,3
+normal+: +2 offset  0,3
 +2 mirror
+extreme+: @0:59 suicide mn  12,0 9,4
+repeat_over 4 0/0/0/3/7
 
 @1:05 missile ss  0,12 4,3 10,6 0,6
-repeat 2.5 4
+repeat_over 10 1/2/4/7/10
 
 @1:07 laser ls  5,0
-+6 laser ls  7,0
+normal+: +6 laser ls  7,0
+extreme+: +3 laser ls  2,0
+insane+: +3 laser ls  10,0
 
 @1:20 suicide mn  12,0 9,4
-repeat 0.55 3
-+1 mirror
-repeat 0.55 3
-+1 mirror
-repeat 0.55 3
-+1 mirror
-repeat 0.55 3
-+1 mirror
-repeat 0.55 3
+repeat_over 1.65 0/1/3/4/5
++1/1/1/0.5/0.5 mirror
+repeat_over 1.65 0/1/3/4/5
++1/1/1/0.5/0.5 mirror
+repeat_over 1.65 0/1/3/4/5
++1/1/1/0.5/0.5 mirror
+repeat_over 1.65 0/1/3/4/5
++1/1/1/0.5/0.5 mirror
+repeat_over 1.65 0/1/3/4/5
 
 @1:33 laser ls  2,0
 +1.5 offset  2,0
-+1.5 offset  2,0
-+1.5 offset  4,0
-+1.5 offset  2,0
+hard+: +1.5 offset  2,0
+normal+: +1.5 offset  6,0 -2
++1.5 offset  4,0 -3
 
 @1:42 suicide mn  0,12 2,5
-repeat 0.93 6 1 mirrored
+repeat_over 5.58 2/4/6/10/14 1 mirrored
 
 @1:52 missile sn  0,3 5,4 12,8
-repeat 1.5 24 1 mirrored
+repeat_over 36 6/12/24/38/55 1 mirrored
 
 @1:58 laser ss 2,0
 +3 mirror
-+5 laser ms 4,0
-+3 mirror
-+5 laser ls 6,0
+normal+: +5 laser ms 4,0
+hard+: +3 mirror
+normal+: +5 laser ls 6,0
 +5 laser ls 0,5
 +3 mirror
+extreme+: +3 laser ms 8,0
+insane+: mirror
