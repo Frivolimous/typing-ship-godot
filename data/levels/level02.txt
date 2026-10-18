@@ -7,11 +7,10 @@ repeat 0.6 5 1 mirrored
 @0:11 missile sn  0,1 5,4 0,8
 mirror
 repeat 1.66 2 2 mirrored
-laser sn  0,6
-insert -6
-laser sn  12,6
-insert -4
-laser mn  6,0
+
+@0:11 laser sn  0,6
++1.66 laser sn  12,6
++1.66 laser mn  6,0
 
 @0:23 missile sn  3,0 3,4 12,11
 missile sn  4,0 5,4 8,0

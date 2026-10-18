@@ -16,10 +16,9 @@ laser sn  12,5
 
 @0:28 missile sn  2,0 2,4 12,9
 repeat 0.5 9 1 mirrored
-laser sn  0,6
-insert -4
+
+@0:31.5 laser sn  0,6
 laser sn  12,6
-insert -4
 
 @0:40 laser sn  0,2
 +0.3 laser sn  12,2
@@ -44,7 +43,6 @@ mirror
 
 @1:10 missile sn  6,0 6,4 0,8
 repeat 1.15 8 1 mirrored
-laser sn  0,3
-insert -5
-laser sn  12,3
-insert -3
+
+@1:15.75 laser sn  0,3
++2.3 laser sn  12,3
