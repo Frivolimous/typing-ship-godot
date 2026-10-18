@@ -23,7 +23,7 @@ public static class Strings
     // Score screen
     public const string LevelScore = "LEVEL SCORE: ", DiffBonus = "DIFFICULTY BONUS x", HealthBonus = "HEALTH BONUS x",
         HealthPerfect = "PERFECT HEALTH x", AccBonus = "ACCURACY BONUS x", AccPerfect = "PERFECT ACCURACY x",
-        FinalScore = "FINAL SCORE", Spacebar = "PRESS SPACE TO CONTINUE";
+        FinalScore = "FINAL SCORE";
 
     // In game
     public const string Paused = "-PAUSED-", Yes = "YES", No = "NO";

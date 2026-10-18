@@ -334,19 +334,22 @@ public partial class TypingTest : Screen
 }
 
 // Level complete, as a mission report: the level score, then each bonus multiplier counting the score up, then the
-// final score and the medals this run earned. Also where the level's best score, best difficulty and medals are
+// final score and the medals this run earned, and three buttons: RETRY, NEXT LEVEL (the keyboard's choice, so Space or
+// Enter plays on; left and right change it) and STAR MAP. Also where the level's best score, best difficulty and medals are
 // recorded, and the defender and perfectionist achievements are checked.
 public partial class ScoreUI : Screen
 {
     const double Step = 1 / 60.0; // the original's 10 ms timer; Flash ran timers at most 60 times a second
     static readonly Rect2 Report = new(40, 92, 470, 360);
 
-    readonly Label title, subtitle, prompt;
+    readonly Label title, subtitle;
+    readonly TextButton[] buttons;
+    int focus = 1;
     readonly Label[][] rows = new Label[6][];
     readonly TextureRect[] runMedals = new TextureRect[2];
     readonly Label[] runMedalNames = new Label[2];
     int score, index, tickBy, shown, healthMedal, accuracyMedal;
-    float cMult, time2;
+    float cMult;
     int[] cLevel = null!;
     bool running;
     double time;
@@ -381,7 +384,47 @@ public partial class ScoreUI : Screen
             runMedalNames[i] = Kit.Label(this, i == 0 ? Strings.Health : Strings.Accuracy, Kit.Caption(8), 0, 0, 120, HorizontalAlignment.Center);
             runMedalNames[i].Visible = false;
         }
-        prompt = Kit.Label(this, Strings.Spacebar, Kit.Caption(9), 0, 474, G.StageSize, HorizontalAlignment.Center);
+        buttons = new[]
+        {
+            new TextButton("RETRY", Retry, 13, boxed: true, width: 140),
+            new TextButton("NEXT LEVEL", Next, 13, boxed: true, colour: Kit.Good, width: 140),
+            new TextButton("STAR MAP", StarMap, 13, word: "map", boxed: true, width: 140),
+        };
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            int index = i;
+            buttons[i].Position = new Vector2(50 + 155 * i, 470);
+            buttons[i].Visible = false;
+            buttons[i].MouseEntered += () => Focus(index);
+            AddChild(buttons[i]);
+            Nav.Add(buttons[i]);
+        }
+    }
+
+    void Focus(int i)
+    {
+        focus = (i + buttons.Length) % buttons.Length;
+        for (int k = 0; k < buttons.Length; k++) buttons[k].Focused = k == focus;
+    }
+
+    static void Retry()
+    {
+        if (!G.Shell.Transitioning) G.Shell.StartGame(M.Level, M.Cps);
+    }
+
+    /// <summary>The next level at the same difficulty; after the last, the victory credits.</summary>
+    static void Next()
+    {
+        if (G.Shell.Transitioning) return;
+        if (M.Level >= TypingShip.Core.Data.GameData.LevelCount - 1) G.Shell.ScoreDone();
+        else G.Shell.StartGame(M.Level + 1, M.Cps);
+    }
+
+    static void StarMap()
+    {
+        if (G.Shell.Transitioning) return;
+        G.Shell.Menu.ShowMapNow();
+        G.Shell.Go(G.Shell.Menu, Shell.Dark);
     }
 
     public bool Counting => running;
@@ -392,7 +435,8 @@ public partial class ScoreUI : Screen
             if (r != null) r[0].Text = r[1].Text = "";
         foreach (var m in runMedals) m.Visible = false;
         foreach (var n in runMedalNames) n.Visible = false;
-        prompt.Visible = false;
+        foreach (var b in buttons) b.Visible = false;
+        buttons[1].Text = M.Level >= TypingShip.Core.Data.GameData.LevelCount - 1 ? "FINISH" : "NEXT LEVEL";
         subtitle.Text = $"{Banner.LevelName(M.Level)}  ·  {Difficulty.Names[Difficulty.Of(M.Cps) - 1].ToUpperInvariant()}";
         score = M.Score - M.ScoreC;
         index = 0;
@@ -404,8 +448,6 @@ public partial class ScoreUI : Screen
     public override void _Process(double delta)
     {
         if (!Visible) return;
-        time2 += (float)delta;
-        prompt.Modulate = new Color(1, 1, 1, 0.55f + 0.45f * Mathf.Sin(time2 * 4));
         if (!running) return;
         time += delta;
         for (int n = 0; time >= Step && running && n < 4; n++)
@@ -417,14 +459,14 @@ public partial class ScoreUI : Screen
 
     public override bool OnKey(InputEventKey key)
     {
-        if (key.Keycode is not (Key.Space or Key.Enter)) return false;
-        if (!running) G.Shell.ScoreDone();
-        return true;
-    }
-
-    public override void _GuiInput(InputEvent e)
-    {
-        if (!running && e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) G.Shell.ScoreDone();
+        if (running) return key.Keycode is Key.Space or Key.Enter; // nothing to choose yet
+        switch (key.Keycode)
+        {
+            case Key.Left: Focus(focus - 1); return true;
+            case Key.Right or Key.Tab: Focus(focus + 1); return true;
+            case Key.Space or Key.Enter or Key.KpEnter: buttons[focus].Press(); return true;
+        }
+        return false;
     }
 
     public override void _Draw()
@@ -499,7 +541,8 @@ public partial class ScoreUI : Screen
                 M.Save.Save();
                 ShowRunMedals();
                 running = false;
-                prompt.Visible = true;
+                foreach (var b in buttons) b.Visible = true;
+                Focus(1);
                 break;
         }
     }

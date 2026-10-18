@@ -94,6 +94,8 @@ public partial class TextButton : Label
 {
     readonly Action output;
     readonly LabelSettings normal, over;
+    readonly StyleBox? box, lit;
+    bool focused;
     public readonly string Word;
 
     /// <summary>
@@ -116,18 +118,29 @@ public partial class TextButton : Label
             CustomMinimumSize = new Vector2(width, 0);
             HorizontalAlignment = HorizontalAlignment.Center;
         }
-        StyleBox? box = boxed ? Kit.ButtonBox(false, colour) : null, lit = boxed ? Kit.ButtonBox(true, colour) : null;
-        if (box != null) AddThemeStyleboxOverride("normal", box);
-        MouseEntered += () =>
+        box = boxed ? Kit.ButtonBox(false, colour) : null;
+        lit = boxed ? Kit.ButtonBox(true, colour) : null;
+        Light(false);
+        MouseEntered += () => Light(true);
+        MouseExited += () => Light(focused);
+    }
+
+    /// <summary>The keyboard's choice: lit as if under the mouse, so Space or Enter would press it.</summary>
+    public bool Focused
+    {
+        get => focused;
+        set
         {
-            LabelSettings = over;
-            if (lit != null) AddThemeStyleboxOverride("normal", lit);
-        };
-        MouseExited += () =>
-        {
-            LabelSettings = normal;
-            if (box != null) AddThemeStyleboxOverride("normal", box);
-        };
+            focused = value;
+            Light(value);
+        }
+    }
+
+    void Light(bool on)
+    {
+        LabelSettings = on ? over : normal;
+        var b = on ? lit : box;
+        if (b != null) AddThemeStyleboxOverride("normal", b);
     }
 
     public override void _GuiInput(InputEvent e)
@@ -141,7 +154,7 @@ public partial class TextButton : Label
 
     public void Press()
     {
-        LabelSettings = normal;
+        Light(focused);
         G.Sound.Sound(SoundControl.Click);
         output();
     }
