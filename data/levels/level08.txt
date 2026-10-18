@@ -64,6 +64,8 @@ normal+: +1.5 offset  6,0 -2
 
 @1:42 suicide mn  0,12 2,5
 repeat_over 5.58 2/4/6/10/14 1 mirrored
+extreme+: @1:44 suicide mn  12,12 10,5
+repeat_over 4 0/0/0/3/5 1 mirrored
 
 @1:52 missile sn  0,3 5,4 12,8
 repeat_over 36 6/12/24/38/55 1 mirrored
@@ -77,3 +79,6 @@ normal+: +5 laser ls 6,0
 +3 mirror
 extreme+: +3 laser ms 8,0
 insane+: mirror
+extreme+: @2:05 suicide mn  0,0 3,4
+mirror
+repeat_over 4 0/0/0/2/3 2

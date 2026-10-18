@@ -64,16 +64,19 @@ normal+: mirror
 @1:48 stealth  3,5 0,12
 hard+: +0.9 mirror
 normal+: +0.9 stealth  6,4 6,0
-extreme+: +0.3 stealth  9,3 12,12
-insane+: +0.3 stealth  3,3 0,0
+extreme+: +0.3 stealth  9,3 12,12 shield
+insane+: +0.3 stealth  3,3 0,0 shield
+extreme+: @1:52 missile lt  0,1 9,3 0,6
+mirror
+repeat 1.5 0/0/0/0/1 2
 
 hard+: @2:00 laser lt 6,0
 +2 laser ms 0,3
 normal+: mirror
 +5 stealth 4,4 0,2
 hard+: +2 stealth 7,5 3,0
-extreme+: +0.3 stealth  9,3 12,12
-insane+: +0.3 stealth  2,5 0,0
+extreme+: +0.3 stealth  9,3 12,12 shield
+insane+: +0.3 stealth  2,5 0,0 shield
 
 
 @2:13 missile ms 0,0 7,4 12,0
@@ -83,11 +86,16 @@ normal+: +1.2 missile ss 0,5 3,5 0,2
 hard+: repeat 5 2 4 mirrored
 normal+: +1.5 missile ms 0,0 7,4 12,0
 +1.5 mirror
+extreme+: missile lb 0,5 3,5 0,2
+insane+: mirror
 
 extreme+: @2:14 laser lb 0,7
 extreme+: mirror
 insane+: +4 laser lb 0,3
 insane+: mirror
+extreme+: @2:16 missile ms  0,0 7,4 12,0
+mirror
+repeat_over 3 0/0/0/1/2 2
 
 @2:30 stealth 4,6 0,12
 extreme+: +2.5 stealth 8,5 12,12
