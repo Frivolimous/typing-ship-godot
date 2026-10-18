@@ -1,89 +1,81 @@
 # Level 2 (3 on the map).
 # How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
-@0:04.34 missile sn  6,0 6,5 0,9
-repeat 0.55 5 1 mirrored
+@0:04 missile sn  6,0 6,5 0,9
+repeat 0.6 5 1 mirrored
 
-@0:11.45 missile sn  0,1 5,4 0,8
+@0:11 missile sn  0,1 5,4 0,8
 mirror
-repeat 1.66 3 2 mirrored
+repeat 1.66 2 2 mirrored
 laser sn  0,6
 insert -6
 laser sn  12,6
 insert -4
 laser mn  6,0
 
-@0:23.81 missile sn  3,0 3,4 12,11
+@0:23 missile sn  3,0 3,4 12,11
 missile sn  4,0 5,4 8,0
-repeat 1.38 3 2
+repeat 1.3 2 2
 +0.55 laser sn  2,0
 mirror
 
-@0:33.5 missile sn  12,3 8,3 1,12
+@0:33 missile sn  12,3 8,3 1,12
 missile sn  12,4 8,5 12,8
-repeat 1.38 3 2
+repeat 1.3 2 2
 +0.55 laser sn  0,6
 mirror
 
-@0:43.19 suicide mn  0,3 3,3
-repeat 0.55 3
+@0:43 suicide mn  0,3 3,3
+repeat 0.7 3
 
-@0:50.49 laser sn  0,3
+@0:47 laser sn  0,3
 mirror
-laser mn  6,0
-+0.55 laser sn  0,6
-mirror
++1 laser mn  6,0
 
-@0:58.86 missile sn  2,0 2,7 2,12
+@0:52 missile sn  3,0 3,7 2,12
 offset  1,0
-repeat 0.83 1 2
-repeat 2.77 1 4 mirrored
+repeat 1 1 2
+repeat 1.6 1 4 mirrored
 laser mn  0,4
 
-@1:06.06 missile sn  0,2 7,2 12,2
+@1:02 missile sn  0,2 7,2 12,2
 offset  0,1
-repeat 0.83 1 2
+repeat 0.85 1 2
 laser mn  12,4
 
-@1:09.66 missile sn  12,5 5,5 0,5
+@1:06 missile sn  12,5 5,5 0,5
 offset  0,1
-repeat 0.83 1 2
+repeat 0.8 1 2
 
-@1:19.16 missile sn  0,12 4,4 12,9
+@1:11 missile sn  0,12 4,4 12,9
 repeat 0.33 3 1 mirrored
 +0.55 laser mn  4,0
 +0.55 mirror
 
-@1:24.04 suicide mn  0,3 3,3
-repeat 0.83 7 1 mirrored
+@1:15 suicide mn  0,3 3,3
+repeat 1 5 1 mirrored
 
-@1:36.36 laser mn  0,7
+@1:22 laser mn  0,7
 mirror
-+0.83 laser sn  0,4
++1 laser sn  0,4
 mirror
-+1.11 laser mn  3,0
++2 laser mn  3,0
 mirror
-+0.83 laser sn  5,0
++1 laser sn  5,0
 mirror
 
-@1:47.81 missile sn  6,0 6,4 0,0
-+1.5 mirror
-+1.5 missile sn  6,0 6,6 0,9
-
-@1:52.35 mirror
+@1:32 missile sn  6,0 6,4 0,0
++1.55 mirror
++1.55 missile sn  6,0 6,6 0,9
++1.55 mirror
 repeat 1.55 4 4
-laser sn  0,3
-insert -18
-laser sn  12,3
-insert -15
-laser sn  0,6
-insert -12
-laser sn  12,6
-insert -9
-laser mn  3,0
-insert -6
-laser mn  9,0
-insert -3
 
-@2:21.15 suicide ms  0,12 3,4
-repeat 0.83 7 1 mirrored
+@1:37 laser sn  0,3
++4 laser sn  12,3
++4 laser sn  0,6
++4 laser sn  12,6
++4 laser mn  3,0
++4 laser mn  9,0
+
+@2:03 suicide ms  0,12 3,4
+repeat 0.8 5 1 mirrored

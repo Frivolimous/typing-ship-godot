@@ -1,40 +1,50 @@
 # Level 0 (1 on the map).
 # How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
-@0:02.77 missile sn  5,0 5,6 4,12
+@0:02 missile sn  5,0 5,6 4,12
 mirror
 
-@0:09.28 missile sn  0,3 7,3 12,3
-+0.55 missile sn  12,6 5,6 0,6
-repeat 0.55 3 2
+@0:08 missile sn  0,3 7,3 12,3
++0.5 missile sn  12,6 5,6 0,6
+repeat 0.5 3 2
 
-@0:17.49 laser sn  6,0
+@0:17 laser sn  6,0
 
-@0:21.83 missile sn  3,0 7,5 4,5 7,0
-repeat 0.55 5
+@0:20 missile sn  3,0 7,5 4,5 7,0
+repeat 0.5 5
 laser sn  12,5
 
-@0:30.24 missile sn  2,0 2,4 12,9
-repeat 0.55 7 1 mirrored
+@0:28 missile sn  2,0 2,4 12,9
+repeat 0.5 9 1 mirrored
 laser sn  0,6
 insert -4
 laser sn  12,6
 insert -4
 
-@0:40.62 laser sn  0,3
-+0.28 laser sn  12,3
-+0.28 laser sn  0,6
-+0.28 laser sn  12,6
+@0:40 laser sn  0,2
++0.3 laser sn  12,2
++0.3 laser sn  0,4
++0.3 laser sn  12,4
 
-@0:47.1 missile sn  3,0 4,4 7,0
-+0.55 missile sn  12,5 7,6 0,5
+@0:47 missile sn  3,0 4,4 7,0
++0.5 missile sn  12,5 7,6 0,5
 repeat 1.11 4 2
 
-@0:56.51 laser sn  0,2
-+0.55 laser sn  12,2
-+1.11 laser sn  0,4
-+0.55 laser sn  12,4
+@0:56 laser sn  0,2
++0.5 laser sn  12,2
++1 laser sn  0,4
++0.5 laser sn  12,4
 
-@1:02.6 missile sn  9,0 8,4 5,0
-+0.55 missile sn  0,5 5,6 12,5
+@1:02 missile sn  9,0 8,4 5,0
++0.5 missile sn  0,5 5,6 12,5
 repeat 1.11 4 2
+
+@1:06 laser sn  0,3
+mirror
+
+@1:10 missile sn  6,0 6,4 0,8
+repeat 1.15 8 1 mirrored
+laser sn  0,3
+insert -5
+laser sn  12,3
+insert -3

@@ -1,72 +1,64 @@
 # Level 6 (6 on the map).
 # How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
-@0:02.77 missile mn  2,0 2,7 2,12
+@0:02 missile mn  2,0 2,7 2,12
 mirror
 missile mn  4,0 4,6 2,12
 mirror
 
-@0:09.28 missile ms  1,0 5,4 11,12
+@0:09 missile ms  1,0 5,4 11,12
 mirror
 +0.55 missile mn  0,10 3,6 0,3
-repeat 0.55 3 1 mirrored
+repeat 1 3 1 mirrored
 
-@0:20.17 missile ms  0,4 7,4 12,4
-+1.11 offset  0,2
-repeat 1.66 3 2
+@0:21 missile ms  0,4 7,4 12,4
++2 offset  0,2
+repeat 2 3 2
 
-@0:31.8 laser ms  0,2
+@0:24 laser ms  0,2
++7 laser ms  0,8
 
-@0:34.02 laser ms  0,8
-
-@0:44.86 missile ms  2,0 2,7 2,12
+@0:42 missile ms  2,0 2,7 2,12
 +0.55 missile ms  3,0 5,5 12,7
 repeat 3.32 1 2
 
-@0:52.06 missile mn  2,0 2,7 2,12
-+0.55 missile mn  3,0 5,5 12,7
-repeat 3.32 3 2
-laser ss  12,3
-insert -7
-laser ss  8,0
-insert -4
-laser ss  6,0
-insert -1
+@0:50 laser ss  12,3
++3 laser ss  8,0
++3 laser ss  6,0
 
-@1:12.92 missile ms  5,0 5,6 0,10
+@0:51 missile mn  2,0 2,7 2,12
++0.55 missile mn  3,0 5,5 12,7
+repeat 3.3 2 2
+
+@1:02 missile ms  5,0 5,6 0,10
 mirror
-+1.11 missile mn  3,0 3,4 0,7
-repeat 1.94 11 1 mirrored
++1.1 missile mn  3,0 3,4 0,7
+repeat 2.3 7 1 mirrored
 laser ms  0,3
 insert -8
 laser ms  12,3
 insert -6
 
-@1:44.03 missile ms  3,0 3,7 2,12
+@1:24 missile ms  3,0 3,7 2,12
+mirror
++3 missile ms  4,0 4,6 2,12
+mirror
++3 missile ms  5,0 5,5 2,12
+mirror
++5 missile mn  3,0 3,7 2,12
+mirror
++3 missile mn  4,0 4,6 2,12
+mirror
++3 missile mn  5,0 5,5 2,12
 mirror
 
-@1:46.25 missile ms  4,0 4,6 2,12
-mirror
-
-@1:48.46 missile ms  5,0 5,5 2,12
-mirror
-
-@1:52.34 missile mn  3,0 3,7 2,12
-mirror
-
-@1:54.55 missile mn  4,0 4,6 2,12
-mirror
-
-@1:56.77 missile mn  5,0 5,5 2,12
-mirror
-
-@2:05.45 laser mn  0,3
+@1:45 laser mn  0,3
 mirror
 +0.55 laser sn  0,6
 mirror
 laser ln  6,0
 
-@2:21.18 suicide ss  1.4,0 1.4,6
+@1:55 suicide ss  1.4,0 1.4,6
 offset  3.8,0
 offset  3.8,0
-repeat 2.77 4 3 mirrored
+repeat 2.8 5 3 mirrored

@@ -1,103 +1,98 @@
 # Level 10 (9 on the map).
 # How to write these: docs/level-format.md. Times are seconds as played on Hard.
 
-@0:01.66 missile lb  2,-1 2,13
+@0:01 missile lb  2,-1 2,13
 mirror
 
-@0:04.43 missile lb  -1,2 13,2
+@0:05 missile lb  -1,2 13,2
+# missile lb 13,3 -1,3
+
+@0:10 laser lb  0,5
 mirror
 
-@0:07.2 laser lb  0,5
+@0:14 missile lb  3,-1 3,6 1,13
 mirror
 
-@0:09.97 missile lb  3,-1 3,6 1,13
+@0:27 missile ss  6,0 6,5 1,0
+repeat 2.5 3 1 mirrored
+
+@0:30 missile sn  2,12 2,3 8,4 10,12
+repeat 0.7 11 1 mirrored
++2 laser ss  5,0
+
+@0:42 missile sn  3,0 2,7 2,12
+repeat 1 5 1 mirrored
+
+@0:47 stealth  6,5 6,0
+
+@0:53 missile sn  6,0 6,5 3,2 12,7
+repeat 0.7 9
+
+@0:54 missile lb  2,-1 2,7 2,13
++1.1 mirror
+
+@1:02 laser ss  4,0
++1.1 mirror
+
+@1:07 stealth  5,3 0,6
++1.1 stealth  8,5 12,7
+
+@1:14 missile lb  2,-1 5,4 2,13
+mirror
++1.1 laser sn  0,7
++0.8 mirror
++0.8 offset  0,-2
++0.8 mirror
++0.8 offset  0,-2
++0.8 mirror
++0.8 laser sn  3,0
++0.8 mirror
+
+@1:29 missile mn  0,2 6,4 12,2
+repeat 2 3
+
+@1:32 missile sn  12,3 6,5 0,3
+repeat 0.5 5 1
++0.5 laser lb  0,6
++0.5 mirror
+
+@1:44 stealth  5,5 5,0
++2 mirror
+
+@1:51 suicide sn  1.4,0 1.4,6
+offset 3,0
+offset 3,0
+repeat 1.6 4 3 mirrored
++2 missile mn  2,0 2,5 1,12
 mirror
 
-@0:11.63 missile ss  6,0 6,5 1,0
-repeat 1.66 3 1 mirrored
+@1:54 missile sn  0,6 6,7 12,10
+repeat 2 3
 
-@0:20.95 missile sn  2,12 2,3 8,4 10,12
-repeat 0.55 13 1 mirrored
-+1.11 laser ss  5,0
-mirror
-
-@0:32.03 missile sn  2,0 2,7 2,12
-repeat 0.55 5 1 mirrored
-
-@0:37.57 stealth  6,7 6,0
-
-@0:41.91 missile sn  6,0 6,5 3,2 12,7
-repeat 0.78 9
-
-@0:50.55 missile lb  2,-1 2,7 2,13
-+1.11 mirror
-
-@0:53.87 laser ss  4,0
-+1.11 mirror
-
-@0:58.86 stealth  5,3 0,6
-+1.11 stealth  8,5 12,7
-
-@1:08.64 missile lb  2,-1 5,4 2,13
-mirror
-+1.11 laser sn  0,7
-+0.83 mirror
-+0.83 offset  0,-2
-+0.83 mirror
-+0.83 offset  0,-2
-+0.83 mirror
-+0.83 laser sn  3,0
-+0.83 mirror
-+0.83 laser sn  7,0
-+0.83 mirror
-
-@1:25.9 missile mn  0,2 6,4 12,2
-repeat 1.11 3
-+0.55 missile sn  12,3 6,5 0,3
-+0.55 clone -2
-repeat 0.55 4 2
-+0.55 clone -2
-repeat 1.11 3
-+0.55 laser lb  0,6
-+0.55 mirror
-
-@1:42.52 stealth  5,5 5,0
-
-@1:44.18 mirror
-
-@1:57.19 suicide sn  1.4,0 1.4,6
-offset  3.8,0
-offset  3.8,0
-repeat 1.66 2 3 mirrored
-missile sn  0,6 6,7 12,10
-repeat 0.55 7
-missile mn  2,0 2,5 1,12
-mirror
-
-@2:07.72 missile mn  4,0 4,5 1,12
+@2:08 missile mn  4,0 4,5 1,12
 mirror
 missile ln  13,5 6,7 -1,10
 
-@2:15.53 laser ms  4,0
-+0.55 mirror
-+0.55 laser ls  6,0
+@2:10 laser ms  4,0
++0.5 mirror
++0.5 laser ls  6,0
++4 laser ss  0,4
++1 mirror
++4 offset  0,3
++1 mirror
 
-@2:19.96 laser ss  0,4
-+1.11 mirror
-+1.11 offset  0,3
-+1.11 mirror
+@2:21 stealth  4,5 0,12
++1.1 mirror
 
-@2:26.05 stealth  4,5 0,12
-+1.11 mirror
+@2:32 suicide mn  3,0 5,2
++0.6 mirror
+repeat 0.5 1 2
++0.6 suicide mn 0,0 2,2
++0.6 mirror
+repeat 1 1 4
++1 suicide ms  0,7 3,6
++0.6 mirror
+repeat 2.5 2 8
 
-@2:35.83 suicide mn  3,0 5,2
-mirror
-repeat 3.32 1 2
-suicide mn  0,0 2,2
-mirror
-repeat 3.32 1 4
-suicide mn  0,7 3,6
-mirror
-repeat 3.32 1 6
-suicide ms  5,0 5,3
-mirror
+@2:35 stealth  3,4 0,12
++10 stealth  9,5 0,12
