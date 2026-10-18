@@ -219,7 +219,9 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 - **The bosses' new art moves where things happen**, in Classic too (Jeremy's call: the old positions aren't kept,
   not even for reference). The scanner and death explosions land on the new art, the turrets drop from boss 1's six
   gun muzzles, boss 0's ships launch from inside its two hangars (data/levels/*/bosses.txt), and the bosses' sizes
-  changed a little. The Classic boss traces were re-recorded for it.
+  changed a little. The Classic boss traces were re-recorded for it. A boss stops where its whole art is on screen
+  (the original's spot, or lower if the art would poke out of the top: boss 0 now stops lower), and the scanner never
+  lands within 20 px of the top of the screen.
 - **Counter-word while the shield is fading:** typing one of boss 2's counter-words while the player's shield is
   fading out brings the shield back. The original added to the fading shield, which then vanished anyway.
 - **"chameleon"** recolours the player's ship with a shader: a random hue rotation (Flash's luminance-weighted

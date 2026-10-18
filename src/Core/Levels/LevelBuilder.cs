@@ -42,7 +42,9 @@ public sealed class LevelBuilder
                 throw new DataError(script.File, s.Line, e.Message);
             }
         }
-        return b.array;
+        // Waves can overlap (an @ time can come before the end of the wave above it), but the game runs events in
+        // list order, so put them in time order. The sort is stable: lines at the same moment keep their order.
+        return b.array.OrderBy(e => e.Time).ToList();
     }
 
     double E(Num n) => n.Eval(c.Rng, c.DifficultyIndex);

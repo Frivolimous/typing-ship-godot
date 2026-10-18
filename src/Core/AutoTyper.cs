@@ -4,8 +4,8 @@ namespace TypingShip.Core;
 /// Dev aid (--autotype, the simulator): types like a player at a set WPM and never mistypes, so levels can be
 /// played through unattended. It plays earliest-deadline-first: it estimates how many ticks each threat has before
 /// it hurts (a missile or suicide ship reaching the player, a laser finishing its charge, boss 3's beam), types the
-/// most pressing one it can still finish in time, repairs the hull when there's slack, and otherwise clears the
-/// nearest ship (turret first) or works on the boss scanner. A yardstick for "can a typist at this speed survive
+/// most pressing one it can still finish in time, otherwise clears the nearest ship (turret first) or works on the
+/// boss scanner, and repairs the hull only when there's nothing else to type. A yardstick for "can a typist at this speed survive
 /// this", not a model of a human.
 /// </summary>
 public sealed class AutoTyper
@@ -50,6 +50,8 @@ public sealed class AutoTyper
             if (word == null || owner is Sprite { Removed: true } || owner is Scanner { Word: null } ||
                 owner?.Word != word || typed >= word.Length || Hopeless(owner, word.Length - typed))
                 Pick();
+            else if (owner == m.Hull && Choose(includeHull: false) is { } other)
+                Take(other); // something to type turned up: the repair can wait
             if (word == null) return;
             if (mistyped)
             {
@@ -75,7 +77,17 @@ public sealed class AutoTyper
     /// <summary>A threat that will hurt before its word can be finished; better to spend the letters elsewhere.</summary>
     bool Hopeless(Entity o, int letters) => Deadline(o) < letters / Rate;
 
-    void Pick()
+    void Pick() => Take(Choose(includeHull: true));
+
+    void Take(Entity? target)
+    {
+        owner = target;
+        word = target?.Word;
+        typed = 0;
+    }
+
+    /// <summary>What to type next (see the class summary for the order), or null for nothing.</summary>
+    Entity? Choose(bool includeHull)
     {
         var m = game;
         Entity? best = null, nearest = null;
@@ -100,15 +112,11 @@ public sealed class AutoTyper
             }
         }
 
-        // Repair when the next threat leaves time to.
-        if (m.Hull.Word is { } heal && bestDeadline > heal.Length / Rate * 1.5f)
-            best = m.Hull;
-        else if (best == null)
+        if (best == null)
             best = m.Boss?.Scanner is { Word: not null } scanner && nearestDist > 200 ? scanner : nearest;
-
-        owner = best;
-        word = best?.Word;
-        typed = 0;
+        // The hull's repair word comes last of all: only when there's nothing else to type.
+        if (includeHull) best ??= m.Hull.Word != null ? m.Hull : null;
+        return best;
     }
 
     /// <summary>Roughly how many ticks until this object hurts the player (Never if it won't directly).</summary>

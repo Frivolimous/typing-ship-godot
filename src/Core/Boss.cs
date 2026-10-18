@@ -53,15 +53,15 @@ public sealed class Boss : Sprite
         five = Speed.FloorTicks(t.Boss2BeamTime / game.Cps);
         Index = i;
         WordSize = -1;
-        Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 100));
         if (i is < 0 or > 2) throw new ArgumentOutOfRangeException(nameof(i), $"Boss int is out of bounds: {i}");
         Art = Arts[i];
-        switch (Index)
-        {
-            case 0: Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 100)); SpriteScale = 0.53f; break;
-            case 1: Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 170)); SpriteScale = 0.48f; break;
-            default: Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 170)); SpriteScale = 0.42f; break;
-        }
+        SpriteScale = Index switch { 0 => 0.53f, 1 => 0.48f, _ => 0.42f };
+        // Where it stops: the original's spot, or lower if the art would poke out of the top of the screen. The
+        // margin covers the aim jitter and how far short of the point a ship can stop.
+        float original = Index == 0 ? 100 : 170;
+        float stop = Math.Max(original, Playfield.VisibleTop + ViewSize.Y / 2 + t.Jitter + t.ArriveDistance);
+        Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, Math.Min(100, stop)));
+        Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, stop));
         Commands.Add(new ObjectCommand(c, Playfield.ViewWidth / 2, 500, t.BossFirstAttack, false, true));
 
         Init(Playfield.ViewWidth / 2, -50, MathF.PI / 2, 0.1f, 0, true);
@@ -310,6 +310,8 @@ public sealed class Boss : Sprite
 public sealed class Scanner : Entity
 {
     int count, toCount;
+    /// <summary>The scanner keeps at least this far below the top of the screen, so it and its word show.</summary>
+    const float ScannerTopMargin = 20;
     /// <summary>The ring's radius, for drawing.</summary>
     public float Ring;
 
@@ -318,7 +320,8 @@ public sealed class Scanner : Entity
         var t = game.Tuning;
         WordSize = t.ScannerWord;
         AddWord();
-        // A random visible pixel of the boss (not in boss 1's hangar), away from the bottom and left edges.
+        // A random visible pixel of the boss (not in boss 1's hangar), away from the bottom and left edges and below
+        // the top of the screen.
         Vec2 p;
         var art = game.Art[v.Art];
         do
@@ -330,7 +333,7 @@ public sealed class Scanner : Entity
                 continue;
             }
             p = v.TopLeft + px * v.SpriteScale;
-        } while (p.Y > 475 || p.X < 35);
+        } while (p.Y > 475 || p.X < 35 || p.Y < Playfield.VisibleTop + ScannerTopMargin);
         Position = p;
         count = t.ScannerRing;
         Ring = t.ScannerRing;

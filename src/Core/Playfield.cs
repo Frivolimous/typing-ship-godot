@@ -9,6 +9,8 @@ public static class Playfield
     public const float GridX = ViewWidth / 12, GridY = ViewHeight / 12;
     public const int TickRate = 24;
     public const float PlayerX = ViewWidth / 2, PlayerY = ViewHeight - 100;
+    /// <summary>The part of the game view the player sees: the 550 px stage, which sits at 25,25 in it.</summary>
+    public const float VisibleLeft = 25, VisibleTop = 25, VisibleRight = 575, VisibleBottom = 575;
 }
 
 /// <summary>Weapon and kill types (ActionControl's constants).</summary>

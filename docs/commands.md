@@ -76,8 +76,8 @@ headless run above, tick for tick.
 
 The bot (`--autotype`) types at exactly the difficulty's WPM and never mistypes. It plays earliest-deadline-first:
 whatever will hurt soonest (an incoming missile, a suicide ship, a laser about to fire, boss 3's beam) as long as it
-can still finish the word in time, then hull repairs when there's slack, then the nearest ship (turret first), then
-the boss scanner. It's a yardstick for "can a typist at this speed survive this", not a model of a human.
+can still finish the word in time, then the nearest ship (turret first), then the boss scanner, and the hull's
+repair word last, only when there's nothing else to type. It's a yardstick for "can a typist at this speed survive this", not a model of a human.
 
 ## Tests
 

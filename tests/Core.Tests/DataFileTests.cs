@@ -70,6 +70,15 @@ public class LevelFormatTests
     }
 
     [Fact]
+    public void Overlapping_waves_come_in_time_order()
+    {
+        // The repeat runs on past the next @ time; the next wave's ships still arrive at their own times, not after it.
+        var events = Build("@0:10 missile sn  3,0 6,7 12,8\nrepeat 1.2 9 1 mirrored\n@0:19 suicide mn  0,2 6,3\nrepeat 1 3 1 mirrored");
+        Assert.Equal(events.Select(e => e.Time).OrderBy(t => t), events.Select(e => e.Time));
+        Assert.Contains(events, e => e.Line == 3 && Math.Abs(e.Time - 19) < 1e-9);
+    }
+
+    [Fact]
     public void Anchors_must_be_in_order()
     {
         var e = ParseFails("@0:20 laser sn  0,1\n@0:10 laser sn  0,2");
