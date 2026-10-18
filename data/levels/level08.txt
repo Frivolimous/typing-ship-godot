@@ -25,14 +25,14 @@ repeat 0.8 9
 
 @0:50 laser ms  4,0
 +1 mirror
-+1 laser ls  6,0
++2 laser ls  6,0
 +2 laser ss  0,4
-+1.5 mirror
-+1.5 offset  0,3
-+1.5 mirror
++1 mirror
++2 offset  0,3
++2 mirror
 
-@1:04 missile ss  0,12 4,3 10,6 0,6
-repeat 2 5
+@1:05 missile ss  0,12 4,3 10,6 0,6
+repeat 2.5 4
 
 @1:07 laser ls  5,0
 +6 laser ls  7,0
@@ -49,10 +49,10 @@ repeat 0.55 3
 repeat 0.55 3
 
 @1:33 laser ls  2,0
-+1 offset  2,0
-+1 offset  2,0
-+1 offset  2,0
-+1 offset  2,0
++1.5 offset  2,0
++1.5 offset  2,0
++1.5 offset  4,0
++1.5 offset  2,0
 
 @1:42 suicide mn  0,12 2,5
 repeat 0.93 6 1 mirrored

@@ -41,11 +41,9 @@ repeat 0.7 9
 mirror
 +1.1 laser sn  0,7
 +0.8 mirror
-+0.8 offset  0,-2
++1.6 offset  0,-2
 +0.8 mirror
-+0.8 offset  0,-2
-+0.8 mirror
-+0.8 laser sn  3,0
++1.6 laser sn  3,0
 +0.8 mirror
 
 @1:29 missile mn  0,2 6,4 12,2
@@ -53,7 +51,7 @@ repeat 2 3
 
 @1:32 missile sn  12,3 6,5 0,3
 repeat 0.5 5 1
-+0.5 laser lb  0,6
++0.5 laser lt  0,6
 +0.5 mirror
 
 @1:44 stealth  5,5 5,0
@@ -76,7 +74,7 @@ missile ln  13,5 6,7 -1,10
 @2:10 laser ms  4,0
 +0.5 mirror
 +0.5 laser ls  6,0
-+4 laser ss  0,4
++4 laser sn  0,4
 +1 mirror
 +4 offset  0,3
 +1 mirror
@@ -84,7 +82,7 @@ missile ln  13,5 6,7 -1,10
 @2:21 stealth  4,5 0,12
 +1.1 mirror
 
-@2:32 suicide mn  3,0 5,2
+@2:33 suicide mn  3,0 5,2
 +0.6 mirror
 repeat 0.5 1 2
 +0.6 suicide mn 0,0 2,2
@@ -94,5 +92,5 @@ repeat 1 1 4
 +0.6 mirror
 repeat 2.5 2 8
 
-@2:35 stealth  3,4 0,12
+@2:36 stealth  3,4 0,12
 +10 stealth  9,5 0,12

@@ -14,9 +14,7 @@ missile ln  13,5 6,3 -1,4
 +0.5 laser lb  7.5,0
 
 @0:27 missile ln  3,-1 3,5 3,13
-mirror
 +4 missile ln  -1,1 6,3 9,13
-mirror
 +4 laser lt  0,5
 mirror
 
@@ -48,17 +46,17 @@ repeat 2 5 1 mirrored
 @1:32 missile ln  -1,-1 2,3 -1,13
 mirror
 
-@1:33 laser lb  2,0
+@1:33 laser lt  2,0
 mirror
 
-@1:43 laser lb  4,0
+@1:43 laser lt  4,0
 mirror
 
 @1:48 stealth  3,5 0,12
 +0.9 mirror
 +0.9 stealth  6,4 6,0
 
-@2:00 laser lb 6,0
+@2:00 laser lt 6,0
 +2 laser ms 0,3
 mirror
 +5 stealth 4,4 0,2
