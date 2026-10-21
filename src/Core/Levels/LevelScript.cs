@@ -245,6 +245,14 @@ public sealed class LevelScript
                 rest = line[words[0].Length..].Trim();
             }
             if (rest.Length == 0) throw new DataError(file, lineNo, $"Nothing follows the time \"{words[0]}\".");
+            // The tag can also come after the time: "@0:14 normal+: missile ...".
+            if (rest.Split(' ')[0] is var tag && tag.EndsWith(':'))
+            {
+                if (from > 0) throw new DataError(file, lineNo, "A line can only have one difficulty tag.");
+                from = ParseTag(tag, file, lineNo);
+                rest = rest[tag.Length..].Trim();
+                if (rest.Length == 0) throw new DataError(file, lineNo, $"Nothing follows the tag \"{tag}\".");
+            }
 
             var s = ParseLine(rest, timing, constants, file, lineNo);
             if (timing.Type != Timing.Kind.Same && s.Moment == null)

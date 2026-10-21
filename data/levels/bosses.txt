@@ -5,30 +5,40 @@
 # their positions are on the same 12 x 12 grid, but measured from the boss art's top-left corner, not the screen's.
 
 [boss 1 escorts]
-@0:13.02 missile sn  0,4 7,6 12,6
-+0.83 missile sn  12,3 5,5 0,5
-repeat 0.83 2 2
-@0:25.85 laser ss  0,9
-+0.55 mirror
+@0:13 missile sn  0,4 7,6 12,6
++0.8 missile sn  12,3 5,5 0,5
+repeat 0.8 0/1/2/3/4 2
+@0:25 laser ss  0,9
++0.5 mirror
+extreme+: +0.5 laser ss  0,6
+mirror
+insane+: +0.5 laser ss  0,3
+mirror
+@0:25.5 wait   # every difficulty's batch lasts as long as Hard's
 
 [boss 1 hangar]
 @0:00 ship msn  1.8,2.2  halt 4.11  attack
 ship msn  2.5,2.66  halt 3.34  attack
-ship msn  3,3.18  halt 2.57  attack
-ship msn  6.92,3.18  halt 2.57  attack
+normal+: ship msn  3,3.18  halt 2.57  attack
+normal+: ship msn  6.92,3.18  halt 2.57  attack
 ship msn  7.45,2.66  halt 3.34  attack
 ship msn  8.14,2.2  halt 4.11  attack
 
 [boss 2 escorts]
-@0:10.85 missile mn  0,3~6 5,6 12,7
+@0:10 missile mn  0,3~6 5,6 12,7
 mirror
-repeat 1.66 1 2
-@0:27.69 laser ms  0,8
-+0.55 mirror
+repeat 1.6 0/0/1/2/3 2
+normal+: @0:27 laser ms  0,8
++0.5 mirror
+insane+: +0.5 laser ms  0,5
+mirror
+@0:27.5 wait
 
 [boss 3 escorts]
-@0:13.02 laser ms  0,6~9
-mirror
-@0:26.03 missile mn  0,0 2,4 5,6 12,10
-repeat 1.11 5 1 mirrored
-@0:44.58 stealth  2~10,5~7 0|12,5
+@0:13 laser ms  0,6~9
+normal+: mirror
+@0:26 missile mn  0,0 2,4 5,6 12,10
+repeat_over 5.5 0/2/5/7/9 1 mirrored
+hard+: @0:44 stealth  2~10,5~7 0|12,5
+insane+: +2 stealth  2~10,5~7 0|12,5 shield
+@0:44 wait

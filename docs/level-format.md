@@ -165,7 +165,8 @@ A line can start with a tag that keeps its ships off the easier difficulties:
 @0:31.5 laser sn  0,6
 normal+: laser sn  12,6        # Normal and harder only
 @0:40 laser sn  0,2
-hard+: +0.3 laser sn  12,2     # the tag goes first, before the time
+hard+: +0.3 laser sn  12,2     # the tag can go before the time...
+@0:44 normal+: laser sn  0,4   # ...or after it
 ```
 
 - The tags are `normal+:`, `hard+:`, `extreme+:` and `insane+:`: the line is on that difficulty and every harder

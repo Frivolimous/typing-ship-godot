@@ -291,6 +291,23 @@ public class BossTests
     }
 
     [Fact]
+    public void Boss_3s_counter_words_take_the_same_share_of_the_typing_speed_on_every_difficulty()
+    {
+        int Window(double cps)
+        {
+            var g = TestData.WithLevel0("@0:00.55 boss 3");
+            g.Cps = cps;
+            g.NewGame(0);
+            g.Until(() => g.Boss != null);
+            return g.Boss!.CounterWindow;
+        }
+        Assert.Equal(31 * 4, Window(Difficulty.Hard)); // as the original had it on Hard
+        double hardLetters = Window(Difficulty.Hard) * Difficulty.Hard;
+        foreach (double cps in Difficulty.Cps)
+            Assert.InRange(Window(cps) * cps, hardLetters - cps, hardLetters + cps); // within a tick's typing
+    }
+
+    [Fact]
     public void Boss_escorts_keep_coming_during_the_fight()
     {
         var g = TestData.WithLevel0("@0:00.55 boss 1");

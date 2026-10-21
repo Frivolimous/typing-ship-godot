@@ -204,6 +204,10 @@ public class LevelFormatTests
         Close(new[] { 1.0, 2, 3 }, Times(level, 40));
         Close(new[] { 1.0, 2, 3, 4 }, Times(level, 65));
         Close(new[] { 1.0, 2, 3, 4 }, Times(level, 90));
+        // The tag can go after the time as well.
+        const string after = "@0:01 laser sn  0,1\n+1 normal+: laser sn  12,1\n+1 laser sn  0,2\n@0:04 hard+: laser sn  12,2";
+        Close(new[] { 1.0, 3 }, Times(after, 25));
+        Close(new[] { 1.0, 2, 3, 4 }, Times(after, 65));
     }
 
     [Fact]
@@ -237,6 +241,8 @@ public class LevelFormatTests
     [InlineData("hard: laser sn  0,1", "Did you mean \"hard+:\"")]
     [InlineData("easy+: laser sn  0,1", "every difficulty")]
     [InlineData("normal+:", "Nothing follows the tag")]
+    [InlineData("@0:01 normal+:", "Nothing follows the tag")]
+    [InlineData("normal+: @0:01 hard+: laser sn  0,1", "only have one difficulty tag")]
     public void Bad_tags_say_what_is_wrong(string line, string expected) =>
         Assert.Contains(expected, ParseFails(line).Message);
 

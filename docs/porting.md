@@ -167,10 +167,15 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   written. Classic too (its traces were re-recorded).
 - **Extreme is 90 WPM and Insane 120** (the original had 75 and 90; Jeremy's call, 2026-10-18), so each
   difficulty is a clear step up and fast typists have something to chase. Above Hard, everything that moves or counts
-  down with the typing speed (ship and missile speeds, halts, laser charges, stealth fades, boss 3's beam) uses a
+  down with the typing speed (ship and missile speeds, halts, laser charges, stealth fades) uses a
   flattened pace, Hard x (cps / Hard)^0.5 (tuning.txt, "pace above hard"): Extreme moves 1.18x as fast as Hard and
   Insane 1.36x, close to what 75 and 90 WPM did, and the extra difficulty comes from more ships in the levels. The
   enemy fire rate and the score bonus still use the full speed. Classic plays the same rules.
+- **Boss 3's beam asks the same of every difficulty.** Its four counter-words (8-10 letters each) must be typed
+  before the beam strikes. The original timed the attack in steps of "boss 3 beam" / cps ticks, rounded down, so
+  the share of the typing speed it took swung from 80% on Easy to 92% on Hard (and 67% on Insane once Insane got
+  faster). The step is now Hard's (4 ticks) scaled by Hard's speed / the typing speed, not rounded, so it takes
+  Hard's share everywhere; Hard plays exactly as before.
 - **Player missiles launch straight ahead.** The original passed the ship's rotation in degrees as radians, so
   missiles swung out at about -117° before homing. Fixed.
 - **Escape pauses and resumes.** The original paused with an on-screen button or by typing "pause". Typing

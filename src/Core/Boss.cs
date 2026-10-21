@@ -33,7 +33,17 @@ public sealed class Boss : Sprite
     public readonly float SpriteScale;
     readonly List<Sprite> objects = new();
     int delay = -1;
-    readonly int five;
+    /// <summary>
+    /// Boss 3's beam timing unit in ticks: Hard's ("boss 3 beam" / Hard's cps, rounded down as in the original), scaled by
+    /// Hard's cps / the typing speed and not rounded, so typing the counter-words takes the same share of the speed on
+    /// every difficulty. The beam's steps fall on <see cref="Beat"/>(n).
+    /// </summary>
+    readonly double beamUnit;
+
+    int Beat(int n) => (int)Math.Round(beamUnit * n);
+
+    /// <summary>Boss 3: ticks from the first counter-word appearing to the beam's first strike.</summary>
+    public int CounterWindow => Beat(43) - Beat(12);
     readonly LevelContext c;
 
     public static readonly string[] Arts = { "ai/boss0", "ai/boss1", "ai/boss2" };
@@ -50,7 +60,7 @@ public sealed class Boss : Sprite
         this.c = c;
         var t = game.Tuning;
         Health = t.BossHealth;
-        five = Speed.FloorTicks(t.Boss2BeamTime / game.Pace);
+        beamUnit = Speed.FloorTicks(t.Boss2BeamTime / Difficulty.Hard) * Difficulty.Hard / game.Cps;
         Index = i;
         WordSize = -1;
         if (i is < 0 or > 2) throw new ArgumentOutOfRangeException(nameof(i), $"Boss int is out of bounds: {i}");
@@ -70,7 +80,7 @@ public sealed class Boss : Sprite
     /// <summary>
     /// Boss 3's charge before the beam fires, 0-1 (0 while it isn't charging, 1 from when the beam fires until it stops).
     /// </summary>
-    public float ChargeProgress => Index != 2 || delay <= 0 ? 0 : delay > five * 20 ? 1 - (delay - five * 20) / (five * 24f) : 1;
+    public float ChargeProgress => Index != 2 || delay <= 0 ? 0 : delay > Beat(20) ? 1 - (delay - Beat(20)) / (float)(Beat(44) - Beat(20)) : 1;
 
     /// <summary>Ticks until the last hit of boss 3's beam (until then a counter-word still blocks one), or -1.</summary>
     public int BeamTicksLeft => Index == 2 && delay > 0 ? delay : -1;
@@ -165,7 +175,7 @@ public sealed class Boss : Sprite
                 ChargeStage = 1;
                 Game.Events.Sound(GameSound.BossCharge);
                 Count = 0;
-                delay = five * 44;
+                delay = Beat(44);
                 break;
         }
     }
@@ -194,41 +204,42 @@ public sealed class Boss : Sprite
         }
     }
 
-    /// <summary>Boss 3's beam, counted down from five*44 ticks (five = beam time / cps).</summary>
+    /// <summary>Boss 3's beam, counted down from Beat(44) ticks.</summary>
     void UpdateBeam()
     {
         if (delay < 0) return;
         var player = Game.Player;
         // The four counter-words appear in a row above the player, left to right, clear of the cockpit and with a gap
         // in the middle for the beam.
-        if (delay == five * 43) MakeCounter(-190, -80);
-        else if (delay == five * 42) MakeCounter(-70, -80);
-        else if (delay == five * 41) MakeCounter(70, -80);
-        else if (delay == five * 40) MakeCounter(190, -80);
-        else if (delay == five * 36)
+        if (delay == Beat(43)) MakeCounter(-190, -80);
+        else if (delay == Beat(42)) MakeCounter(-70, -80);
+        else if (delay == Beat(41)) MakeCounter(70, -80);
+        else if (delay == Beat(40)) MakeCounter(190, -80);
+        else if (delay == Beat(36))
         {
             ChargeStage = 2;
             Game.Events.Sound(GameSound.BossCharge);
         }
-        else if (delay == five * 28)
+        else if (delay == Beat(28))
         {
             ChargeStage = 3;
             Game.Events.Sound(GameSound.BossCharge);
         }
-        else if (delay == five * 20)
+        else if (delay == Beat(20))
         {
             // The original left a stale shield frame here if the last beam ended with counters unused.
             BeamFrame = Count > 0 ? 1 : 0;
             Game.Events.Sound(GameSound.BossFire);
         }
-        else if (delay < five * 15)
+        else if (delay < Beat(15))
         {
             if (delay % 5 == 0)
             {
                 if (Count == 0) Game.Events.BeamHitsPlayer();
                 else BeamFrame = delay / 5 % 3 + 1;
             }
-            if (delay % (five * 4) == 0)
+            // The beam strikes four times: Beat(12), Beat(8), Beat(4) and 0.
+            if (delay == Beat(12) || delay == Beat(8) || delay == Beat(4) || delay == 0)
             {
                 if (delay > 0) Game.Events.Sound(GameSound.BossFire);
                 if (Count > 0)

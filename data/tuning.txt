@@ -103,5 +103,7 @@ boss 1 attack = 48        # halt between attacks: boss 1 launches six suicide sh
 boss 2 attack = 23        # boss 2 drops an invisible laser turret...
 boss 2 attack per health = 3   # ...waiting this much longer for each health it has left
 boss 3 attack = 70        # boss 3 charges its beam
-boss 3 beam = 25          # the beam's timing unit: the whole attack lasts 44 x (this / cps) ticks
+boss 3 beam = 25          # the beam's timing unit: on Hard a step is this / cps ticks, rounded down (4); other difficulties
+                          #   scale Hard's step by Hard's cps / their typing speed, so the counter-words take the same
+                          #   share of the speed everywhere. The whole attack lasts 44 steps
 counter word = 11         # boss 3's counter-words have this many letters, less the boss's health
