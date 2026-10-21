@@ -10,7 +10,7 @@ repeat_over 9 2/5/9/13/17 1 mirrored
 @0:10 laser ln  3,0
 +4 laser ln  9,0
 normal+: +4 laser ln  6,0
-hard+: +4 laser ln  6,0
+hard+: +4 laser ln  0,6
 
 @0:20 missile sn  1,12 4,6 12,2
 repeat_over 7 1/4/7/10/13 1 mirrored
