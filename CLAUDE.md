@@ -98,7 +98,7 @@ original art. `game/assets/sprites/ai/` holds AI-generated placeholder
 art (ships point up; the bosses are animated in code), cut out from sources in `C:\JS Projects\Typing Ship PUB\art\ai-sprites\`.
 **Art sets:** the ships, missiles, turret and medals come from a set, a folder under `game/assets/sprites/` with a
 `player.png` (`ai`, `custom`, ...), picked in the options, with F2 or `--art=NAME` (Core/Sprites.cs); art a set lacks is
-borrowed from `ai`. Bosses always use `ai` (their art shapes the rules). Each set has its own flames and charge points in
+borrowed from `ai`. Bosses always use `ai` (their art shapes the rules). Each set has its own flames, charge points and shields in
 data/mounts.txt (`custom/player ...`); when ship art changes, move them there. **Music is git-ignored** (Jeremy keeps it backed up
 elsewhere). Code must keep working when `game/assets/music/` is empty, and nothing should start tracking those files. The `.fla` and the raw art sources live outside the repo:
 `C:\JS Projects\Typing Ship PUB\` and `C:\JS Projects\Typing Ship\` (Audio/, Bitmaps/, Vector/).

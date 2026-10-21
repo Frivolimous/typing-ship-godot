@@ -1,15 +1,19 @@
-# Where effects sit on each piece of art: engine flames, and where a laser ship (or the player's EMP) charges up.
+# Where effects sit on each piece of art: engine flames, where a laser ship (or the player's EMP) charges up, and the
+# shield bubble around it.
 #
 #   sprite   x,y   flame   width   length   colour
 #   sprite   x,y   charge
+#   sprite   x,y   shield  width   height
 #
 #   sprite   the art's path under game/assets/sprites, without .png (ai/player, ai/stealth)
 #   x,y      a point on that PNG, in its pixels, measured from its centre (x right, y down; the art points up)
 #   width    how wide the flame is at the nozzle, in the same pixels
 #   length   how long the flame is, in the same pixels (it flickers around this)
 #   colour   blue, cyan, orange, red, purple or white
+#   shield   the bubble's centre (x,y), its width across the ship and its height along it, in the art's pixels
 #
-# Art without flames has none; a ship without a charge point charges at its centre.
+# Art without flames has none; a ship without a charge point charges at its centre; a ship without a shield line keeps
+# its hull's shield size (in View/Views.cs).
 # Changes show up the next time the game starts.
 
 ai/player           -28,94  flame   18  44  blue
@@ -78,3 +82,26 @@ custom/player             0,-70  charge
 custom/laser_s            0,-40  charge
 custom/laser_m            0,-50  charge
 custom/laser_l            0,-97  charge
+
+# Shields: the ai set's match the old hull table; the custom ones are first guesses to tune (missile_m made roomier).
+ai/player             0,0    shield  200  200
+ai/missile_s          0,0    shield   90   90
+ai/laser_s            0,10   shield  110  110
+ai/mine               0,0    shield   60   60
+ai/missile_m          4,0    shield  120  120
+ai/laser_m            0,4    shield  140  140
+ai/bomber             0,0    shield   70   70
+ai/missile_l          2,14   shield  164  232
+ai/laser_l            0,16   shield  130  220
+ai/stealth            0,0    shield   70  100
+
+custom/player         0,0    shield  200  200
+custom/missile_s      0,0    shield   95   95
+custom/laser_s        0,8    shield  130  135
+custom/mine           0,0    shield   60   60
+custom/missile_m      0,0    shield  160  140
+custom/laser_m        0,4    shield  165  150
+custom/bomber         0,0    shield   70   70
+custom/missile_l      0,10   shield  190  250
+custom/laser_l        0,10   shield  150  260
+custom/stealth        0,0    shield   70  100

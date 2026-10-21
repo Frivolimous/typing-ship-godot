@@ -336,6 +336,7 @@ public partial class EnemyShipView : SpriteView
 
     readonly EnemyShip ship;
     readonly ShieldView shield = new();
+    readonly Node2D shieldHost;
     readonly ChargeGlow? glow;
     TurretView? turret;
     bool shieldShown;
@@ -363,7 +364,7 @@ public partial class EnemyShipView : SpriteView
     {
         this.ship = ship;
         var look = Look(ship.Hull);
-        shield.SetSize(look.Shield.X, look.Shield.Y, look.Shield.Z, look.Shield.W);
+        shieldHost = ShieldView.Fit(shield, View, this, look.Shield);
         if (ship.Charge != null)
         {
             glow = new ChargeGlow(ship.Charge, ChargeGlow.LaserTint);
@@ -409,7 +410,7 @@ public partial class EnemyShipView : SpriteView
     {
         if (ship.ShieldOn == shieldShown) return;
         shieldShown = ship.ShieldOn;
-        if (shieldShown) shield.Add(this);
+        if (shieldShown) shield.Add(shieldHost);
         else shield.Remove();
     }
 
@@ -456,6 +457,7 @@ public partial class PlayerView : SpriteView
 {
     readonly PlayerShip ship;
     public readonly ShieldView Shield = new();
+    Node2D shieldHost;
     public readonly ChargeGlow Glow;
     bool shieldShown;
 
@@ -463,7 +465,7 @@ public partial class PlayerView : SpriteView
     {
         this.ship = ship;
         Name = "Player";
-        Shield.SetSize(100, 100);
+        shieldHost = ShieldView.Fit(Shield, View, this, new Vector4(100, 100, 0, 0));
         Glow = new ChargeGlow(ship.Charge, ChargeGlow.EmpTint);
         Glow.Mount(this, new Vector2(0, -20));
     }
@@ -476,6 +478,10 @@ public partial class PlayerView : SpriteView
         EngineFlames.Reattach(View);
         Glow.GetParent()?.RemoveChild(Glow);
         Glow.Mount(this, new Vector2(0, -20));
+        bool up = Shield.GetParent() != null;
+        Shield.GetParent()?.RemoveChild(Shield);
+        shieldHost = ShieldView.Fit(Shield, View, this, new Vector4(100, 100, 0, 0));
+        if (up) shieldHost.AddChild(Shield);
     }
 
     public PlayerView() : this(null!) { }
@@ -492,7 +498,7 @@ public partial class PlayerView : SpriteView
         if (ship.ShieldOn != shieldShown)
         {
             shieldShown = ship.ShieldOn;
-            if (shieldShown) Shield.Add(this);
+            if (shieldShown) Shield.Add(shieldHost);
             else Shield.Remove();
         }
         if (shieldShown) Shield.Alpha = ship.ShieldAlpha;

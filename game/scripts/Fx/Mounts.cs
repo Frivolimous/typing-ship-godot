@@ -7,7 +7,7 @@ namespace TypingShip;
 /// <summary>A nozzle on a piece of art: where it is (texture pixels from the art's centre), how big its flame is.</summary>
 public readonly record struct EngineMount(Vector2 At, float Width, float Length, Color Colour);
 
-/// <summary>Where effects sit on each piece of art (data/mounts.txt): engine flames and the weapon's charge point.</summary>
+/// <summary>Where effects sit on each piece of art (data/mounts.txt): engine flames, the weapon's charge point, the shield.</summary>
 public static class Mounts
 {
     const string File = "mounts.txt";
@@ -24,6 +24,7 @@ public static class Mounts
 
     static Dictionary<string, EngineMount[]> flames = new();
     static Dictionary<string, Vector2> charges = new();
+    static Dictionary<string, Rect2> shields = new();
 
     /// <summary>Reads mounts.txt; a mistake throws a DataError naming the line. A missing file means no mounts.</summary>
     public static void Load(DataSource source)
@@ -31,6 +32,7 @@ public static class Mounts
         var text = source.Read(File);
         var foundFlames = new Dictionary<string, List<EngineMount>>();
         var foundCharges = new Dictionary<string, Vector2>();
+        var foundShields = new Dictionary<string, Rect2>();
         var lines = text?.Split('\n') ?? [];
         for (int n = 0; n < lines.Length; n++)
         {
@@ -40,7 +42,7 @@ public static class Mounts
             var f = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
             if (f.Length == 0) continue;
             DataError Error(string problem) => new(File, n + 1, problem);
-            if (f.Length < 3) throw Error("expected: sprite  x,y  flame width length colour   or   sprite  x,y  charge");
+            if (f.Length < 3) throw Error("expected: sprite  x,y  flame width length colour,  sprite  x,y  charge,  or  sprite  x,y  shield width height");
             var xy = f[1].Split(',');
             if (xy.Length != 2 || !Num(xy[0], out float x) || !Num(xy[1], out float y))
                 throw Error($"\"{f[1]}\" isn't a position like -28,94");
@@ -61,12 +63,20 @@ public static class Mounts
                     if (foundCharges.ContainsKey(f[0])) throw Error($"{f[0]} already has a charge point");
                     foundCharges[f[0]] = at;
                     break;
+                case "shield":
+                    if (f.Length != 5) throw Error("expected: sprite  x,y  shield  width  height");
+                    if (!Num(f[3], out float sw) || sw <= 0) throw Error($"\"{f[3]}\" isn't a width");
+                    if (!Num(f[4], out float sh) || sh <= 0) throw Error($"\"{f[4]}\" isn't a height");
+                    if (foundShields.ContainsKey(f[0])) throw Error($"{f[0]} already has a shield");
+                    foundShields[f[0]] = new Rect2(at, new Vector2(sw, sh)); // centre and size
+                    break;
                 default:
-                    throw Error($"\"{f[2]}\" should be flame or charge");
+                    throw Error($"\"{f[2]}\" should be flame, charge or shield");
             }
         }
         flames = foundFlames.ToDictionary(kv => kv.Key, kv => kv.Value.ToArray());
         charges = foundCharges;
+        shields = foundShields;
     }
 
     static bool Num(string s, out float v) => float.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out v);
@@ -81,6 +91,12 @@ public static class Mounts
 
     /// <summary>The engine flames on a piece of art, or null if it has none.</summary>
     public static EngineMount[]? Flames(Texture2D? tex) => Name(tex) is { } n ? flames.GetValueOrDefault(n) : null;
+
+    /// <summary>
+    /// The art's shield, if it has a shield line: an ellipse's centre (Position) and size, in texture pixels from the
+    /// art's centre, the art pointing up.
+    /// </summary>
+    public static Rect2? Shield(Texture2D? tex) => Name(tex) is { } n && shields.TryGetValue(n, out var r) ? r : null;
 
     /// <summary>Where the art's weapon charges up, in texture pixels from its centre, or null if it isn't listed.</summary>
     public static Vector2? Charge(Texture2D? tex) =>

@@ -63,6 +63,22 @@ public partial class ShieldView : Node2D, IViewTicker
         Material = material;
     }
 
+    /// <summary>
+    /// Sizes a ship's shield: from its art's shield line in data/mounts.txt (then it sits on the art, in its pixels),
+    /// or else from <paramref name="fallback"/> (width along the heading, height across, offset x and y, in stage pixels on
+    /// the ship). Returns what it goes on when it's up.
+    /// </summary>
+    public static Node2D Fit(ShieldView shield, Sprite2D art, Node2D ship, Vector4 fallback)
+    {
+        if (Mounts.Shield(art.Texture) is { } m)
+        {
+            shield.SetSize(m.Size.X, m.Size.Y, m.Position.X, m.Position.Y);
+            return art;
+        }
+        shield.SetSize(fallback.X, fallback.Y, fallback.Z, fallback.W);
+        return ship;
+    }
+
     public void SetSize(float w, float h, float x = 0, float y = 0)
     {
         radius = new Vector2(w / 2, h / 2);
