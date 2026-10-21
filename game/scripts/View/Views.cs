@@ -468,6 +468,16 @@ public partial class PlayerView : SpriteView
         Glow.Mount(this, new Vector2(0, -20));
     }
 
+    /// <summary>The art set changed: the ship, its flames and its gun take the new set's.</summary>
+    public void Reskin()
+    {
+        Frames = Sprites.Player;
+        View.Texture = Frames[0];
+        EngineFlames.Reattach(View);
+        Glow.GetParent()?.RemoveChild(Glow);
+        Glow.Mount(this, new Vector2(0, -20));
+    }
+
     public PlayerView() : this(null!) { }
 
     // As for enemy ships: the shield is only in the tree while it's up.

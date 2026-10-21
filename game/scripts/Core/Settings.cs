@@ -14,6 +14,8 @@ public static class Settings
     /// <summary>0-1.</summary>
     public static float MusicVolume = 1, SoundVolume = 1;
     public static bool Glow = true, Shake = true, Flashes = true, Tutorials = true;
+    /// <summary>The art set (a folder under assets/sprites; see Sprites.ArtSets).</summary>
+    public static string ArtSet = Sprites.DefaultSet;
 
     public static void Load()
     {
@@ -29,6 +31,7 @@ public static class Settings
         Shake = B("shake", Shake);
         Flashes = B("flashes", Flashes);
         Tutorials = B("tutorials", Tutorials);
+        if (d.TryGetValue("art", out var art) && art.VariantType == Variant.Type.String) ArtSet = art.AsString();
     }
 
     public static void Save()
@@ -37,7 +40,7 @@ public static class Settings
         var d = new Godot.Collections.Dictionary
         {
             ["fullscreen"] = Fullscreen, ["music"] = MusicVolume, ["sound"] = SoundVolume, ["glow"] = Glow, ["shake"] = Shake,
-            ["flashes"] = Flashes, ["tutorials"] = Tutorials,
+            ["flashes"] = Flashes, ["tutorials"] = Tutorials, ["art"] = ArtSet,
         };
         using var f = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
         if (f == null)
@@ -58,5 +61,6 @@ public static class Settings
         }
         G.Sound.MusicVolume = MusicVolume;
         G.Sound.SoundVolume = SoundVolume;
+        Sprites.UseArtSet(ArtSet);
     }
 }

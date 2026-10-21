@@ -191,12 +191,33 @@ public partial class Shell : Control, IViewTicker
 
     public void AddPopup(Control c) => popups.AddChild(c);
 
+    /// <summary>A short line of text at the top of the screen that fades away.</summary>
+    public void Note(string text)
+    {
+        var l = Kit.Label(popups, text, Kit.Body(12, Colors.White), 0, 28, G.StageSize, HorizontalAlignment.Center);
+        var t = l.CreateTween();
+        t.TweenInterval(1.2);
+        t.TweenProperty(l, "modulate:a", 0f, 0.5);
+        t.TweenCallback(Callable.From(l.QueueFree));
+    }
+
     /// <summary>"Exit the game?": quits on yes.</summary>
     public void AskQuit() => confirm.Ask("EXIT THE GAME?", () => GetTree().Quit());
 
     public override void _UnhandledInput(InputEvent e)
     {
         if (e is not InputEventKey { Pressed: true, Echo: false } key) return;
+
+        // F2: the next art set, anywhere (even mid-level), to compare them.
+        if (key.Keycode == Key.F2)
+        {
+            Settings.ArtSet = Sprites.NextArtSet();
+            Settings.Apply();
+            Settings.Save();
+            Note($"ART SET: {Sprites.ArtSet.ToUpperInvariant()}");
+            GetViewport().SetInputAsHandled();
+            return;
+        }
 
         // The original's dev keys, outside a level: Ctrl+Home invincible, Ctrl+Page Up unlock all, Ctrl+Page Down wipe.
         if (key.CtrlPressed && !(InGame && G.Model.Running) && key.Keycode is Key.Home or Key.Pageup or Key.Pagedown)

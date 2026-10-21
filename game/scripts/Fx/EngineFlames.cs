@@ -25,6 +25,17 @@ public partial class EngineFlames : Node2D
     }
 
     /// <summary>Puts flames on a sprite if its art has any; returns them, or null.</summary>
+    /// <summary>Swaps a sprite's flames for those of its (new) art.</summary>
+    public static EngineFlames? Reattach(Sprite2D art)
+    {
+        foreach (var old in art.GetChildren().OfType<EngineFlames>())
+        {
+            art.RemoveChild(old);
+            old.QueueFree();
+        }
+        return Attach(art);
+    }
+
     public static EngineFlames? Attach(Sprite2D art)
     {
         var mounts = Mounts.Flames(art.Texture);

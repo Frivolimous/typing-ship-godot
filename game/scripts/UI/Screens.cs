@@ -118,6 +118,7 @@ public partial class AchieveUI : Screen
         {
             int tier = G.Model.Save.Achieve[i];
             medals[i].Texture = Sprites.Achieve[tier];
+            if (i < 3) lineMedals[i].Texture = Sprites.Achieve[i + 1]; // the art set may have changed
             tiers[i].Text = tier > 0 ? Strings.Tiers[tier] : "NOT EARNED";
             tiers[i].LabelSettings = Kit.Caption(8, tier > 0 ? Kit.TierColours[tier] : new Color(Kit.Ink, 0.4f));
         }

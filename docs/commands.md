@@ -39,6 +39,7 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 | `--botwpm=N` | With `--autotype`: the bot types at N WPM instead (lower = takes damage). `--botcps=N` is the same in characters per second |
 | `--quit-on-end` | Quit when the level is cleared or lost |
 | `--noglow` | Turn the glow (bloom) off, to compare |
+| `--art=NAME` | Use an art set (a folder under game/assets/sprites with a player.png: `ai`, `custom`, ...) for this run, without saving it. In the game, F2 cycles the sets and the options have an ART SET row |
 | `--menu` | With `--autotype`: start on the title menu anyway (the bot plays once you start a level) |
 | `--map` | Start on the level map instead of the title |
 | `--profile=NAME` | Use the save file `user://NAME.json` instead of `user://save.json` (keeps test runs out of your save) |

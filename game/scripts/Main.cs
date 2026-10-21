@@ -50,6 +50,7 @@ public partial class Main : Node2D
         AddChild(G.Sound);
         if (bot) Settings.Path = null;
         Settings.Load();
+        if (args.TryGetValue("art", out var artSet)) Settings.ArtSet = artSet; // for this run only (not saved)
         Settings.Apply();
         G.World = new Presenter();
         G.Ctrl = new GameControl { Name = "GameControl" };

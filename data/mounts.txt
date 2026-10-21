@@ -43,3 +43,38 @@ ai/player             0,-70  charge
 ai/laser_s            0,-34  charge
 ai/laser_m            0,-50  charge
 ai/laser_l            0,-66  charge
+
+# custom set
+
+custom/player           -28,94  flame   18  44  orange
+custom/player            27,94  flame   18  44  orange
+custom/player             0,88  flame    9  24  orange
+
+custom/missile_s        -17,23  flame    5  18  cyan
+custom/missile_s         17,23  flame    5  18  cyan
+custom/missile_m         0,45  flame    12  32  cyan
+custom/missile_l         0,100  flame   15  40  cyan
+custom/missile_l        -28,90  flame   11  30  cyan
+custom/missile_l         28,90  flame   11  30  cyan
+
+custom/laser_s          -17,42  flame    8  20  cyan
+custom/laser_s           17,42  flame    8  20  cyan
+custom/laser_m            0,50  flame   14  38  cyan
+custom/laser_m          -27,46  flame    8  20  cyan
+custom/laser_m           27,46  flame    8  20  cyan
+custom/laser_l          -22,95  flame   10  32  cyan
+custom/laser_l           22,95  flame   10  32  cyan
+
+custom/bomber             0,26  flame    8  22  red
+
+custom/stealth          -19,17  flame    6  16  purple
+custom/stealth           19,17  flame    6  16  purple
+
+custom/projectile_blue    0,30  flame    8  26  red
+custom/projectile_red     0,28  flame    7  24  orange
+
+# Charge points: the laser ships' noses, and the player's (the EMP).
+custom/player             0,-70  charge
+custom/laser_s            0,-40  charge
+custom/laser_m            0,-50  charge
+custom/laser_l            0,-97  charge

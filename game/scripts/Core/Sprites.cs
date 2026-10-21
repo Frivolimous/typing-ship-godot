@@ -7,33 +7,81 @@ public static class Sprites
 {
     static Texture2D T(string name) => GD.Load<Texture2D>($"res://assets/sprites/{name}.png");
 
-    // The AI-generated placeholder set in assets/sprites/ai/ (point up, drawn at AiScale) replaced the Flash ships,
-    // the mine, the bomber and the missiles.
+    // The ship art (every set) points up and is drawn at AiScale.
     public const float AiScale = 0.5f;
     /// <summary>Missiles are drawn smaller than their art's AiScale size (Jeremy: they read too big).</summary>
     public const float MissileScale = AiScale * 0.55f;
 
-    public static readonly Texture2D[] Player = { T("ai/player") };
+    // ---- Art sets ----
+    // The ships, missiles, turret and medals come from an art set: a folder under assets/sprites with a player.png
+    // ("ai", "custom", ...), chosen in the options, with F2, or with --art=NAME. Art a set doesn't have is borrowed
+    // from "ai", so a half-finished set still plays. Flames and charge points are per set (data/mounts.txt). The
+    // bosses always use "ai": their art shapes the rules (gun ports, hangars, where the scanner lands).
 
-    // Each enemy is a single frame or an animation; index 9 (the invisible "nl" laser) has no art.
-    public static readonly Texture2D[]?[] Enemy =
+    public const string DefaultSet = "ai";
+    const string Root = "res://assets/sprites";
+
+    /// <summary>The art set in use.</summary>
+    public static string ArtSet { get; private set; } = DefaultSet;
+
+    /// <summary>The art sets there are: "ai" first, then the rest by name.</summary>
+    public static IReadOnlyList<string> ArtSets { get; } = FindSets();
+
+    static List<string> FindSets()
     {
-        new[] { T("ai/missile_s") },
-        new[] { T("ai/laser_s") },
-        new[] { T("ai/mine") },
-        new[] { T("ai/missile_m") },
-        new[] { T("ai/laser_m") },
-        new[] { T("ai/bomber") },
-        new[] { T("ai/missile_l") },
-        new[] { T("ai/laser_l") },
-        new[] { T("ai/stealth") },
-        null,
-    };
+        var sets = DirAccess.GetDirectoriesAt(Root)
+            .Where(d => ResourceLoader.Exists($"{Root}/{d}/player.png"))
+            .OrderBy(d => d == DefaultSet ? "" : d, StringComparer.Ordinal)
+            .ToList();
+        if (!sets.Contains(DefaultSet)) sets.Insert(0, DefaultSet);
+        return sets;
+    }
 
-    public static readonly Texture2D[] PMissile = { T("ai/projectile_blue") };
-    public static readonly Texture2D[] EMissile = { T("ai/projectile_red") };
-    // Points right, with the pivot at the centre of its round base (texture pixels from the top left).
-    public static readonly Texture2D Turret = T("ai/turret");
+    /// <summary>Raised when the art set changes, so what's on screen can swap its art.</summary>
+    public static event Action? ArtChanged;
+
+    /// <summary>Switches to an art set (an unknown name means "ai").</summary>
+    public static void UseArtSet(string set)
+    {
+        set = ArtSets.Contains(set) ? set : DefaultSet;
+        if (set == ArtSet) return;
+        ArtSet = set;
+        LoadArt();
+        ArtChanged?.Invoke();
+    }
+
+    /// <summary>The set after the current one, round and round.</summary>
+    public static string NextArtSet() => ArtSets[(ArtSets.ToList().IndexOf(ArtSet) + 1) % ArtSets.Count];
+
+    /// <summary>A sprite from the current set, or from "ai" if the set hasn't got it.</summary>
+    static Texture2D A(string name) => ResourceLoader.Exists($"{Root}/{ArtSet}/{name}.png") ? T($"{ArtSet}/{name}") : T($"{DefaultSet}/{name}");
+
+    static Sprites() => LoadArt();
+
+    static void LoadArt()
+    {
+        Player = new[] { A("player") };
+        // Each enemy is a single frame or an animation; index 9 (the invisible "nl" laser) has no art.
+        Enemy = new[]
+        {
+            new[] { A("missile_s") }, new[] { A("laser_s") }, new[] { A("mine") }, new[] { A("missile_m") }, new[] { A("laser_m") },
+            new[] { A("bomber") }, new[] { A("missile_l") }, new[] { A("laser_l") }, new[] { A("stealth") }, null,
+        };
+        PMissile = new[] { A("projectile_blue") };
+        EMissile = new[] { A("projectile_red") };
+        Turret = A("turret");
+        Achieve = new[] { A("medal_locked"), A("medal_bronze"), A("medal_silver"), A("medal_gold") };
+    }
+
+    public static Texture2D[] Player { get; private set; } = null!;
+    public static Texture2D[]?[] Enemy { get; private set; } = null!;
+    public static Texture2D[] PMissile { get; private set; } = null!;
+    public static Texture2D[] EMissile { get; private set; } = null!;
+    /// <summary>Points right, with the pivot at the centre of its round base (texture pixels from the top left).</summary>
+    public static Texture2D Turret { get; private set; } = null!;
+    /// <summary>Medals by tier (0 = not earned yet: a dark, locked medal). The art is twice its usual on-screen size.</summary>
+    public static Texture2D[] Achieve { get; private set; } = null!;
+
     public static readonly Vector2 TurretPivot = new(18, 18);
     public static readonly Texture2D[] Nebula = { T("Nebula0"), T("Nebula1"), T("Nebula2") };
     public static readonly Texture2D[] Back = { T("StarBack0"), T("StarBack1"), T("StarBack2") };
@@ -90,6 +138,4 @@ public static class Sprites
 
     public static readonly Texture2D Superman = T("Superman");
 
-    // Medals by tier (0 = not earned yet: a dark, locked medal). The art is twice its usual on-screen size.
-    public static readonly Texture2D[] Achieve = { T("ai/medal_locked"), T("ai/medal_bronze"), T("ai/medal_silver"), T("ai/medal_gold") };
 }

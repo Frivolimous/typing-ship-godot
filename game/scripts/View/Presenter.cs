@@ -21,6 +21,8 @@ public sealed class Presenter : IGameEvents
     public void Init()
     {
         Player = new PlayerView(G.Model.Player);
+        // New ships take the new art as they spawn; the player's ship swaps at once.
+        Sprites.ArtChanged += Player.Reskin;
     }
 
     /// <summary>Copies every sprite's state into its node (once per tick).</summary>

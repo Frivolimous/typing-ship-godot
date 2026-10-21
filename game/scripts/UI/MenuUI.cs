@@ -33,6 +33,11 @@ public partial class MenuUI : Screen
 
         ship.Position = ShipHome;
         EngineFlames.Attach(ship);
+        Sprites.ArtChanged += () =>
+        {
+            ship.Texture = Sprites.Player[0];
+            EngineFlames.Reattach(ship);
+        };
         AddChild(ship);
 
         AddChild(menuButtons);
