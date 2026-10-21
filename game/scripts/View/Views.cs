@@ -334,6 +334,12 @@ public partial class EnemyShipView : SpriteView
     /// <summary>The word on the ship's turret, if it has one.</summary>
     public WordLabel? TurretWord => turret?.Word;
 
+    public override void _Process(double delta)
+    {
+        // Only the art turns: the mine's path and its word don't.
+        if (spin != 0) View.Rotation += spin * (float)delta;
+    }
+
     readonly EnemyShip ship;
     readonly ShieldView shield = new();
     readonly Node2D shieldHost;
@@ -360,10 +366,15 @@ public partial class EnemyShipView : SpriteView
     static (int Art, float Scale, Vector4 Shield, Vector2? Charge) Look(string hull) =>
         Hulls.TryGetValue(hull, out var h) ? h : Hulls["sm"]; // a hull added in tuning.txt borrows the small ship's art
 
+    const int MineArt = 2;
+    // A mine turns slowly as it drifts (radians a second, either way); other ships don't.
+    readonly float spin;
+
     public EnemyShipView(EnemyShip ship) : base(ship, Sprites.Enemy[Look(ship.Hull).Art], Look(ship.Hull).Scale)
     {
         this.ship = ship;
         var look = Look(ship.Hull);
+        if (look.Art == MineArt) spin = (G.Rand() < 0.5f ? -1 : 1) * (0.35f + 0.3f * G.Rand());
         shieldHost = ShieldView.Fit(shield, View, this, look.Shield);
         if (ship.Charge != null)
         {
