@@ -124,6 +124,13 @@ if (!(Test-Path $steamcmd)) {
 }
 $user = if ($env:STEAM_USER) { $env:STEAM_USER } else { Read-Host "Steam login (an account with SteamPipe rights on the app)" }
 Write-Host "== Uploading to app $($app.App)$(if ($setLive) { ", live on the '$setLive' branch" }) (steamcmd asks for the password and Steam Guard code)"
+$log = Join-Path $out "output\app_build_$($app.App).log"
+if (Test-Path $log) { Remove-Item $log }
 & $steamcmd +login $user +run_app_build $appFile +quit
-if ($LASTEXITCODE -ne 0) { throw "steamcmd failed (exit $LASTEXITCODE): see the log above and $out\output" }
-Write-Host "== Uploaded: $desc"
+# steamcmd's exit code isn't reliable (7 after a good upload, e.g. the run after it updates itself): the app build
+# log says whether the build made it.
+$result = if (Test-Path $log) { Get-Content $log -Raw } else { "" }
+if ($result -notmatch "Successfully finished AppID \d+ build \(BuildID (\d+)\)") {
+    throw "The upload failed (steamcmd exit $LASTEXITCODE): see the log above and $out\output"
+}
+Write-Host "== Uploaded: $desc, build $($Matches[1])$(if (!$setLive) { ". Set it live on the partner site: SteamPipe > Builds" })"
