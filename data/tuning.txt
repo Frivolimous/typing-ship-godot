@@ -107,3 +107,24 @@ boss 3 beam = 25          # the beam's timing unit: on Hard a step is this / cps
                           #   scale Hard's step by Hard's cps / their typing speed, so the counter-words take the same
                           #   share of the speed everywhere. The whole attack lasts 44 steps
 counter word = 11         # boss 3's counter-words have this many letters, less the boss's health
+
+[endless]
+# Endless mode, in numbered waves of patterns from data/levels/endless.txt. A wave starts once every enemy of the last
+# is dead or gone: "WAVE n" comes up, and its first pattern starts as that fades. Each wave has a budget of pattern
+# levels (a pattern's level is about the typing speed it asks for, in letters a second, less 1.4), split at random
+# across a random number of patterns that start a set delay apart. Four levers rise with the wave: the budget (so the
+# patterns' levels), how many patterns, how close together they come, and the typing speed it's balanced for
+# (how fast everything moves and how often enemies fire).
+first wave = 2.5          # seconds from the start of the run to the first "WAVE 1"
+announce = 1.5            # seconds from "WAVE n" coming up to the wave's first pattern (as it fades)
+start offset = -1         # wave 1's budget: the difficulty's own level (its speed less 1.4: Hard 4) plus this, at least 1
+budget per wave = 1       # the budget grows this much each wave
+waves per pattern = 3     # a wave has from enough patterns to keep each at level 15 or under, up to one per this many waves
+patterns per missile pattern = 3  # a wave has at most one pattern of only missile ships, or one for each this
+                          #   many patterns if more: they're easy to survive, so this keeps waves about as dangerous
+pattern delay = 3         # seconds between the starts of a wave's patterns...
+pattern delay per wave = 0.1   # ...this much less each wave...
+min pattern delay = 1     # ...down to this...
+pattern delay per pattern = 0  # ...plus this for each pattern past the first
+cps per wave = 0.125      # the typing speed each wave is balanced for rises this much (letters a second) a wave, up
+                          #   to Insane's: everything moves at its pace, and enemies fire at its rate. Insane doesn't ramp.

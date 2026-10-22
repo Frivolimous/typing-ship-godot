@@ -618,7 +618,8 @@ public partial class GameOverUI : Screen
     static void Retry()
     {
         if (G.Shell.Transitioning) return;
-        G.Shell.StartGame(G.Model.Level, G.Model.Cps);
+        if (G.Model.Endless != null) G.Shell.StartEndless(G.Model.Cps);
+        else G.Shell.StartGame(G.Model.Level, G.Model.Cps);
     }
 
     public void AddWin()
@@ -633,13 +634,24 @@ public partial class GameOverUI : Screen
         QueueRedraw();
     }
 
-    public void AddLose()
+    public void AddLose(bool newBest = false)
     {
+        var m = G.Model;
         won = false;
         title.Text = Strings.LoseGame;
         title.LabelSettings = Kit.Title(30, Kit.Bad);
-        subtitle.Text = $"{Banner.LevelName(G.Model.Level)}  ·  {Difficulty.Names[Difficulty.Of(G.Model.Cps) - 1].ToUpperInvariant()}";
-        caption.Text = Strings.LevelScore.TrimEnd(' ', ':');
+        string diff = Difficulty.Names[Difficulty.Of(m.Cps) - 1].ToUpperInvariant();
+        if (m.Endless is { } run)
+        {
+            int s = (int)m.Time, best = m.Save.EndlessBest[m.Diff - 1];
+            subtitle.Text = $"ENDLESS  ·  {diff}  ·  WAVE {run.Wave}  ·  {s / 60}:{s % 60:00}";
+            caption.Text = (newBest ? "NEW BEST SCORE" : $"SCORE  ·  BEST {best}") + $"  ·  x{run.ScoreFactor:0.##} FOR {diff}";
+        }
+        else
+        {
+            subtitle.Text = $"{Banner.LevelName(m.Level)}  ·  {diff}";
+            caption.Text = Strings.LevelScore.TrimEnd(' ', ':');
+        }
         score.Text = G.Model.Score.ToString();
         retry.Visible = true;
         QueueRedraw();

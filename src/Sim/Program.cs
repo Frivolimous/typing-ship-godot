@@ -14,17 +14,20 @@ using TypingShip.Core.Levels;
 //     <folder>/pacing.html     charts of the same (open in a browser)
 //   Default folder: pacing/ (git-ignored).
 //   --check: print every rule a game level breaks, and exit with 1 if there are any (warnings don't count).
+// dotnet run --project src/Sim -- endless [--runs=10] [--minutes=20]: see EndlessReport.cs.
 
 var opts = args.Skip(1).Select(a => a.TrimStart('-').Split('=', 2)).ToDictionary(p => p[0], p => p.Length > 1 ? p[1] : "");
-if (args.Length == 0 || args[0] != "pacing")
+if (args.Length == 0 || args[0] is not ("pacing" or "endless"))
 {
     Console.Error.WriteLine("Usage: dotnet run --project src/Sim -- pacing [--check] [--out=folder] [--seed=N] [--level=N] [--bot-speed=80%] [--errors=3.5%]");
+    Console.Error.WriteLine("       dotnet run --project src/Sim -- endless [--runs=10] [--minutes=20]");
     return 1;
 }
 
 var root = FindRoot();
 var data = GameData.Load(DataSource.FromDirectory(Path.Combine(root, "data")));
 var art = ArtLibrary.FromFolder(Path.Combine(root, "game", "assets", "sprites"));
+if (args[0] == "endless") return EndlessReport.Run(data, art, opts);
 var outDir = Path.GetFullPath(opts.GetValueOrDefault("out", Path.Combine(root, "pacing")));
 ulong seed = ulong.Parse(opts.GetValueOrDefault("seed", "1"));
 var levels = opts.TryGetValue("level", out var l) ? new[] { int.Parse(l) } : Enumerable.Range(0, GameData.LevelCount).ToArray();

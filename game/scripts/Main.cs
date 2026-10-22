@@ -113,7 +113,9 @@ public partial class Main : Node2D
         playfield.AddChild(shell);
         shell.Init();
         bool edit = args.ContainsKey("edit");
-        if (args.TryGetValue("level", out var level) || (bot && !args.ContainsKey("menu")) || edit)
+        if (args.ContainsKey("endless"))
+            shell.StartEndlessDirect(args.TryGetValue("seed", out var es) ? ulong.Parse(es) : null);
+        else if (args.TryGetValue("level", out var level) || (bot && !args.ContainsKey("menu")) || edit)
             shell.StartDirect(level != null ? int.Parse(level) : 0);
         else shell.ShowTitle(args.ContainsKey("map"));
         if (edit || args.ContainsKey("from") || args.ContainsKey("line"))

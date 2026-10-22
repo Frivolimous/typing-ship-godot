@@ -196,6 +196,64 @@ repeat_over 4.5 3/5/9/9/9 1 mirrored   # 4 ships on Easy, 6 on Normal, 10 on Har
 
 A number used in several places can get a name in the header instead (below).
 
+## endless.txt
+
+Endless mode's patterns, in `data/levels/endless.txt`. Each pattern is a section, written like a short level from
+`@0:00`:
+
+```
+[level 5 crossing pairs]
+@0:00 missile sn  3,0 4,4 7,0
++0.4 missile sn  12,5 7,6 0,5
+repeat_over 2.4 2 2
+```
+
+- The section name is `level N` (1 to 15) and then any name. The level is yours to set: it's how hard the pattern is
+  on its own, about the typing speed it asks for.
+- A pattern plays the same on every difficulty: no difficulty tags and no per-difficulty numbers (the game stops with
+  a message if it finds one). The difficulty instead sets where a run starts (below).
+
+**Guidelines for writing patterns.** These are for writing and checking patterns, not rules: a pattern can stray
+from them. Count each ship's word, its shield's (the same word again), its turret's (4 letters), for a stealth
+ship one of its missiles (3 letters), and for a diving suicide ship (medium) 3 letters more: it's the one ship
+that hits you if you don't type it in time, where the others just leave. Missile ships' missiles don't count,
+and landmines count as their word. The spawn time is from the first ship to the last.
+At least half of a
+pattern's diving suicide ships should come in from the side or the bottom of the grid and move 5 squares or more
+before they dive, so the player sees them coming: straight down from the top with a short move gives no time.
+
+```
+level      = floor((letters + words) / (spawn time + 3) / 0.8 - 1.4)
+spawn time = (letters + words) / (0.8 x level + 1.12) - 3
+letters    from (level + 1) x 3 to (level + 1) x 5
+```
+
+So a level asks a typist at 80% of their speed to keep up with about level + 1.4 letters a second: level 1 about 2,
+level 15 about 13. `dotnet run --project src/Sim -- endless --patterns` (ts 16) lists every pattern's letters, words,
+spawn time and the level they work out to, and marks the ones outside the guidelines.
+
+**How a run uses them.** A run is numbered waves. Each wave has a budget of pattern levels: wave 1's is the
+difficulty's own level (its speed in letters a second, less 1.4, rounded: Easy 1, Normal 2, Hard 4, Extreme 6, Insane 9) plus
+"start offset" (-1), and it grows each wave ("budget per wave"). The budget measures clearing: the levels are what
+it takes to shoot everything down. It is split at random across a random number of patterns: at least enough that
+none is above level 15, at most one more every "waves per pattern" waves. Each part becomes a pattern of that level
+(or the nearest level there is), about half of them mirrored, started "pattern delay" seconds apart (less each
+wave), so they overlap more and more. Patterns of only missile ships are easy to survive (the ships just fly off if
+you don't type them, and only fire now and then), so a wave has at most one of them, or one for every "patterns per
+missile pattern" (3) if it has more; this keeps every wave about as dangerous. The next wave waits until every
+enemy of the last is dead or gone; "WAVE n" comes up and the wave starts as it fades. Each wave is also balanced for
+a slightly faster typist ("cps per wave", up to Insane's speed): everything moves at that speed's pace and enemies
+fire at its rate, so Insane doesn't ramp. The score is the ships' points times the difficulty's speed over Easy's
+(its WPM / 25: Easy x1, Normal x1.6, Hard x2.6, Extreme x3.6, Insane x4.8), so playing below your speed doesn't
+pay; best scores are kept per difficulty. All the numbers are in tuning.txt `[endless]`.
+
+The Sim plays and checks it (ts 14 and 16, docs/commands.md): `dotnet run --project src/Sim -- endless` plays runs
+with the bots and prints, for each difficulty, the clears (waves where every ship was shot down), the wave and time
+survived, and the score. `--cross` plays each difficulty's 80% typist one difficulty down and up. `--detail` shows
+each run's waves and what hurt; `--solo=NAME [--wave=N]` plays patterns on their own as in that wave;
+`--patterns` checks the guidelines.
+
+
 ## bosses.txt
 
 Four sections, each a list of ship lines like a level:

@@ -29,8 +29,13 @@ public sealed partial class Game
     public int ScoreC, Level = -1, MissedShips, TotalShips;
     /// <summary>The difficulty, as a typing speed in characters per second (see <see cref="Speed"/>).</summary>
     public double Cps = Difficulty.Normal;
-    /// <summary>The speed things move and count down at: Cps, flattened above Hard (Tuning.Pace).</summary>
-    public double Pace => Tuning.Pace(Cps);
+    /// <summary>The speed things move and count down at: Cps, flattened above Hard (Tuning.Pace), and sped up as an
+    /// endless run goes on.</summary>
+    public double Pace => Tuning.Pace(Cps) * PaceScale;
+    /// <summary>Endless mode's speed-up (1 in the levels).</summary>
+    public double PaceScale => Endless?.Speed ?? 1;
+    /// <summary>The endless run being played, or null in the levels.</summary>
+    public EndlessRun? Endless;
     public int Score;
     public List<LevelEvent> LevelData = new();
     public readonly List<Sprite> Objects = new();
@@ -74,7 +79,7 @@ public sealed partial class Game
     public LevelSet Set => Classic ? Data.Classic : Data.Main;
 
     /// <summary>The current level's context: the difficulty, and the level's pace and density.</summary>
-    public LevelContext Context => Set.Context(Level, Rng, Tuning, Cps);
+    public LevelContext Context => Set.Context(Level, Rng, Tuning, Cps) with { PaceScale = PaceScale };
 
     /// <summary>Editing aid: use newly loaded data files from the next level start (or restart) on.</summary>
     public void Reload(GameData data) => Data = data;
@@ -98,9 +103,25 @@ public sealed partial class Game
 
     public void NewGame(int level = 0)
     {
+        Endless = null;
+        Start(level);
+    }
+
+    /// <summary>How often enemies fire at a typing speed: each fire command adds this to <see cref="MCount"/>.</summary>
+    public float FireRate(double cps) => Math.Clamp((float)(cps / Tuning.FireRateCps), Tuning.FireRateMin, Tuning.FireRateMax);
+
+    /// <summary>An endless run: waves until the player is destroyed (Endless.cs). The seed picks the waves.</summary>
+    public void NewEndless(ulong seed)
+    {
+        Endless = new EndlessRun(this, seed);
+        Start(0);
+    }
+
+    void Start(int level)
+    {
         while (Objects.Count > 0) Objects[0].Remove();
         Boss?.Remove();
-        MRate = Math.Clamp((float)(Cps / Tuning.FireRateCps), Tuning.FireRateMin, Tuning.FireRateMax);
+        MRate = FireRate(Cps);
         TutReset();
         Score = 0;
         Level = level - 1;
@@ -123,7 +144,7 @@ public sealed partial class Game
         LevelEnded = false;
         CanType = true;
         BossMode = false;
-        LevelData = Set.BuildLevel(Level, Context);
+        LevelData = Endless != null ? new List<LevelEvent>() : Set.BuildLevel(Level, Context);
         MaxTime = LevelData.Count > 0 ? LevelData.Max(e => e.Time) : 0;
         ship.Destroyed = false;
         Delay = 0;
@@ -179,6 +200,7 @@ public sealed partial class Game
         LevelTicks++;
         Events.TickAdvanced();
 
+        Endless?.Feed();
         if (LevelData.Count > 0)
         {
             while (LevelData.Count > 0 && Time > LevelData[0].Time)
@@ -192,7 +214,7 @@ public sealed partial class Game
         {
             LevelData = Set.BuildBossLoop(Boss!.Index, Context, Time);
         }
-        else if (Boss == null && Objects.Count == 0)
+        else if (Boss == null && Objects.Count == 0 && Endless == null)
         {
             if (Delay == 0 && finalDelay) EndLevel();
             else
@@ -366,10 +388,14 @@ public sealed partial class Game
     }
 
     /// <summary>GameControl.finalDeath: a lost level still keeps its best score.</summary>
-    public void RecordLoss()
+    /// <summary>A lost level keeps its best score; an ended endless run its best score and time. True for a new best
+    /// endless score.</summary>
+    public bool RecordLoss()
     {
+        if (Endless != null) return Save.RecordEndless(Diff - 1, Score, (int)Time);
         var best = Save.LevelScore[Level];
         best[0] = Math.Max(best[0], Score);
         Save.Save();
+        return false;
     }
 }

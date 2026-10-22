@@ -32,6 +32,9 @@ echo   10  Run the tests
 echo   11  Level pacing report, game levels and Classic  (charts and CSVs in pacing\)
 echo   12  Play the Classic levels  (the original 12 as they were; own save file)
 echo   13  Check the pacing rules  (every rule a game level breaks; docs\pacing-rules.md)
+echo   14  Endless report  (how long the bots last at each difficulty)
+echo   15  Play endless mode  (Hard)
+echo   16  Check the endless patterns  (against the guidelines for writing them)
 echo.
 echo    0  Quit
 echo.
@@ -57,6 +60,9 @@ if "%PICK%"=="10" dotnet test
 if "%PICK%"=="11" dotnet run --project src\Sim -- pacing && start "" "pacing\pacing.html"
 if "%PICK%"=="12" dotnet build && "%GODOT%" --path game -- --classic --profile=classic
 if "%PICK%"=="13" dotnet run --project src\Sim -- pacing --check
+if "%PICK%"=="14" dotnet run --project src\Sim -- endless
+if "%PICK%"=="15" dotnet build && "%GODOT%" --path game -- --endless --wpm=65
+if "%PICK%"=="16" dotnet run --project src\Sim -- endless --patterns
 exit /b
 
 :watch

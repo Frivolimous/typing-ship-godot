@@ -177,10 +177,13 @@ public sealed class Presenter : IGameEvents
 
     public void AchievementAwarded(int achievement, int tier) => new PopAchieve(achievement, tier);
 
+    public void WaveStarting(int wave) =>
+        new Banner($"WAVE {wave}", "", Cockpit.Rim, hold: (float)G.Model.Tuning.EndlessAnnounce - Banner.FadeIn);
+
     public void LevelStarted()
     {
         G.UI.SnapScore();
-        new Banner(Banner.LevelName(G.Model.Level), Difficulty.Names[Difficulty.Of(G.Model.Cps) - 1].ToUpperInvariant(),
+        new Banner(G.Model.Endless != null ? "ENDLESS" : Banner.LevelName(G.Model.Level), Difficulty.Names[Difficulty.Of(G.Model.Cps) - 1].ToUpperInvariant(),
             Cockpit.Rim);
         G.Starfield.SetBack(G.Model.Level);
         var gameView = G.UI.GameView;

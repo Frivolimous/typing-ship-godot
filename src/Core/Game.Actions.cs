@@ -155,7 +155,9 @@ public sealed partial class Game
     /// <summary>Score points, shown as a floating number at a point in the game view.</summary>
     public void AddScore(int amount, Vec2 at)
     {
-        Score += amount;
+        int score = Endless?.ScoreFor(amount) ?? Score + amount;
+        amount = score - Score;
+        Score = score;
         Events.ScorePopup(at, amount, true);
     }
 

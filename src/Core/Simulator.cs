@@ -29,7 +29,8 @@ public sealed partial class Game
     }
 
     /// <summary>The one-line summary printed when a level ends (headless runs, the simulator).</summary>
-    public string ResultLine(bool cleared) =>
+    public string ResultLine(bool cleared) => Endless != null
+        ? $"Endless run over at {(int)Time / 60}:{(int)Time % 60:00}: score {Score}, wave {Endless.Wave}, ships {TotalShips}, ticks {Ticks}" :
         $"Level {Level} {(cleared ? "cleared" : "lost")}: score {Score}, ships {TotalShips}, missed {MissedShips}, " +
         $"health {Player.Health}, ticks {Ticks}";
 }
@@ -41,7 +42,7 @@ public static class Simulator
 
     public static Result Run(GameData data, ArtLibrary art, int level, double cps, ulong seed, double botCps = 0,
         TextWriter? trace = null, int maxTicks = 200_000, Action<Game>? onTick = null, bool classic = false,
-        double errorRate = 0)
+        double errorRate = 0, bool endless = false)
     {
         var game = new Game(data, new Rng(seed), art) { Cps = cps, Trace = trace, Classic = classic };
         game.TutOff(); // tutorial pop-ups would wait for Space
@@ -54,7 +55,8 @@ public static class Simulator
         });
         game.Events = events;
         var bot = new AutoTyper(game, botCps, errorRate, errorSeed: seed);
-        game.NewGame(level);
+        if (endless) game.NewEndless(seed);
+        else game.NewGame(level);
         while (cleared == null && game.Ticks < maxTicks)
         {
             game.Step();

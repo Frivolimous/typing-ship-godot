@@ -9,6 +9,8 @@ namespace TypingShip;
 public partial class Banner : Control
 {
     const float In = 0.35f, Out = 0.4f, Y = 210;
+    /// <summary>Seconds a banner takes to come in.</summary>
+    public const float FadeIn = In;
     static readonly Font Spaced = new FontVariation { BaseFont = Fonts.HudBold, SpacingGlyph = 4 };
 
     readonly Label title, subtitle;

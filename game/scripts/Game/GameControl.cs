@@ -23,6 +23,13 @@ public partial class GameControl : Node
         if (!Settings.Tutorials) G.Model.TutOff();
     }
 
+    /// <summary>An endless run (a fresh seed each time unless given one).</summary>
+    public void NewEndless(ulong? seed = null)
+    {
+        G.Model.NewEndless(seed ?? (ulong)Random.Shared.NextInt64());
+        if (!Settings.Tutorials) G.Model.TutOff();
+    }
+
     public override void _PhysicsProcess(double delta)
     {
         G.Model.Step();

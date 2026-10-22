@@ -18,6 +18,9 @@ public sealed class SaveData
     public int[] AchieveC { get; set; } = new int[6];
     /// <summary>Per level: best score, best difficulty cleared (0 = never, 1-5), health medal (0-3), accuracy medal (0-3).</summary>
     public int[][] LevelScore { get; set; } = NewLevelScores();
+    /// <summary>Endless mode, per difficulty (0 easy to 4 insane): best score, and the longest run in seconds.</summary>
+    public int[] EndlessBest { get; set; } = new int[5];
+    public int[] EndlessSeconds { get; set; } = new int[5];
     /// <summary>The typing test's last result in WPM, 0 if never taken. (New: the original threw it away.)</summary>
     public int TestWpm { get; set; }
 
@@ -38,7 +41,8 @@ public sealed class SaveData
         {
             var data = JsonSerializer.Deserialize<SaveData>(json);
             if (data is { Version: CurrentVersion } && data.Achieve.Length == 6 && data.AchieveC.Length == 6 &&
-                data.LevelScore.Length == 12 && data.LevelScore.All(l => l.Length == 4))
+                data.LevelScore.Length == 12 && data.LevelScore.All(l => l.Length == 4) &&
+                data.EndlessBest is { Length: 5 } && data.EndlessSeconds is { Length: 5 })
                 return data;
         }
         catch (JsonException e)
@@ -51,6 +55,16 @@ public sealed class SaveData
     public string ToJson() => JsonSerializer.Serialize(this);
 
     public void Save() => Store?.Invoke(ToJson());
+
+    /// <summary>Keeps an endless run's score and time if they're bests for the difficulty. True for a new best score.</summary>
+    public bool RecordEndless(int difficulty, int score, int seconds)
+    {
+        bool best = score > EndlessBest[difficulty];
+        EndlessBest[difficulty] = Math.Max(EndlessBest[difficulty], score);
+        EndlessSeconds[difficulty] = Math.Max(EndlessSeconds[difficulty], seconds);
+        Save();
+        return best;
+    }
 
     /// <summary>Ctrl+Page Down in the original.</summary>
     public void Clear()

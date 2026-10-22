@@ -64,8 +64,11 @@ public partial class GameUI : Control
     /// <summary>The hull follows the rules every frame (the typed text and score do so themselves).</summary>
     public override void _Process(double delta) => Hull.Sync();
 
-    public void OnTick() =>
-        progress.Set(G.Model.MaxTime > 0 ? Math.Min(1, (float)(G.Model.Time / G.Model.MaxTime)) : 0);
+    public void OnTick()
+    {
+        if (G.Model.Endless is { } run) progress.SetWave(run.Wave, G.Model.Time);
+        else progress.Set(G.Model.MaxTime > 0 ? Math.Min(1, (float)(G.Model.Time / G.Model.MaxTime)) : 0);
+    }
 }
 
 /// <summary>The score screen: the score counts up to its value, and pulses green as points come in (red as they go).</summary>
@@ -118,7 +121,7 @@ public partial class ScoreReadout : Node2D
     }
 }
 
-/// <summary>The progress screen: how far through the level, as a percentage and a bar.</summary>
+/// <summary>The progress screen: how far through the level, as a percentage and a bar (or an endless run's wave).</summary>
 public partial class ProgressReadout : Node2D
 {
     readonly Label caption = new()
@@ -146,8 +149,19 @@ public partial class ProgressReadout : Node2D
 
     public void Set(float f)
     {
+        caption.Text = "MISSION";
         fraction = f;
         percent.Text = $"{(int)(f * 100)}%";
+        QueueRedraw();
+    }
+
+    /// <summary>Endless: the wave, and the run's time under it.</summary>
+    public void SetWave(int wave, double seconds)
+    {
+        int s = (int)seconds;
+        caption.Text = $"WAVE   {s / 60}:{s % 60:00}";
+        percent.Text = Math.Max(wave, 1).ToString();
+        fraction = 0;
         QueueRedraw();
     }
 

@@ -72,6 +72,12 @@ public sealed class Tuning
     public double Boss2BeamTime = 25;
     public int CounterWord = 11;
 
+    // [endless]
+    public double EndlessFirstWave = 2.5, EndlessAnnounce = 1.5, EndlessStartOffset = -1, EndlessBudgetPerWave = 1;
+    public double EndlessWavesPerPattern = 3, EndlessPatternDelay = 3, EndlessPatternDelayPerWave = 0.1, EndlessMinPatternDelay = 1;
+    public double EndlessPatternDelayPerPattern = 0, EndlessPatternsPerMissilePattern = 3;
+    public double EndlessCpsPerWave = 0.125;
+
     public readonly record struct SizeStats(int Letters, int Points, float Speed);
 
     // ---------------------------------------------------------------------------------------------------------
@@ -85,7 +91,7 @@ public sealed class Tuning
     static Entry D(string s, string k, Action<Tuning, double> set) => new(s, k, (t, v) => set(t, ToDouble(v)));
 
     const string Ships = "enemy ships", Size = "size", Weapon = "weapon", Defence = "defence", Health = "hull health",
-        EnemyWeapons = "enemy weapons", Player = "player", Scripts = "level scripts", Bosses = "bosses";
+        EnemyWeapons = "enemy weapons", Player = "player", Scripts = "level scripts", Bosses = "bosses", Endless = "endless";
 
     static readonly Entry[] Entries =
     {
@@ -141,9 +147,21 @@ public sealed class Tuning
         I(Bosses, "boss 3 attack", (t, v) => t.Boss2Attack = v),
         D(Bosses, "boss 3 beam", (t, v) => t.Boss2BeamTime = v),
         I(Bosses, "counter word", (t, v) => t.CounterWord = v),
+
+        D(Endless, "first wave", (t, v) => t.EndlessFirstWave = v),
+        D(Endless, "announce", (t, v) => t.EndlessAnnounce = v),
+        D(Endless, "start offset", (t, v) => t.EndlessStartOffset = v),
+        D(Endless, "budget per wave", (t, v) => t.EndlessBudgetPerWave = v),
+        D(Endless, "waves per pattern", (t, v) => t.EndlessWavesPerPattern = Math.Max(1, v)),
+        D(Endless, "pattern delay", (t, v) => t.EndlessPatternDelay = v),
+        D(Endless, "pattern delay per wave", (t, v) => t.EndlessPatternDelayPerWave = v),
+        D(Endless, "min pattern delay", (t, v) => t.EndlessMinPatternDelay = v),
+        D(Endless, "pattern delay per pattern", (t, v) => t.EndlessPatternDelayPerPattern = v),
+        D(Endless, "cps per wave", (t, v) => t.EndlessCpsPerWave = v),
+        D(Endless, "patterns per missile pattern", (t, v) => t.EndlessPatternsPerMissilePattern = Math.Max(1, v)),
     };
 
-    static readonly string[] Sections = { Ships, Size, Weapon, Defence, Health, EnemyWeapons, Player, Scripts, Bosses };
+    static readonly string[] Sections = { Ships, Size, Weapon, Defence, Health, EnemyWeapons, Player, Scripts, Bosses, Endless };
 
     /// <summary>Reads data/tuning.txt. Throws a <see cref="DataError"/> naming the line for any mistake.</summary>
     public static Tuning Parse(string text, string fileName = "tuning.txt")

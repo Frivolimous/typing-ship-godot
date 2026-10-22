@@ -2,13 +2,14 @@ using TypingShip.Core.Data;
 
 namespace TypingShip.Core.Levels;
 
-/// <summary>What building a level needs: the random numbers, the tuning, and the difficulty (its speed in CPS).</summary>
-public sealed record LevelContext(Rng Rng, Tuning Tuning, double Cps)
+/// <summary>What building a level needs: the random numbers, the tuning, and the difficulty (its speed in CPS).
+/// PaceScale speeds everything up on top of the difficulty (endless mode's ramp; 1 in the levels).</summary>
+public sealed record LevelContext(Rng Rng, Tuning Tuning, double Cps, double PaceScale = 1)
 {
     /// <summary>0 (easy) to 4 (insane).</summary>
     public int DifficultyIndex => Difficulty.Of(Cps) - 1;
     /// <summary>The speed ships move and halts count down at: Cps, flattened above Hard (Tuning.Pace).</summary>
-    public double Pace => Tuning.Pace(Cps);
+    public double Pace => Tuning.Pace(Cps) * PaceScale;
 }
 
 /// <summary>Something in a level that happens at Time: seconds from the start of the level, the same at every difficulty.</summary>
@@ -136,6 +137,10 @@ public sealed class ObjectCommand
     readonly LevelContext c;
     readonly float baseX, baseY; // the point as written, before the jitter
     readonly double baseTimer;   // the halt as written, in halt units
+
+    /// <summary>The point as written, before the jitter, in pixels.</summary>
+    public float WrittenX => baseX;
+    public float WrittenY => baseY;
 
     public ObjectCommand(LevelContext c, float x = 0, float y = 0, double timer = 0, bool move = true, bool fire = false)
     {

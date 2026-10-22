@@ -88,6 +88,24 @@ ported, what's left, where the port deliberately differs from the original, and 
    This comes before the visual overhaul so the final art covers the new content too. Decided so far:
    - **Endless mode:** a wave generator built from authored wave patterns, with density ramping over time.
      Steam leaderboards bracketed by CPS. No anti-cheat at release; patch later if cheating becomes a problem.
+     **Done (Jeremy's design, 2026-10-22):** numbered waves of patterns from data/levels/endless.txt, each pattern
+     `[level N name]` (1-15, the typing speed it takes to clear it; 45 to start, three a level), the same on every
+     difficulty (no tags). Guidelines for writing them (level from letters, words and spawn time; letter range per
+     level; a diving suicide ship counts 3 letters more, and at least half of a pattern's come in from the side or
+     bottom and move 5 squares before diving) are checked by the Sim, not the game. Each wave has a budget of pattern
+     levels for clearing (a level below the difficulty's own, +1 a wave), split at random across 1 to wave/3 patterns
+     started a shrinking delay apart, with at most one missile-only pattern (or one per three patterns) so survival
+     stays level; the next wave waits until the last is cleared, is announced ("WAVE n") and starts as that fades.
+     Each wave is balanced for a typist 0.125 letters a second faster, up to Insane's: ship pace and enemy fire rate
+     follow it, so Insane doesn't ramp (tuning.txt `[endless]`). The score is ship points x the difficulty's WPM / 25,
+     so playing down doesn't pay; best score and longest run saved per difficulty (a global board can rank the
+     scaled scores). Benchmarks (Jeremy, from Z-Type): a standard game about 5 minutes or under, a world-record game
+     about 12; Jeremy's session target is 2-5 minutes. The bots: 80% typists survive a median 2:54-4:35 on every
+     difficulty and clear every wave for about the first minute; a 140 WPM typist on Insane about 9½ minutes. No
+     bosses; the wave and time are shown with the score. A big ENDLESS circle on the map, apart from the route and
+     locked until the campaign is beaten (boss 3 cleared), the wave in the cockpit, the game-over screen for the
+     result. The patterns come from the run's own seed, so the daily challenge can reuse them. Leaderboards come with
+     Steam.
    - **Daily challenge:** one seed per UTC day, so everyone gets the same wave pattern (words can differ,
      because typed words return to the pool). Unlimited attempts, best score counts, one leaderboard per day.
      Daily modifiers ("lasers only", "double shields") come later.

@@ -183,6 +183,7 @@ public partial class MapUI : Control
     };
 
     readonly LevelButton[] levels = new LevelButton[12];
+    readonly EndlessButton endless;
     public readonly DiffSelect Diff = new();
     Vector2[] route = Array.Empty<Vector2>();
     int[] routeLevel = Array.Empty<int>(); // which level each route point leads to
@@ -203,6 +204,8 @@ public partial class MapUI : Control
             levels[i] = new LevelButton(name, i, OpenDiff) { Position = Spots[i] };
             AddChild(levels[i]);
         }
+        endless = new EndlessButton(OpenEndless) { Position = EndlessButton.Spot };
+        AddChild(endless);
         AddChild(Diff);
     }
 
@@ -234,6 +237,7 @@ public partial class MapUI : Control
             var b = l;
             nav.Add(b.Word, () => OpenDiff(b), () => IsVisibleInTree() && b.Unlocked);
         }
+        nav.Add("endless", OpenEndless, () => IsVisibleInTree() && endless.Unlocked);
         for (int i = 0; i < Strings.Diffs.Length; i++)
         {
             double cps = Difficulty.Cps[i];
@@ -253,6 +257,8 @@ public partial class MapUI : Control
             else levels[i].SetState(d[1], d[2], d[3]);
             if (levels[i].Unlocked) reached = i;
         }
+        // Endless opens once the campaign is beaten (boss 3 cleared on any difficulty).
+        endless.SetState(save.LevelScore[TypingShip.Core.Data.GameData.LevelCount - 1][1] > 0, save.EndlessBest.Max());
         QueueRedraw();
     }
 
@@ -293,6 +299,89 @@ public partial class MapUI : Control
         if (!b.Unlocked) return;
         G.Sound.Sound(SoundControl.Click);
         Diff.Open(b.Index, b.Position);
+    }
+
+    /// <summary>The difficulty box for an endless run, to the left of its circle.</summary>
+    public void OpenEndless()
+    {
+        if (!endless.Unlocked) return;
+        G.Sound.Sound(SoundControl.Click);
+        Diff.Open(-1, EndlessButton.Spot - new Vector2(EndlessButton.Size + 145, 0));
+    }
+}
+
+// Endless mode on the map: a big circle apart from the route, with ENDLESS in the middle. Locked (dim) until the
+// campaign is beaten; then it turns like the next level's ring, with the best endless score beneath.
+public partial class EndlessButton : Control
+{
+    public static readonly Vector2 Spot = new(400, 432);
+    public new const float Size = 40;
+    public bool Unlocked { get; private set; }
+    readonly Action click;
+    int best;
+    bool hover;
+    float time;
+
+    float Radius => Size * (hover && Unlocked ? 1.08f : 1);
+
+    public EndlessButton(Action onClick)
+    {
+        click = onClick;
+        MouseFilter = MouseFilterEnum.Stop;
+        base.Size = new Vector2(1, 1); // hits are tested against the ring (_HasPoint)
+        MouseEntered += () => hover = true;
+        MouseExited += () => hover = false;
+    }
+
+    public void SetState(bool unlocked, int best)
+    {
+        Unlocked = unlocked;
+        this.best = best;
+        MouseDefaultCursorShape = unlocked ? CursorShape.PointingHand : CursorShape.Arrow;
+        QueueRedraw();
+    }
+
+    public override void _Process(double delta)
+    {
+        time += (float)delta;
+        QueueRedraw();
+    }
+
+    public override void _Draw()
+    {
+        float r = Radius;
+        var colour = Unlocked ? Kit.Rim : new Color(0.45f, 0.5f, 0.6f);
+        if (Unlocked)
+        {
+            float pulse = 0.5f + 0.5f * Mathf.Sin(time * 2.5f);
+            DrawCircle(Vector2.Zero, r + 14, new Color(colour, 0.06f + 0.08f * pulse));
+            for (int k = 0; k < 10; k++)
+            {
+                float a = time * 0.6f + k * Mathf.Tau / 10;
+                DrawArc(Vector2.Zero, r + 8, a, a + 0.38f, 6, new Color(colour, 0.8f), 1.5f, true);
+            }
+        }
+        DrawCircle(Vector2.Zero, r, new Color(0.02f, 0.04f, 0.07f, 0.95f));
+        if (Unlocked) DrawCircle(Vector2.Zero, r, new Color(colour, 0.12f));
+        DrawArc(Vector2.Zero, r, 0, Mathf.Tau, 48, new Color(colour, Unlocked ? 0.95f : 0.4f), Unlocked ? 2.5f : 1.2f, true);
+        DrawArc(Vector2.Zero, r - 6, 0, Mathf.Tau, 48, new Color(colour, Unlocked ? 0.35f : 0.15f), 1, true);
+
+        var font = Fonts.HudBold;
+        float h = font.GetAscent(10) - font.GetDescent(10);
+        DrawString(font, new Vector2(-r, h / 2 - 1), "ENDLESS", HorizontalAlignment.Center, r * 2, 10,
+            Unlocked ? Colors.White : new Color(colour, 0.6f));
+        string under = Unlocked ? (best > 0 ? $"BEST {best}" : "") : "BEAT THE CAMPAIGN";
+        if (under != "")
+            DrawString(Fonts.Hud, new Vector2(-70, Size + 22), under, HorizontalAlignment.Center, 140, 8, new Color(colour, Unlocked ? 0.9f : 0.6f));
+    }
+
+    public override bool _HasPoint(Vector2 point) => point.Length() <= Radius + 6;
+
+    public override void _GuiInput(InputEvent e)
+    {
+        if (e is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) return;
+        AcceptEvent();
+        if (Unlocked) click();
     }
 }
 
@@ -475,8 +564,9 @@ public partial class DiffSelect : Control
     public void Open(int level, Vector2 at)
     {
         this.level = level;
-        heading.Text = Banner.LevelName(level);
-        highscore.Text = G.Model.Save.LevelScore[level][0].ToString();
+        var save = G.Model.Save;
+        heading.Text = level < 0 ? "ENDLESS" : Banner.LevelName(level);
+        highscore.Text = (level < 0 ? save.EndlessBest.Max() : save.LevelScore[level][0]).ToString();
         // Beside the level, kept on the stage.
         Position = new Vector2(Math.Min(at.X + 30, G.StageSize - Size.X - 4), Math.Clamp(at.Y - 30, 4, G.StageSize - Size.Y - 50));
         // Point out the hardest difficulty the typing test says you can keep up with.
@@ -498,6 +588,7 @@ public partial class DiffSelect : Control
     {
         Visible = false;
         G.Sound.Sound(SoundControl.Click);
-        G.Shell.StartGame(level, cps);
+        if (level < 0) G.Shell.StartEndless(cps);
+        else G.Shell.StartGame(level, cps);
     }
 }

@@ -60,11 +60,15 @@ public sealed class GameData
     public LevelSet Main { get; }
     /// <summary>The original 12 levels as they were, data/levels/classic/: a baseline during development, removed before release.</summary>
     public LevelSet Classic { get; }
+    /// <summary>levels/endless.txt: endless mode's waves.</summary>
+    public IReadOnlyList<EndlessWave> EndlessWaves { get; }
+    public const string EndlessFile = "levels/endless.txt";
     /// <summary>typing-test.txt: the typing test's passages.</summary>
     public IReadOnlyList<string> TestPassages { get; }
 
-    GameData(string words, Tuning tuning, LevelSet main, LevelSet classic, IReadOnlyList<string> passages)
+    GameData(string words, Tuning tuning, LevelSet main, LevelSet classic, IReadOnlyList<string> passages, IReadOnlyList<EndlessWave> endless)
     {
+        EndlessWaves = endless;
         Words = words;
         Tuning = tuning;
         Main = main;
@@ -79,9 +83,10 @@ public sealed class GameData
         var tuning = Tuning.Parse(Need("tuning.txt"), "tuning.txt");
         var data = new GameData(Need("words.txt"), tuning,
             LevelSet.Load("main", "levels", Need), LevelSet.Load("classic", "levels/classic", Need),
-            TypingTestRun.ParsePassages(Need(TestFile), TestFile));
+            TypingTestRun.ParsePassages(Need(TestFile), TestFile), EndlessWave.Parse(Need(EndlessFile), EndlessFile));
         data.Main.Check(tuning);
         data.Classic.Check(tuning);
+        EndlessWave.Check(data.EndlessWaves, tuning);
         return data;
     }
 }

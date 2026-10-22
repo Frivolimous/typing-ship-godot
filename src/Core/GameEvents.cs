@@ -46,6 +46,8 @@ public interface IGameEvents
     void LevelOver(bool cleared) { }
     /// <summary>The level is won and about to end: the last ship is gone (or the boss is dying).</summary>
     void LevelClearing() { }
+    /// <summary>Endless: wave n is about to start (it comes in "announce" seconds later).</summary>
+    void WaveStarting(int wave) { }
 
     // Ticks the presentation keeps in step with: the backdrop scrolls at the start of a tick, and the HUD and
     // sprite animations advance once the ship has moved on.

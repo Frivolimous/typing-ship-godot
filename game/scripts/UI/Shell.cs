@@ -91,6 +91,24 @@ public partial class Shell : Control, IViewTicker
         G.Ctrl.NewGame(level);
     }
 
+    /// <summary>Dev flag (--endless): straight into an endless run, no menus.</summary>
+    public void StartEndlessDirect(ulong? seed)
+    {
+        current = null;
+        G.UI.Visible = true;
+        PauseB.Visible = true;
+        G.Ctrl.NewEndless(seed);
+    }
+
+    /// <summary>ENDLESS on the menu, or RETRY after a run: a fresh run starts under the fade.</summary>
+    public void StartEndless(double cps)
+    {
+        G.Model.Cps = cps;
+        G.Starfield.ClearParticles();
+        G.Ctrl.NewEndless();
+        GoGame();
+    }
+
     /// <summary>DiffSelect.startGame: the level starts at once and runs under the fade.</summary>
     public void StartGame(int level, double cps)
     {
@@ -172,8 +190,8 @@ public partial class Shell : Control, IViewTicker
             Go(Score, Dark);
             return;
         }
-        G.Model.RecordLoss(); // a lost level still keeps its best score
-        GameOver.AddLose();
+        bool best = G.Model.RecordLoss(); // a lost level still keeps its best score; an endless run its best
+        GameOver.AddLose(best);
         Go(GameOver, Dark, 3);
     }
 
