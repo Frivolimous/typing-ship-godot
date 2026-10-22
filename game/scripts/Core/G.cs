@@ -25,6 +25,12 @@ public static class G
     /// <summary>Flashes over the playfield (hits, the boss's last blast).</summary>
     public static ScreenFlash Flash = null!;
 
+    /// <summary>The store (Steam) for achievements and leaderboards; NoPlatform without one.</summary>
+    public static IPlatform Platform = new NoPlatform();
+
+    /// <summary>False in a release export: the dev options and dev keys are off (docs/commands.md).</summary>
+    public static readonly bool Dev = Godot.OS.IsDebugBuild();
+
     /// <summary>Random numbers for the presentation (stars, particles, flicker).</summary>
     public static Rng Rng = new();
 

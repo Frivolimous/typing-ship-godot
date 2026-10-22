@@ -37,6 +37,7 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
 | `game/` | The Godot project: presentation and input only |
 | `data/` | words.txt, tuning.txt, typing-test.txt (the typing test's passages), mounts.txt (where engine flames and weapon charge-ups sit on each sprite), levels/ (read from disk in a checkout, embedded in the game assembly for exports) |
 | `docs/` | Docs |
+| `steam/` | Steam: Valve's steam_api libraries (`redist/`), the release build and SteamPipe upload script (`build.ps1`), and what's set up on the partner site ([steam/README.md](steam/README.md)). The game's Steam code is `game/scripts/Platform/` behind `IPlatform` (`G.Platform`); Core never sees it |
 
 ## Architecture
 

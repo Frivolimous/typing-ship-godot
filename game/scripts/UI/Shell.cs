@@ -238,7 +238,8 @@ public partial class Shell : Control, IViewTicker
         }
 
         // The original's dev keys, outside a level: Ctrl+Home invincible, Ctrl+Page Up unlock all, Ctrl+Page Down wipe.
-        if (key.CtrlPressed && !(InGame && G.Model.Running) && key.Keycode is Key.Home or Key.Pageup or Key.Pagedown)
+        // Not in a release export.
+        if (G.Dev && key.CtrlPressed && !(InGame && G.Model.Running) && key.Keycode is Key.Home or Key.Pageup or Key.Pagedown)
         {
             if (key.Keycode == Key.Home) G.Model.Invincible = true;
             else if (key.Keycode == Key.Pageup) G.Model.Save.UnlockAll();

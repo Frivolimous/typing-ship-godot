@@ -39,7 +39,7 @@ public sealed class SaveData
         if (json == null) return new SaveData();
         try
         {
-            var data = JsonSerializer.Deserialize<SaveData>(json);
+            var data = JsonSerializer.Deserialize(json, SaveJson.Default.SaveData);
             if (data is { Version: CurrentVersion } && data.Achieve.Length == 6 && data.AchieveC.Length == 6 &&
                 data.LevelScore.Length == 12 && data.LevelScore.All(l => l.Length == 4) &&
                 data.EndlessBest is { Length: 5 } && data.EndlessSeconds is { Length: 5 })
@@ -52,7 +52,7 @@ public sealed class SaveData
         return new SaveData();
     }
 
-    public string ToJson() => JsonSerializer.Serialize(this);
+    public string ToJson() => JsonSerializer.Serialize(this, SaveJson.Default.SaveData);
 
     public void Save() => Store?.Invoke(ToJson());
 
@@ -86,6 +86,11 @@ public sealed class SaveData
     /// <summary>How many levels have a gold medal: slot 2 = health, 3 = accuracy.</summary>
     public int GoldMedals(int slot) => LevelScore.Count(l => l[slot] == 3);
 }
+
+/// <summary>The save's JSON code, generated at build time instead of found by reflection, so it still works in an
+/// export build that trims unused code.</summary>
+[JsonSerializable(typeof(SaveData))]
+internal partial class SaveJson : JsonSerializerContext;
 
 /// <summary>The six achievements, each with three tiers (bronze, silver, gold).</summary>
 public static class Achievement

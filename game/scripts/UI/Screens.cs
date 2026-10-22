@@ -593,7 +593,9 @@ public partial class ScoreUI : Screen
 public partial class GameOverUI : Screen
 {
     static readonly Rect2 ScoreBox = new(150, 170, 250, 120);
-    readonly Label title, subtitle, caption, score;
+    readonly Label title, subtitle, caption, score, ranks;
+    /// <summary>Counts endless runs shown, so a late leaderboard answer for an earlier run is dropped.</summary>
+    int shown;
     readonly TextButton retry;
     bool won;
 
@@ -603,6 +605,8 @@ public partial class GameOverUI : Screen
         subtitle = Kit.Label(this, "", Kit.Caption(9), 0, 116, G.StageSize, HorizontalAlignment.Center);
         caption = Kit.Label(this, "", Kit.Caption(9), ScoreBox.Position.X, ScoreBox.Position.Y + 22, ScoreBox.Size.X, HorizontalAlignment.Center);
         score = Kit.Label(this, "", Kit.Title(40), ScoreBox.Position.X, ScoreBox.Position.Y + 42, ScoreBox.Size.X, HorizontalAlignment.Center);
+        // Endless runs: the player's place on the Steam leaderboards, under the score.
+        ranks = Kit.Label(this, "", Kit.Caption(8), 0, ScoreBox.End.Y + 14, G.StageSize, HorizontalAlignment.Center);
         retry = new TextButton("RETRY", Retry, 14, boxed: true, colour: Kit.Good, width: 170) { Position = new Vector2(190, 340) };
         AddChild(retry);
         Nav.Add(retry);
@@ -631,6 +635,8 @@ public partial class GameOverUI : Screen
         caption.Text = "TOTAL SCORE";
         score.Text = G.Model.Save.Highscore.ToString();
         retry.Visible = false;
+        ranks.Text = "";
+        shown++;
         QueueRedraw();
     }
 
@@ -654,6 +660,12 @@ public partial class GameOverUI : Screen
         }
         score.Text = G.Model.Score.ToString();
         retry.Visible = true;
+        ranks.Text = m.Endless != null && G.Platform.Name is { } store ? $"SENDING THE SCORE TO {store.ToUpperInvariant()}..." : "";
+        int token = ++shown;
+        if (m.Endless != null) Leaderboards.SubmitEndless(m, line =>
+        {
+            if (token == shown) ranks.Text = line ?? "";
+        });
         QueueRedraw();
     }
 

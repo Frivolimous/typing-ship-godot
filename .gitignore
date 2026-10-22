@@ -35,3 +35,6 @@ screenshots/
 
 # Pacing reports (dotnet run --project src/Sim -- pacing)
 pacing/
+
+# steamcmd, downloaded by steam/build.ps1
+steam/steamcmd/

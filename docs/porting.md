@@ -101,7 +101,14 @@ The original AS3 source is no longer in the repo (Jeremy keeps a copy). This fil
    the title shows the best total score instead. Leaderboards come with Steam (phase 9).
 9. **Steam integration:** Steamworks, achievements, cloud saves, Steam Deck support and store builds, plus
    the endless and daily leaderboards and Workshop word lists from phase 6. See
-   [release-checklist.md](release-checklist.md).
+   [release-checklist.md](release-checklist.md) and [steam/README.md](../steam/README.md). **Done so far
+   (2026-10-22):** Steamworks.NET behind `IPlatform` (scripts/Platform/; `G.Platform`, `NoPlatform` without Steam,
+   on in exports, `--steam` in a checkout); the 18 achievements (six x three tiers, `SOLDIER_BRONZE` ...) unlocked as
+   they're awarded and synced from the save at start-up; endless leaderboards per difficulty plus `endless_all`, sent
+   on game over with the ranks shown on the game-over screen; Steam Cloud through Auto-Cloud (user:// is now
+   `%APPDATA%\Millennium Typer`); Windows and Linux export presets, `steam/build.ps1` (ts 17, 18) for release
+   builds and SteamPipe uploads; release exports drop the dev options and dev keys; the save's JSON is
+   source-generated (safe if trimmed). Left: the daily board (with the daily challenge), Steam Deck keyboard, Workshop.
 
 ## Class map
 

@@ -15,7 +15,8 @@ public partial class Main : Node2D
         foreach (var a in OS.GetCmdlineUserArgs())
         {
             var parts = a.TrimStart('-').Split('=', 2);
-            args[parts[0]] = parts.Length > 1 ? parts[1] : "";
+            // A release export takes no dev options, only the data check and turning Steam off.
+            if (G.Dev || parts[0] is "check" or "nosteam") args[parts[0]] = parts.Length > 1 ? parts[1] : "";
         }
 
         GameData data;
@@ -42,6 +43,12 @@ public partial class Main : Node2D
         var rules = seed is { } rs ? new Rng(rs) : new Rng();
         G.Rng = seed is { } fs ? new Rng(fs + 0x9E3779B97F4A7C15) : new Rng();
         bool bot = args.ContainsKey("autotype");
+        SaveFile.MoveFromGodotFolder();
+        // Steam: on in an export (unless --nosteam); a checkout only with --steam, so dev runs don't award the
+        // achievements or post scores. Never for the bot.
+        bool checkout = DataFiles.Folder != null;
+        if (!bot && !args.ContainsKey("nosteam") && (!checkout || args.ContainsKey("steam")))
+            G.Platform = SteamPlatform.Start(this, checkout);
         // Bot runs don't touch the player's save unless given a profile of their own.
         if (args.TryGetValue("profile", out var profile)) SaveFile.Path = $"user://{profile}.json";
         else if (bot) SaveFile.Path = null;
@@ -76,6 +83,7 @@ public partial class Main : Node2D
 
         G.Starfield = new Starfield { Name = "Stars" };
         G.Model = new Game(data, rules, new ArtLibrary(Sprites.Mask), SaveFile.Load(), G.World);
+        G.Platform.Sync(G.Model.Save);
         if (args.TryGetValue("wpm", out var wpm)) G.Model.Cps = Speed.FromWpm(double.Parse(wpm, CultureInfo.InvariantCulture));
         if (args.TryGetValue("cps", out var cps)) G.Model.Cps = double.Parse(cps, CultureInfo.InvariantCulture);
         G.UI = new GameUI { Name = "GameUI" };
@@ -119,6 +127,7 @@ public partial class Main : Node2D
         else shell.ShowTitle(args.ContainsKey("map"));
         if (edit || args.ContainsKey("from") || args.ContainsKey("line"))
             AddChild(new LevelEditor(args.GetValueOrDefault("from"), args.GetValueOrDefault("line"), edit) { Name = "LevelEditor" });
+        if (!G.Dev) return;
         DevKeys.AddIfRequested(this);
         Screenshot.CaptureIfRequested(this);
     }

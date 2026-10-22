@@ -35,6 +35,9 @@ echo   14  Endless report  (how long the bots last at each difficulty)
 echo   15  Play endless mode  (Hard)
 echo   16  Check the endless patterns  (against the guidelines for writing them)
 echo.
+echo   17  Release builds  (Windows and Linux in builds\, checked)
+echo   18  Upload a release build to Steam  (the beta branch)
+echo.
 echo    0  Quit
 echo.
 set "PICK="
@@ -61,6 +64,8 @@ if "%PICK%"=="13" dotnet run --project src\Sim -- pacing --check
 if "%PICK%"=="14" dotnet run --project src\Sim -- endless
 if "%PICK%"=="15" dotnet build && "%GODOT%" --path game -- --endless --wpm=65
 if "%PICK%"=="16" dotnet run --project src\Sim -- endless --patterns
+if "%PICK%"=="17" powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Linux
+if "%PICK%"=="18" powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload main
 exit /b
 
 :watch

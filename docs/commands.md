@@ -26,6 +26,9 @@ whatever the `GODOT` environment variable is set to. Commands run from the repo 
 | Play endless mode straight away | 15 | `$GODOT --path game -- --endless --wpm=65 [--seed=N]` |
 | Check the endless patterns against the guidelines for writing them (letters, words, spawn time, the level they work out to, divers coming from the side or bottom) | 16 | `dotnet run --project src/Sim -- endless --patterns` |
 
+| Release builds: exports Windows (and Linux with `-Linux`) with Godot's release template into `builds/`, then checks the exported game reads its embedded data. Warns if `game/assets/music` is empty | 17 | `powershell -ExecutionPolicy Bypass -File steam\build.ps1 [-Linux]` |
+| Upload to Steam: the release build, uploaded with steamcmd to the main app's `beta` branch (or `-Branch NAME`; `-Upload playtest` for the Playtest app). Refuses without music. Asks for the Steam login. See [steam/README.md](../steam/README.md) | 18 | `powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload main [-Branch beta] [-Description "..."] [-Linux]` |
+
 How to write levels, the editing keys, and what the checks report: [level-format.md](level-format.md).
 
 ## Game options
@@ -57,6 +60,12 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 | `--line=N` | Start the level at line N of its file (the first ship that line or a later one makes) |
 | `--check` | Load and check every data file, print "Data OK" or the first mistake, and quit |
 | `--trace=file.txt` | Write one line of game state per tick (positions, words, score), to compare two runs exactly |
+| `--steam` | Use Steam in a checkout (Steam must be running): achievements unlock and endless scores go to the leaderboards, on Jeremy's account. Exported builds use Steam without it. Never with `--autotype` |
+| `--nosteam` | Don't use Steam, even in an exported build |
+
+A **release export** (ts 17, ts 18) ignores every option above except `--check` and `--nosteam`, and the
+original's dev keys (Ctrl+Home invincible, Ctrl+Page Up unlock all, Ctrl+Page Down wipe the save) do nothing.
+The editor and debug exports keep them all.
 
 ## Simulating a level
 

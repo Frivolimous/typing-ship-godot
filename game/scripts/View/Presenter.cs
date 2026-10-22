@@ -175,7 +175,11 @@ public sealed class Presenter : IGameEvents
     public void TutorialShown(int index, Vec2? pointer, PointerDir dir) =>
         new PopBox(index, pointer is { } p ? G.V(p) : null, dir);
 
-    public void AchievementAwarded(int achievement, int tier) => new PopAchieve(achievement, tier);
+    public void AchievementAwarded(int achievement, int tier)
+    {
+        new PopAchieve(achievement, tier);
+        G.Platform.Unlock(achievement, tier);
+    }
 
     public void WaveStarting(int wave) =>
         new Banner($"WAVE {wave}", "", Cockpit.Rim, hold: (float)G.Model.Tuning.EndlessAnnounce - Banner.FadeIn);
