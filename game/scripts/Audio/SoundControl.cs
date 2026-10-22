@@ -58,11 +58,16 @@ public partial class SoundControl : Node
         p.Play();
     }
 
-    // Music isn't in git (see assets/music/README.md), so a fresh checkout runs without it.
+    // Music isn't in git (see assets/music/README.md), so a fresh checkout runs without it. Ogg (what ships), or WAV.
     AudioStream? Music(int i)
     {
-        var path = $"res://assets/music/Music{i}.wav";
-        return music[i] ??= ResourceLoader.Exists(path) ? GD.Load<AudioStream>(path) : null;
+        if (music[i] != null) return music[i];
+        foreach (var ext in new[] { "ogg", "wav" })
+        {
+            var path = $"res://assets/music/Music{i}.{ext}";
+            if (ResourceLoader.Exists(path)) return music[i] = GD.Load<AudioStream>(path);
+        }
+        return null;
     }
 
     /// <summary>Fade the current track out and the given one in (-1 = the last requested track).</summary>

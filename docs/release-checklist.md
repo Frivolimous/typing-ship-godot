@@ -24,7 +24,9 @@ Things that must be settled before a commercial Steam release.
 - [x] The data files (words, tuning, levels) are embedded in the game assembly (game/TypingShip.csproj). Check an
       exported build reads them: run it with `-- --check`. The build script does this every time.
 - [ ] Music is git-ignored. Make sure the release build machine has it (see game/assets/music/README.md).
-- [ ] Music: the WAVs are about 81 MB. Re-import as compressed (Ogg/QOA) or convert, to keep the download small.
+- [x] Music: the WAVs are about 81 MB. Re-import as compressed (Ogg/QOA) or convert, to keep the download small.
+      Converted to Ogg by Jeremy (6.4 MB); the game loads `MusicN.ogg`, or `MusicN.wav` if there's no Ogg. The
+      sound effects stay WAV (1.1 MB in all, and short sounds start without decoding delay).
 - [ ] Window and fullscreen settings, and a settings menu (volume, fullscreen, keyboard layout notes).
 - [x] Remove or gate the dev flags (`--autotype`, `--level`, `--wpm`, `--cps`, `--screenshot`, `--keys`, `--profile`, `--edit`, `--from`,
       `--line`, `--trace`, ...) and the
