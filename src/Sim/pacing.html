@@ -103,12 +103,10 @@ footer code { font: 12px var(--mono); color: var(--ink-2); }
       perfect bot plays each level at the stated speed. Above it, words pile up on screen; below it, you get breathing
       room. <b>Pressure</b> is the typing speed needed to stop every threat (missiles, mines, suicide ships, laser shots)
       before it hits, over the worst stretch of up to 20 seconds around each moment: it shows threats bunching up, which
-      demand can't. A typist slower than the pressure gets hit there. <b>Game levels</b> are data/levels, <b>Classic</b>
-      the original 12 (data/levels/classic).</p>
+      demand can't. A typist slower than the pressure gets hit there.</p>
   </header>
 
   <div class="controls" role="toolbar" aria-label="Chart options">
-    <div class="group" id="sets"><span>Levels</span></div>
     <div class="group" id="diffs"><span>Difficulty</span></div>
     <div class="group" id="metric"><span>Measure</span></div>
     <div class="group" id="xmode"><span>X axis</span></div>
@@ -153,10 +151,7 @@ const DIFFS = [
   { name: "Extreme", wpm: 90, v: "--s4" }, { name: "Insane", wpm: 120, v: "--s5" },
 ];
 const BOSS = new Set([4, 8, 12]);
-const state = { set: "both", diff: "All", x: "progress", ov: "ratio", metric: "demand" };
-const SETS = [{ value: "main", label: "Game levels" }, { value: "classic", label: "Classic" }, { value: "both", label: "Both (Classic dashed)" }];
-const visibleSets = () => state.set === "both" ? ["main", "classic"] : [state.set];
-const setLabel = s => s === "classic" ? " (Classic)" : "";
+const state = { diff: "All", x: "progress", ov: "ratio", metric: "demand" };
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const colorOf = name => css(DIFFS.find(d => d.name === name).v);
 const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
@@ -263,8 +258,8 @@ function renderOverview() {
   const ratio = key === "ratio" || key === "peakratio" || key === "pressure";
   const val = r => key === "avg" ? r.avg : key === "peak" ? r.peak : key === "ratio" ? r.avg / r.wpm * 100
     : key === "pressure" ? (r.peakPressure || 0) * 100 : r.peak / r.wpm * 100;
-  const series = diffs.flatMap(d => visibleSets().map(set => ({
-    name: d.name + setLabel(set), color: colorOf(d.name), dash: set === "classic",
+  const series = diffs.flatMap(d => ["main"].map(set => ({
+    name: d.name, color: colorOf(d.name),
     pts: DATA.runs.filter(r => r.set === set && r.diff === d.name).map(r => [r.level, val(r)]),
     label: p => ratio ? `${Math.round(p[1])}%` : `${Math.round(p[1])} WPM`,
   }))).filter(s => s.pts.length);
@@ -284,7 +279,7 @@ function renderLevels() {
   const diffs = visibleDiffs();
   const host = document.getElementById("levels");
   host.innerHTML = "";
-  const sets = visibleSets();
+  const sets = ["main"];
   const runs = DATA.runs.filter(r => sets.includes(r.set) && diffs.some(d => d.name === r.diff));
   const series0 = r => state.metric === "pressure" ? (r.p || []).slice(0, r.seconds) : r.d;
   const yMaxRaw = Math.max(...runs.flatMap(r => series0(r)));
@@ -307,7 +302,7 @@ function renderLevels() {
     const prog = state.x === "progress";
     const xMax = prog ? 100 : Math.ceil(longest / 60) * 60;
     const series = lr.map(r => ({
-      name: r.diff + setLabel(r.set), color: colorOf(r.diff), dash: r.set === "classic",
+      name: r.diff, color: colorOf(r.diff),
       pts: series0(r).map((v, i) => [prog ? (i + 1) / r.seconds * 100 : i + 1, v, r.w ? r.w[i] : null]),
       label: p => `${Math.round(p[1])} WPM` + (p[2] != null ? ` · ${p[2]} on screen` : "") + (prog ? ` at ${fmtTime(p[0] / 100 * r.seconds)}` : ""),
     }));
@@ -325,8 +320,8 @@ function renderTable() {
   const t = document.getElementById("table");
   let h = `<thead><tr><th>Level</th>${diffs.map(d => `<th>${d.name} · ${d.wpm}</th>`).join("")}</tr></thead><tbody>`;
   const levels = [...new Set(DATA.runs.map(r => r.level))].sort((a, b) => a - b);
-  for (const level of levels) for (const set of visibleSets()) {
-    h += `<tr><td>${level}${BOSS.has(level) ? " ★" : ""}${set === "classic" ? ' <span class="sub">Classic</span>' : ""}</td>`;
+  for (const level of levels) for (const set of ["main"]) {
+    h += `<tr><td>${level}${BOSS.has(level) ? " ★" : ""}</td>`;
     for (const d of diffs) {
       const r = runOf(set, level, d.name);
       const last = r.lastSpawn != null ? ` · last spawn ${fmtTime(r.lastSpawn)}` : "";
@@ -338,7 +333,6 @@ function renderTable() {
 }
 
 function renderAll() {
-  chips("sets", SETS, "set", renderAll);
   chips("diffs", [{ value: "All", label: "All" }, ...DIFFS.map(d => ({ value: d.name, label: d.name, color: d.v }))], "diff", renderAll);
   chips("metric", [{ value: "demand", label: "Demand" }, { value: "pressure", label: "Pressure" }], "metric", renderAll);
   chips("xmode", [{ value: "progress", label: "Level progress" }, { value: "time", label: "Seconds" }], "x", renderAll);

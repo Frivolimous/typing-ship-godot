@@ -11,16 +11,11 @@ word lengths, health) are in `data/tuning.txt`. Edit them in any text editor; no
 | level02 | 3 | | level06 | 6 | | level10 | 9 |
 | level03 | B1 | | level07 | B2 | | level11 | B3 |
 
-**Classic levels.** `data/levels/classic/` holds the original 12 levels and their bosses.txt, converted to this
-format at Hard's timing: a baseline to compare against while the game's own levels are tuned (play them with
-`--classic`, see [commands.md](commands.md)). They're removed before release. A test checks they still play as
-recorded, so leave them alone; edit the ones in `data/levels/`. For now those are still copies of the Classic ones.
-
 ## Time
 
 **Every time in a level file is in seconds, as the level plays on Hard, and the timing is the same at every
-difficulty.** Hard is the reference: levels are written and tuned for Hard first; the other difficulties are worked
-out from Hard later.
+difficulty.** Hard is the reference: levels are written and tuned for Hard first, then thinned or filled for the
+other difficulties with difficulty tags and five-value numbers (below).
 
 A level is a list of **waves**. Each wave starts with an absolute time, `@m:ss`, and the lines in it use gaps:
 
@@ -92,7 +87,7 @@ Laser ships' words are a letter longer, and suicide ships always have 3 letters.
 
 ## Commands
 
-Every command below can start with a time (`@m:ss` or `+gap`) except `repeat` and `insert`.
+Every command below can start with a time (`@m:ss` or `+gap`) except `repeat`.
 
 **Ships**
 
@@ -122,7 +117,6 @@ away. The last step should take the ship off screen, or it's counted as escaping
 | `repeat 0.55 3 2` | The last 2 ships, again 3 times. Each pair comes 0.55 s after the one before, keeping the gap between the 2 |
 | `repeat 0.55 7 1 mirrored` | The last ship 7 more times, mirrored each time, so they alternate sides |
 | `repeat_over 4.5 9` | The last ship 9 more times, spread evenly so the last copy comes 4.5 s after the line above (every 0.5 s) |
-| `insert -4` | Moves the ship above earlier: it now arrives together with, and just before, the ship at -4 (counting the moved one as -1, as the copy commands count) |
 
 `repeat` is `repeat GAP [TIMES [SHIPS [mirrored]]]`, with the gap in seconds; times and ships default to 1. Copies
 count as ships for the copy commands after them, so `mirror` after a `repeat` mirrors the last copy.
@@ -267,8 +261,8 @@ Four sections, each a list of ship lines like a level:
 ## Removed
 
 These were part of the format before times moved to seconds, and the game now refuses them with a message saying
-what to do: `pace`, `duration`, `density` and `only` blocks. Difficulty tags and `/` numbers in a line were removed
-with them and came back for the difficulty pass (above).
+what to do: `pace`, `duration`, `density`, `only` blocks and `insert` (overlapping `@m:ss` waves do its job). Difficulty
+tags and `/` numbers in a line were removed with them and came back for the difficulty pass (above).
 
 ## Mistakes
 
@@ -282,13 +276,6 @@ levels/level07.txt, line 12: @0:40 is earlier than the @ time on line 9. @ times
 ```
 
 The same goes for tuning.txt: a misspelt or missing setting stops the game with the line to fix.
-
-## How the old files were converted
-
-The levels were converted from the old distance-based format by the engine itself, at Hard: each gap became the
-seconds it took on Hard (the old 0.1-and-over gap shrink included), rounded to hundredths. Every ship arrives within
-one tick (1/24 s) of when it did before, and 82% on exactly the same tick. Halts were converted so they last
-exactly as many ticks as before at every difficulty, and ships' paths and random numbers are unchanged.
 
 ## The typing test
 

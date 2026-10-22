@@ -15,8 +15,9 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
 
 ## Porting rules
 
-- **The original is the spec.** The AS3 source is in [reference/original-as3/](reference/original-as3/). Port its
-  behaviour (numbers, timings, quirks of feel), not just its intent. Read the relevant AS3 before porting a feature.
+- **The port is the spec now.** The game started as a faithful port of the original AS3 (its numbers, timings and
+  quirks of feel); the AS3 source is no longer in the repo (Jeremy keeps a copy). Where the port still follows the
+  original, docs/porting.md ("Notes from the original") records what it does.
 - **Fix real bugs instead of preserving them** (Jeremy's call, e.g. the player missile heading). When a fix changes
   how the game plays, list it under "Deviations" in docs/porting.md.
 - **Levels and tuning are data**, for Jeremy to edit: `data/levels/*.txt` (the original LevelData helpers, one per
@@ -24,8 +25,8 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
   [docs/level-format.md](docs/level-format.md); keep that current when the format changes. Every mistake in a data
   file must stop the game with a message naming the file and line.
 - **Hard is the reference** for level pacing: level timing is written for Hard and is the same at every
-  difficulty. Jeremy hand-tunes the Hard levels; once he has, never change them to satisfy the pacing rule check.
-  The other difficulties get derived from Hard later (docs/porting.md, "Difficulty pass").
+  difficulty. Jeremy hand-tunes the Hard levels; never change them to satisfy the pacing rule check. The other
+  difficulties are thinned or filled from Hard by hand, with difficulty tags and five-value numbers in the level files.
 
 ## Layout
 
@@ -35,7 +36,7 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
 | `tests/Core.Tests/` | xUnit tests of the rules and data files |
 | `game/` | The Godot project: presentation and input only |
 | `data/` | words.txt, tuning.txt, typing-test.txt (the typing test's passages), mounts.txt (where engine flames and weapon charge-ups sit on each sprite), levels/ (read from disk in a checkout, embedded in the game assembly for exports) |
-| `docs/`, `reference/` | Docs; the original AS3 (read-only) |
+| `docs/` | Docs |
 
 ## Architecture
 

@@ -66,10 +66,10 @@ public static class Pacing
     /// some letters (each mistake costs a Backspace too). Shows where real players are likely to struggle.
     /// </summary>
     public static Outcome Realistic(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1,
-        double speedShare = RealisticSpeed, double errorRate = RealisticErrors, bool classic = false)
+        double speedShare = RealisticSpeed, double errorRate = RealisticErrors)
     {
         int hits = 0, health = -1;
-        var result = Simulator.Run(data, art, level, cps, seed, botCps: cps * speedShare, classic: classic, errorRate: errorRate,
+        var result = Simulator.Run(data, art, level, cps, seed, botCps: cps * speedShare, errorRate: errorRate,
             onTick: game =>
             {
                 if (health >= 0 && game.Player.Health < health) hits += health - game.Player.Health;
@@ -80,7 +80,7 @@ public static class Pacing
             Math.Max(0, g.Player.Health));
     }
 
-    public static Run Measure(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1, bool classic = false,
+    public static Run Measure(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1,
         double tail = 5, bool pressure = true)
     {
         var samples = new List<Sample>();
@@ -89,7 +89,7 @@ public static class Pacing
         var perSecond = new List<int>();
         int newChars = 0;
 
-        var result = Simulator.Run(data, art, level, cps, seed, classic: classic, onTick: game =>
+        var result = Simulator.Run(data, art, level, cps, seed, onTick: game =>
         {
             current.Clear();
             int chars = 0, visible = 0;
@@ -120,7 +120,7 @@ public static class Pacing
             newChars = 0;
         });
         if (!pressure) return new Run(level, cps, result.Cleared, result.Line, samples, tail);
-        var threats = Core.Pressure.Collect(data, art, level, cps, seed, classic, maxSeconds: Math.Max(samples.Count + 60, 120));
+        var threats = Core.Pressure.Collect(data, art, level, cps, seed, maxSeconds: Math.Max(samples.Count + 60, 120));
         int seconds = Math.Max(samples.Count, threats.Count == 0 ? 0 : (int)Math.Ceiling(threats.Max(t => t.Hit)));
         var (ratio, lines) = Core.Pressure.Curve(threats, cps, seconds);
         return new Run(level, cps, result.Cleared, result.Line, samples, tail, ratio, lines);

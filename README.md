@@ -48,7 +48,6 @@ game/              the Godot project (presentation and input)
   assets/            sprites, sfx, music (extracted from the original .fla, named by their old AS3 class names)
 data/              words.txt, tuning.txt, levels/ (Jeremy edits these: see docs/level-format.md)
 docs/              porting status and roadmap, commands, level format, release checklist
-reference/         the original AS3 source, read-only, for porting
 ```
 
 ## Credits (original game)

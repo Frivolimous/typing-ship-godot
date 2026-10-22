@@ -4,7 +4,7 @@ namespace TypingShip.Core.Levels;
 
 /// <summary>
 /// Turns a level script into its list of events for one play: positions on the 12 x 12 grid become pixels, ships
-/// get their flight plans, mirror/repeat/insert copy and shuffle events, and each line's time (seconds, the same at
+/// get their flight plans, mirror/repeat copy events, and each line's time (seconds, the same at
 /// every difficulty) is worked out from its @ time or + gap. Random numbers are drawn in the order they're written,
 /// as the original's LevelData helpers drew them.
 /// </summary>
@@ -124,7 +124,6 @@ public sealed class LevelBuilder
             }
             case Statement.Repeat re: repeat(E(re.Gap), (int)E(re.Times), re.Count, re.Mirrored); break;
             case Statement.RepeatOver ro: repeatOver(E(ro.Duration), (int)E(ro.Times), ro.Count, ro.Mirrored); break;
-            case Statement.Insert ins: insert(ins.At); break;
             case Statement.Wait: Add(new MarkerEvent(time, MarkerEvent.Kind.Wait, 0)); break;
             case Statement.Jump j: Add(new MarkerEvent(time, MarkerEvent.Kind.Jump, E(j.Seconds))); break;
             case Statement.Loop lo: Add(new MarkerEvent(time, MarkerEvent.Kind.Loop, lo.From < 0 ? array.Count + lo.From : lo.From)); break;
@@ -169,18 +168,6 @@ public sealed class LevelBuilder
             move(xTo2, yTo2, xTo3 == -1),
             xTo3 != -1 ? move(xTo3, yTo3, true) : halt(1),
         ]);
-
-    /// <summary>Move the last event back to position j, at that event's time.</summary>
-    void insert(int j)
-    {
-        int at = j < 0 ? array.Count + j : j;
-        if (at < 0 || at >= array.Count)
-            throw new ArgumentException($"insert {j}: there are only {array.Count} events above this line.");
-        var last = array[^1];
-        last.Time = array[at].Time; // before removing it: insert -1 leaves it where it is
-        array.RemoveAt(array.Count - 1);
-        array.Insert(at, last);
-    }
 
     void ship(string type, double x, double y, ObjectCommand[]? commands = null) =>
         Add(new SpawnEvent(c, time, type, (float)(x * Playfield.GridX), (float)(y * Playfield.GridY), commands));

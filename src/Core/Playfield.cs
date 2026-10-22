@@ -69,8 +69,7 @@ public static class Speed
 
     /// <summary>
     /// A speed that grows with typing speed, perCps x cps, in single precision. It's worked out per WPM, as the
-    /// original did, so it rounds exactly as before: perCps x cps directly can differ in the last bit, and the
-    /// Classic levels would then drift.
+    /// original did, so it rounds exactly as before: perCps x cps directly can differ in the last bit.
     /// </summary>
     public static float Scaled(double perCps, double cps) => (float)(perCps / 12) * (float)ToWpm(cps);
 }

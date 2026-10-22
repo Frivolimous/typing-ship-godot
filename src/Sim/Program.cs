@@ -4,10 +4,9 @@ using TypingShip.Core.Data;
 using TypingShip.Core.Levels;
 
 // dotnet run --project src/Sim -- pacing [--check] [--out=folder] [--seed=N] [--level=N] [--bot-speed=80%] [--errors=3.5%]
-//   Plays every level of both level sets (the game's, data/levels, and Classic, data/levels/classic) at every
-//   difficulty with the perfect bot and writes:
-//     <folder>/pacing.csv      one row per set, level, difficulty and second (for charts and spreadsheets)
-//     <folder>/summary.csv     one row per set, level and difficulty, with demand as a share of the difficulty's speed
+//   Plays every level (data/levels) at every difficulty with the perfect bot and writes:
+//     <folder>/pacing.csv      one row per level, difficulty and second (for charts and spreadsheets)
+//     <folder>/summary.csv     one row per level and difficulty, with demand as a share of the difficulty's speed
 //     <folder>/lines.csv       the time (as on Hard) each line of each level file happens, like L42 -> 1:37
 //     <folder>/violations.csv  the pacing rules (data/pacing-rules.txt, docs/pacing-rules.md) each game level breaks
 //     <folder>/realistic.csv   how a bot at 80% of the speed, with typing mistakes, fares on each game level
@@ -38,15 +37,14 @@ var inv = CultureInfo.InvariantCulture;
 var rules = PacingRules.Parse(File.ReadAllText(Path.Combine(root, "data", PacingRules.FileName)),
     Path.Combine("data", PacingRules.FileName));
 
-var sets = new[] { data.Main, data.Classic };
+var sets = new[] { data.Main };
 var runs = sets.SelectMany(set => levels.SelectMany(level => Difficulty.Cps.Select(cps => (set, level, cps))))
     .AsParallel().AsOrdered()
-    .Select(x => (x.set, run: Pacing.Measure(data, art, x.level, x.cps, seed, classic: x.set == data.Classic, tail: rules.TailSeconds)))
+    .Select(x => (x.set, run: Pacing.Measure(data, art, x.level, x.cps, seed, tail: rules.TailSeconds)))
     .ToList();
-Pacing.Run ClassicOf(Pacing.Run r) => runs.First(x => x.set == data.Classic && x.run.Level == r.Level && x.run.Cps == r.Cps).run;
 
 // The rules, checked on the game's levels (the perfect bot's runs).
-var findings = runs.Where(x => x.set == data.Main).SelectMany(x => rules.Check(x.run, x.run.Level + 1)).ToList();
+var findings = runs.SelectMany(x => rules.Check(x.run, x.run.Level + 1)).ToList();
 
 // A bot closer to a real player, reported separately (the rules don't use it).
 double Share(string key, double fallback) => opts.TryGetValue(key, out var v)
@@ -79,15 +77,13 @@ using (var csv = new StreamWriter(Path.Combine(outDir, "pacing.csv")))
 using (var csv = new StreamWriter(Path.Combine(outDir, "summary.csv")))
 {
     csv.WriteLine("set,level,difficulty,wpm,cleared,seconds,last_spawn,average_seconds,total_chars,average_demand_wpm,peak_demand_wpm," +
-                  "average_ratio,peak_ratio,classic_average_ratio,classic_peak_ratio,peak_pressure,peak_pressure_at,peak_pressure_lines,ships,missed");
+                  "average_ratio,peak_ratio,peak_pressure,peak_pressure_at,peak_pressure_lines,ships,missed");
     foreach (var (set, r) in runs)
     {
-        var c = ClassicOf(r);
         csv.WriteLine(string.Join(",", set.Name, r.Level + 1, Difficulty.Name(r.Cps), Speed.ToWpm(r.Cps), r.Cleared ? "yes" : "no", r.Seconds,
             PacingRules.Time(Math.Max(0, r.LastSpawnSecond - 1)), r.AverageSeconds, r.TotalChars,
             Speed.ToWpm(r.AverageCps).ToString("0.0", inv), Speed.ToWpm(r.PeakCps).ToString("0.0", inv),
             r.AverageRatio.ToString("0.00", inv), r.PeakRatio.ToString("0.00", inv),
-            c.AverageRatio.ToString("0.00", inv), c.PeakRatio.ToString("0.00", inv),
             r.PeakPressure.Value.ToString("0.00", inv), PacingRules.Time(Math.Max(0, r.PeakPressure.Second - 1)),
             "\"" + string.Join(" ", r.PeakPressure.Second > 0 && r.PressureLines is { } pl ? pl[r.PeakPressure.Second - 1] : Array.Empty<int>()) + "\"",
             Field(r.Line, "ships"), Field(r.Line, "missed")));
@@ -164,15 +160,11 @@ File.WriteAllText(Path.Combine(outDir, "pacing.html"),
 
 Console.WriteLine($"Demand ÷ the difficulty's speed: average (start to last spawn + {rules.TailSeconds:0} s) and peak ({Pacing.Window} s window).");
 Console.WriteLine($"Press: peak pressure, the speed needed to stop every threat before it hits (÷ the difficulty's speed).");
-Console.WriteLine("Classic is the original pacing, converted to seconds on Hard.");
-Console.WriteLine($"{"",18}  {"Game levels",-36}  {"Classic",-29}");
-Console.WriteLine("Level  Difficulty  Time  Last spawn  Avg   Peak  Press    Time   Avg   Peak  Press");
-foreach (var (set, r) in runs.Where(x => x.set == data.Main))
+Console.WriteLine("Level  Difficulty  Time  Last spawn  Avg   Peak  Press");
+foreach (var (set, r) in runs)
 {
-    var c = ClassicOf(r);
     Console.WriteLine($"{r.Level + 1,5}  {Difficulty.Name(r.Cps),-10}  {PacingRules.Time(r.Seconds)}  {PacingRules.Time(Math.Max(0, r.LastSpawnSecond - 1)),10}" +
-                      $"  {r.AverageRatio,4:0.00}  {r.PeakRatio,5:0.00}  {r.PeakPressure.Value,5:0.00}    {PacingRules.Time(c.Seconds)}  {c.AverageRatio,4:0.00}  {c.PeakRatio,5:0.00}  {c.PeakPressure.Value,5:0.00}" +
-                      (r.Cleared ? "" : "   GAME LEVEL NOT CLEARED") + (c.Cleared ? "" : "   CLASSIC NOT CLEARED"));
+                      $"  {r.AverageRatio,4:0.00}  {r.PeakRatio,5:0.00}  {r.PeakPressure.Value,5:0.00}" + (r.Cleared ? "" : "   NOT CLEARED"));
 }
 Console.WriteLine($"Rules: {findings.Count(f => !f.Warning)} violations on the game's levels (pacing --check lists them). Realistic bot: " +
     $"{realistic.Count(o => !o.Cleared)} of {realistic.Count} runs lost.");

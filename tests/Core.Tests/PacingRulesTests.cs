@@ -162,17 +162,6 @@ public class PacingRulesTests
     }
 
     [Fact]
-    public void The_report_matches_the_spec_s_measurements_of_the_Classic_levels()
-    {
-        // docs/pacing-rules.md was written from the Hard runs of the original levels (seed 1). Two of its notes:
-        // level 10 spikes to about 1.69P at 1:10, and level 5's lull at 1:17 follows a bump that peaks at 0.77P.
-        var l10 = Rules.Check(Pacing.Measure(TestData.Data, TestData.Art, 9, Difficulty.Hard, 1, classic: true), 10);
-        Assert.Contains(l10, f => f.Rule == "peaks" && f.At == "1:10" && f.Message.StartsWith("peak 1.70P"));
-        var l5 = Rules.Check(Pacing.Measure(TestData.Data, TestData.Art, 4, Difficulty.Hard, 1, classic: true), 5);
-        Assert.Contains(l5, f => f.Rule == "earned" && f.At == "1:17" && f.Message.Contains("0.78P"));
-    }
-
-    [Fact]
     public void The_realistic_bot_mistypes_from_its_own_random_numbers()
     {
         // Same seed, same game; mistakes make the bot slower but don't change the level's random numbers.

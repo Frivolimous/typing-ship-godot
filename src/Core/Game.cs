@@ -74,9 +74,7 @@ public sealed partial class Game
         Player = new PlayerShip(this);
     }
 
-    /// <summary>Play the Classic levels (the original 12, a baseline during development) instead of the game's.</summary>
-    public bool Classic;
-    public LevelSet Set => Classic ? Data.Classic : Data.Main;
+    public LevelSet Set => Data.Main;
 
     /// <summary>The current level's context: the difficulty, and the level's pace and density.</summary>
     public LevelContext Context => Set.Context(Level, Rng, Tuning, Cps) with { PaceScale = PaceScale };

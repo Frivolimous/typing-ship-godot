@@ -33,12 +33,11 @@ public class LevelFormatTests
             stealth  6,7 6,0 shield
             ship lmt  3,0  move 3,3  halt 3.8  halt 2.5 fire  move 0,3
             repeat 0.55 7 1 mirrored
-            insert -4
             +0.8 offset  0,-2
             clone -2
             @1:10 boss 1
             """);
-        Assert.Equal(11, s.Statements.Count);
+        Assert.Equal(10, s.Statements.Count);
         var m = Assert.IsType<Statement.Missile>(s.Statements[0]);
         Assert.Equal(2, m.Line);
         Assert.Equal("sn", m.Type);
@@ -285,7 +284,6 @@ public class LevelFormatTests
         Assert.Equal(3, e.Line);
         Assert.Contains("only 0 events", e.Message);
         Assert.Contains("not a ship", Assert.Throws<DataError>(() => Build("boss 1\nmirror")).Message);
-        Assert.Contains("insert -5", Assert.Throws<DataError>(() => Build("laser sn  6,0\ninsert -5")).Message);
     }
 
     [Fact]
@@ -317,11 +315,11 @@ public class LevelFormatTests
     }
 
     [Fact]
-    public void Insert_moves_the_last_event_back()
+    public void Insert_was_removed_and_says_what_to_do_instead()
     {
-        var events = Build("@0:02 laser sn  0,1\n+2 laser sn  0,2\n+2 laser sn  0,3\nlaser sn  12,9\ninsert -3");
-        Assert.Equal(new[] { 1, 4, 2, 3 }, events.Select(e => e.Line).ToArray());
-        Assert.Equal(events[2].Time, events[1].Time); // it takes the place (and time) of the one it went before
+        var e = Assert.Throws<DataError>(() => Build("laser sn  0,1\n+2 laser sn  12,9\ninsert -2"));
+        Assert.Equal(3, e.Line);
+        Assert.Contains("@m:ss", e.Message);
     }
 
     [Fact]
@@ -346,7 +344,6 @@ public class LevelFormatTests
     public void Every_real_level_and_boss_section_loads()
     {
         Assert.Equal(GameData.LevelCount, TestData.Data.Main.Levels.Count);
-        Assert.Equal(GameData.LevelCount, TestData.Data.Classic.Levels.Count);
         Assert.Equal(4, TestData.Data.Main.BossScripts.Count);
     }
 

@@ -36,10 +36,10 @@ public static class Pressure
     const float Left = Playfield.VisibleLeft, Right = Playfield.VisibleRight, Top = Playfield.VisibleTop, Bottom = Playfield.VisibleBottom;
 
     /// <summary>Plays the level untouched and lists every threat that hit.</summary>
-    public static List<Threat> Collect(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1, bool classic = false,
+    public static List<Threat> Collect(GameData data, ArtLibrary art, int level, double cps, ulong seed = 1,
         int maxSeconds = 600)
     {
-        var game = new Game(data, new Rng(seed), art) { Cps = cps, Classic = classic, Invincible = true };
+        var game = new Game(data, new Rng(seed), art) { Cps = cps, Invincible = true };
         game.TutOff();
         var seen = new Dictionary<Sprite, (double Appear, int Letters)>();
         var threats = new List<Threat>();

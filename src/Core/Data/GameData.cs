@@ -58,21 +58,18 @@ public sealed class GameData
     public Tuning Tuning { get; }
     /// <summary>The game's levels, data/levels/.</summary>
     public LevelSet Main { get; }
-    /// <summary>The original 12 levels as they were, data/levels/classic/: a baseline during development, removed before release.</summary>
-    public LevelSet Classic { get; }
     /// <summary>levels/endless.txt: endless mode's waves.</summary>
     public IReadOnlyList<EndlessWave> EndlessWaves { get; }
     public const string EndlessFile = "levels/endless.txt";
     /// <summary>typing-test.txt: the typing test's passages.</summary>
     public IReadOnlyList<string> TestPassages { get; }
 
-    GameData(string words, Tuning tuning, LevelSet main, LevelSet classic, IReadOnlyList<string> passages, IReadOnlyList<EndlessWave> endless)
+    GameData(string words, Tuning tuning, LevelSet main, IReadOnlyList<string> passages, IReadOnlyList<EndlessWave> endless)
     {
         EndlessWaves = endless;
         Words = words;
         Tuning = tuning;
         Main = main;
-        Classic = classic;
         TestPassages = passages;
     }
 
@@ -82,23 +79,21 @@ public sealed class GameData
 
         var tuning = Tuning.Parse(Need("tuning.txt"), "tuning.txt");
         var data = new GameData(Need("words.txt"), tuning,
-            LevelSet.Load("main", "levels", Need), LevelSet.Load("classic", "levels/classic", Need),
+            LevelSet.Load("main", "levels", Need),
             TypingTestRun.ParsePassages(Need(TestFile), TestFile), EndlessWave.Parse(Need(EndlessFile), EndlessFile));
         data.Main.Check(tuning);
-        data.Classic.Check(tuning);
         EndlessWave.Check(data.EndlessWaves, tuning);
         return data;
     }
 }
 
 /// <summary>
-/// Twelve level files and their bosses.txt, in one folder: the game's levels (data/levels/) or the Classic ones
-/// (data/levels/classic/).
+/// Twelve level files and their bosses.txt, in one folder: the game's levels (data/levels/).
 /// </summary>
 public sealed class LevelSet
 {
     public string Name { get; }
-    /// <summary>The folder inside data/, e.g. "levels/classic".</summary>
+    /// <summary>The folder inside data/, e.g. "levels".</summary>
     public string Folder { get; }
     public IReadOnlyList<LevelScript> Levels { get; }
     /// <summary>bosses.txt: "[boss N escorts]" (sent in during the fight) and "[boss 1 hangar]" (boss 1's ships).</summary>

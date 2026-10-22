@@ -84,12 +84,11 @@ public abstract record Statement(int Line)
     public sealed record Repeat(int Line, Num Gap, Num Times, int Count, bool Mirrored) : Statement(Line);
     /// <summary>Copies spread evenly over Duration seconds: the last one comes Duration after the line above.</summary>
     public sealed record RepeatOver(int Line, Num Duration, Num Times, int Count, bool Mirrored) : Statement(Line);
-    public sealed record Insert(int Line, int At) : Statement(Line);
     public sealed record Wait(int Line, Timing When) : Statement(Line);
     public sealed record Jump(int Line, Timing When, Num Seconds) : Statement(Line);
     public sealed record Loop(int Line, Timing When, int From) : Statement(Line);
 
-    /// <summary>The line's timing, for lines that happen at a moment (not repeat or insert).</summary>
+    /// <summary>The line's timing, for lines that happen at a moment (not repeat).</summary>
     public Timing? Moment => this switch
     {
         Missile m => m.When, Laser l => l.When, Suicide s => s.When, Stealth s => s.When, Ship s => s.When, Boss b => b.When,
@@ -121,7 +120,7 @@ public sealed class LevelScript
 
     public static readonly string[] Commands =
     {
-        "missile", "laser", "suicide", "stealth", "ship", "boss", "mirror", "clone", "offset", "repeat", "repeat_over", "insert", "wait", "jump", "loop",
+        "missile", "laser", "suicide", "stealth", "ship", "boss", "mirror", "clone", "offset", "repeat", "repeat_over", "wait", "jump", "loop",
     };
 
     // Words that were part of the format before the time-based rewrite, with what to do instead.
@@ -129,8 +128,9 @@ public sealed class LevelScript
     {
         ["pace"] = "Levels no longer need a pace line: timing is in seconds and the same at every difficulty. Delete the line.",
         ["duration"] = "A level's length is now its content (the last @ time plus that wave). Delete the line.",
-        ["density"] = "density was removed; the other difficulties are worked out later from Hard. Delete the line.",
+        ["density"] = "density was removed; thin or fill the other difficulties with difficulty tags (normal+:) and five-value numbers. Delete the line.",
         ["only"] = "Difficulty blocks (only ...) were removed. Delete the line; use a per-difficulty header constant if you need one.",
+        ["insert"] = "insert was removed: to bring a ship in with an earlier wave, give it that wave's time (@m:ss waves can overlap).",
     };
 
     static readonly Dictionary<string, string> Usage = new()
@@ -146,7 +146,6 @@ public sealed class LevelScript
         ["offset"] = "[@M:SS | +GAP] offset  X,Y [BACK]   e.g. +0.8 offset  0,-2",
         ["repeat"] = "repeat GAP [TIMES [SHIPS [mirrored]]]   e.g. repeat 0.55 7 1 mirrored (GAP in seconds)",
         ["repeat_over"] = "repeat_over SECONDS TIMES [SHIPS [mirrored]]   e.g. repeat_over 4.5 9 1 mirrored (the last copy SECONDS after the line above)",
-        ["insert"] = "insert POSITION   e.g. insert -4",
         ["wait"] = "@M:SS wait   or   +GAP wait",
         ["jump"] = "[@M:SS | +GAP] jump SECONDS",
         ["loop"] = "[@M:SS | +GAP] loop [FROM]",
@@ -328,7 +327,6 @@ public sealed class LevelScript
                 p.Number("number of times"),
                 p.More ? p.Int("number of ships to repeat", 1, 1000) : 1,
                 p.More && p.Word("mirrored")),
-            "insert" => new Statement.Insert(lineNo, p.Int("position", -10000, 10000)),
             "wait" => new Statement.Wait(lineNo, when),
             "jump" => new Statement.Jump(lineNo, when, p.Number("seconds to skip")),
             "loop" => new Statement.Loop(lineNo, when, p.More ? p.Int("event to loop from", -10000, 10000) : 0),
