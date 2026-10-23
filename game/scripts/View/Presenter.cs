@@ -199,8 +199,8 @@ public sealed class Presenter : IGameEvents
 
     public void LevelClearing()
     {
-        if (G.Model.Boss != null) new Banner("BOSS DESTROYED", "MISSION COMPLETE", new Color(0.45f, 1, 0.65f), 2.2f, delay: 1.6f);
-        else new Banner("MISSION COMPLETE", "ALL TARGETS DOWN", new Color(0.45f, 1, 0.65f), 1.6f);
+        if (G.Model.Boss != null) new Banner("BOSS DESTROYED", "MISSION COMPLETE", Kit.Good, 2.2f, delay: 1.6f);
+        else new Banner("MISSION COMPLETE", "ALL TARGETS DOWN", Kit.Good, 1.6f);
     }
 
     public void LevelOver(bool cleared) => LevelFinished?.Invoke(cleared);

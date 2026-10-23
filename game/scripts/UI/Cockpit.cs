@@ -35,10 +35,13 @@ public partial class Cockpit : Node2D
 
     static Vector2[] Corners(Rect2 r) => new[] { r.Position, new Vector2(r.End.X, r.Position.Y), r.End, new Vector2(r.Position.X, r.End.Y) };
 
-    // The palette follows the player's ship, toned down: muted brass lines, red trim, dark bronze, and cool text (Ink)
-    // so readouts stand apart from the warm explosions. Kit (the menus) shares it.
-    public static readonly Color Rim = new(0.88f, 0.72f, 0.45f), Trim = new(0.78f, 0.2f, 0.15f),
-        Steel = new(0.24f, 0.17f, 0.1f), Deep = new(0.07f, 0.045f, 0.03f), Glass = new(0.035f, 0.02f, 0.012f, 0.95f);
+    // The palette: navy steel panels with brass lines (the player's ship's gold), and cyan for readouts and the screens'
+    // glass, so the warm ship, flames and explosions stand out against a cool frame. Red only means danger (Alarm).
+    // Kit (the menus) shares it.
+    public static readonly Color Rim = new(0.88f, 0.72f, 0.45f), Accent = new("34d0f0"),
+        // Thin highlights (the hull's bevel, the glass's sheen, the panels' top edges).
+        Highlight = Accent,
+        Steel = new(0.12f, 0.16f, 0.25f), Deep = new(0.03f, 0.045f, 0.08f), Glass = new(0.012f, 0.03f, 0.06f, 0.95f);
     static readonly Color Alarm = new(1, 0.2f, 0.15f);
 
     float time;
@@ -58,15 +61,15 @@ public partial class Cockpit : Node2D
         DrawPolygon(hull.ToArray(), shades);
 
         // A bevel and two seams following the edge.
-        DrawPolyline(Offset(Edge, 5), new Color(0.55f, 0.4f, 0.2f, 0.6f), 1.5f, true);
+        DrawPolyline(Offset(Edge, 5), new Color(Highlight, 0.75f), 1.5f, true);
         DrawPolyline(Offset(Edge, 22), new Color(0, 0, 0, 0.45f), 2, true);
-        DrawPolyline(Offset(Edge, 21), new Color(Trim, 0.4f), 1, true);
+        DrawPolyline(Offset(Edge, 21), new Color(Rim, 0.25f), 1, true);
         foreach (float x in new[] { 70f, 480f })
             DrawLine(new Vector2(x, TopAt(x) + 22), new Vector2(x, 450), new Color(0, 0, 0, 0.45f), 1);
         for (float x = 16; x < G.StageSize; x += 36)
         {
             if (x > 150 && x < 400) continue; // the console's slopes
-            DrawCircle(new Vector2(x, TopAt(x) + 13), 1.2f, new Color(0.7f, 0.52f, 0.28f, 0.7f));
+            DrawCircle(new Vector2(x, TopAt(x) + 13), 1.2f, new Color(0.55f, 0.65f, 0.8f, 0.7f));
         }
 
         // The rim lights up gold, or pulses red while the hull is down to its last point.
@@ -89,8 +92,8 @@ public partial class Cockpit : Node2D
 
         // Indicator lights, blinking out of step.
         Light(new Vector2(146, 504), 0.0f, Rim);
-        Light(new Vector2(154, 504), 0.4f, Trim);
-        Light(new Vector2(396, 504), 0.7f, Trim);
+        Light(new Vector2(154, 504), 0.4f, Accent);
+        Light(new Vector2(396, 504), 0.7f, Accent);
         Light(new Vector2(404, 504), 0.2f, critical ? Alarm : Rim);
     }
 
@@ -101,7 +104,7 @@ public partial class Cockpit : Node2D
         DrawPolyline(closed, new Color(0, 0, 0, 0.6f), 4);
         DrawColoredPolygon(corners, Glass);
         DrawPolyline(closed, new Color(Rim, 0.35f), 1, true);
-        DrawLine(corners[0] + new Vector2(2, 2), corners[1] + new Vector2(-2, 2), new Color(Rim, 0.12f), 2, true);
+        DrawLine(corners[0] + new Vector2(2, 2), corners[1] + new Vector2(-2, 2), new Color(Highlight, 0.4f), 2, true); // the glass's sheen
     }
 
     void Light(Vector2 at, float phase, Color c)
@@ -145,7 +148,7 @@ public partial class Cockpit : Node2D
 public partial class TypedDisplay : Node2D
 {
     const int FontSize = 12;
-    public static readonly Color Ink = new(0.72f, 0.92f, 1), Danger = new(1, 0.3f, 0.25f);
+    public static readonly Color Ink = Cockpit.Accent, Danger = new(1, 0.3f, 0.25f);
     string shown = "";
     float time;
 

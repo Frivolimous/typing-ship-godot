@@ -7,7 +7,7 @@ namespace TypingShip;
 public partial class Shell : Control, IViewTicker
 {
     /// <summary>The fade between screens: a deep blue-black (white is kept for launching into a level).</summary>
-    public static readonly Color Dark = new(0.035f, 0.018f, 0.01f);
+    public static readonly Color Dark = new(0.01f, 0.02f, 0.04f);
 
     public MenuUI Menu = null!;
     public ScoreUI Score = null!;

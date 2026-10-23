@@ -71,10 +71,12 @@ public partial class GameUI : Control
     }
 }
 
-/// <summary>The score screen: the score counts up to its value, and pulses green as points come in (red as they go).</summary>
+/// <summary>The score screen: the score counts up to its value, and pulses white as points come in (red as they go).</summary>
 public partial class ScoreReadout : Node2D
 {
-    static readonly Color Gain = new(0.45f, 1, 0.65f), Loss = new(1, 0.35f, 0.3f);
+    // Bright, saturated colours, so the number reads at a glance: green at rest, flashing white as points come in and
+    // red as they go.
+    static readonly Color Resting = Kit.Good, Gain = Colors.White, Loss = new("ff4d4d");
     readonly Label caption = new()
     {
         Text = "SCORE",
@@ -117,7 +119,7 @@ public partial class ScoreReadout : Node2D
 
         number.Text = ((int)Mathf.Round(shown)).ToString();
         number.Scale = Vector2.One * (1 + 0.15f * pulse);
-        number.Modulate = Colors.White.Lerp(flash, pulse);
+        number.Modulate = Resting.Lerp(flash, pulse);
     }
 }
 
@@ -136,9 +138,11 @@ public partial class ProgressReadout : Node2D
         Position = new Vector2(8, 15),
         Size = new Vector2(116, 24),
         HorizontalAlignment = HorizontalAlignment.Right,
-        LabelSettings = Fonts.Settings(Fonts.HudBold, 15, Colors.White, 3, new Color(0, 0, 0, 0.6f)),
+        LabelSettings = Fonts.Settings(Fonts.HudBold, 15, Bright, 3, new Color(0, 0, 0, 0.6f)),
         MouseFilter = Control.MouseFilterEnum.Ignore,
     };
+    // The cockpit's teal accent, for the number and its bar.
+    static readonly Color Bright = Cockpit.Accent;
     float fraction;
 
     public ProgressReadout()
@@ -168,8 +172,8 @@ public partial class ProgressReadout : Node2D
     public override void _Draw()
     {
         var bar = new Rect2(8, 40, 116, 4);
-        DrawRect(bar, new Color(Cockpit.Rim, 0.15f));
-        DrawRect(new Rect2(bar.Position, new Vector2(bar.Size.X * fraction, bar.Size.Y)), new Color(Cockpit.Rim, 0.85f));
+        DrawRect(bar, new Color(Bright, 0.15f));
+        DrawRect(new Rect2(bar.Position, new Vector2(bar.Size.X * fraction, bar.Size.Y)), Bright);
     }
 }
 
@@ -178,7 +182,7 @@ public partial class HullBar : Node2D
 {
     const float FlickerTime = 0.6f;
     const float Width = 226, PipTop = 28, PipHeight = 9, Gap = 5, Margin = 10;
-    static readonly Color Full = new(0.4f, 1, 0.7f), Worn = new(1, 0.75f, 0.2f), Critical = new(1, 0.25f, 0.2f);
+    static readonly Color Full = Kit.Good, Worn = new(1, 0.75f, 0.2f), Critical = new(1, 0.25f, 0.2f);
     static readonly Color Hurt = new(1, 0.35f, 0.35f);
 
     // The repair word, shown above the pips while the hull is damaged.

@@ -754,7 +754,7 @@ public partial class PauseUI : Control
             Position = new Vector2(Panel.Position.X, 188),
             Size = new Vector2(Panel.Size.X, 40),
             LabelSettings = Fonts.Settings(new FontVariation { BaseFont = Fonts.HudBold, SpacingGlyph = 5 }, 28, Colors.White, 5,
-                new Color(Cockpit.Trim, 0.45f)),
+                new Color(Cockpit.Accent, 0.35f)),
             MouseFilter = MouseFilterEnum.Ignore,
         });
         AddChild(new Label
@@ -794,7 +794,7 @@ public partial class PauseUI : Control
         DrawRect(Panel.Grow(3), new Color(0, 0, 0, 0.5f));
         DrawRect(Panel, Kit.Fill);
         DrawRect(Panel, new Color(Cockpit.Rim, 0.5f), false, 1.5f);
-        DrawLine(Panel.Position + new Vector2(3, 3), new Vector2(Panel.End.X - 3, Panel.Position.Y + 3), new Color(Cockpit.Rim, 0.15f), 2);
+        DrawLine(Panel.Position + new Vector2(3, 3), new Vector2(Panel.End.X - 3, Panel.Position.Y + 3), new Color(Cockpit.Highlight, 0.35f), 2);
     }
 
     public void Show(bool b)

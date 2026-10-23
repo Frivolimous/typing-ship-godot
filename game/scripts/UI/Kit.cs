@@ -3,13 +3,13 @@ using Godot;
 namespace TypingShip;
 
 /// <summary>
-/// The look shared by every screen outside a level, matching the cockpit (and the player's ship): dark bronze chamfered
-/// panels with a lit gold rim and red trim, Orbitron for titles and labels, and the difficulty colours.
+/// The look shared by every screen outside a level, matching the cockpit (and the player's ship): navy chamfered panels
+/// with a brass rim and cyan accents, Orbitron for titles and labels, and the difficulty colours.
 /// </summary>
 public static class Kit
 {
-    public static readonly Color Rim = Cockpit.Rim, Trim = Cockpit.Trim, Fill = new(0.035f, 0.02f, 0.012f, 0.92f),
-        Ink = new(0.88f, 0.94f, 1), Good = new(0.45f, 1, 0.65f), Bad = new(1, 0.35f, 0.3f);
+    public static readonly Color Rim = Cockpit.Rim, Accent = Cockpit.Accent, Highlight = Cockpit.Highlight, Fill = new(0.012f, 0.025f, 0.055f, 0.92f),
+        Ink = new(0.88f, 0.94f, 1), Good = new("3df58a"), Bad = new(1, 0.35f, 0.3f);
 
     /// <summary>The ship's bright gold, kept for START GAME.</summary>
     public static readonly Color Gold = new(1, 0.8f, 0.3f);
@@ -18,7 +18,7 @@ public static class Kit
     public static readonly Color Locked = new(0.55f, 0.48f, 0.4f), Unearned = new(0.36f, 0.31f, 0.26f);
 
     /// <summary>What dims the screen behind a box (add an alpha).</summary>
-    public static readonly Color Shade = new(0.03f, 0.015f, 0.005f);
+    public static readonly Color Shade = new(0, 0.01f, 0.03f);
 
     /// <summary>Easy, Normal, Hard, Extreme, Insane.</summary>
     public static readonly Color[] DiffColours =
@@ -40,10 +40,10 @@ public static class Kit
     /// <summary>A dark brass edge for title-style text that shouldn't look like a warning (scores, a win).</summary>
     public static readonly Color BrassEdge = new(0.32f, 0.22f, 0.1f, 0.85f);
 
-    /// <summary>Title text: spaced Orbitron with a thick edge (faint red by default, or <paramref name="edge"/>).</summary>
+    /// <summary>Title text: spaced Orbitron with a thick edge (faint cyan by default, or <paramref name="edge"/>).</summary>
     public static LabelSettings Title(int size, Color? colour = null, Color? edge = null) =>
         Fonts.Settings(Spaced(Fonts.HudBold, Math.Max(2, size / 7)), size, colour ?? Colors.White, Math.Max(4, size / 5),
-            edge ?? new Color(Trim, 0.3f));
+            edge ?? new Color(Accent, 0.25f));
 
     public static LabelSettings Caption(int size = 8, Color? colour = null) => Fonts.Settings(Fonts.Hud, size, colour ?? new Color(Rim, 0.85f));
 
@@ -94,7 +94,7 @@ public static class Kit
         ci.DrawPolyline(closed, new Color(0, 0, 0, 0.55f), 5);
         ci.DrawColoredPolygon(pts, Fill);
         ci.DrawPolyline(closed, new Color(Rim, glow), 1.5f, true);
-        ci.DrawLine(pts[0] + new Vector2(2, 3), pts[1] + new Vector2(-3, 3), new Color(Rim, 0.12f), 2);
+        ci.DrawLine(pts[0] + new Vector2(2, 3), pts[1] + new Vector2(-3, 3), new Color(Highlight, 0.35f), 2);
         if (accent is { } a)
             ci.DrawColoredPolygon(new[]
             {

@@ -283,9 +283,9 @@ public partial class MapUI : Control
     {
         // The chart's grid, fading out towards the edges.
         for (float x = 25; x < G.StageSize; x += 50)
-            DrawLine(new Vector2(x, 60), new Vector2(x, 490), new Color(Kit.Rim, 0.05f), 1);
+            DrawLine(new Vector2(x, 60), new Vector2(x, 490), new Color(Kit.Highlight, 0.08f), 1);
         for (float y = 75; y < 500; y += 50)
-            DrawLine(new Vector2(0, y), new Vector2(G.StageSize, y), new Color(Kit.Rim, 0.05f), 1);
+            DrawLine(new Vector2(0, y), new Vector2(G.StageSize, y), new Color(Kit.Highlight, 0.08f), 1);
 
         // The route: dim where it's still locked, lit as far as you've reached.
         for (int i = 1; i < route.Length; i++)

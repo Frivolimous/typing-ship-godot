@@ -150,7 +150,7 @@ public partial class EmpEffect : BeamFx
 // get bigger numbers.
 public partial class PopScore : Node2D, IViewTicker
 {
-    static readonly Color Gain = new(0.45f, 1, 0.65f), Loss = new(1, 0.35f, 0.3f);
+    static readonly Color Gain = Kit.Good, Loss = Kit.Bad;
     readonly float rate;
     float pop = 1;
 

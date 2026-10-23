@@ -173,10 +173,10 @@ public partial class SidePanels : Node2D
     public override void _Draw()
     {
         const float s = G.StageSize, w = 2000;
-        var panel = new Color(0x0a0604ff);
+        var panel = new Color(0x04070eff);
         DrawRect(new Rect2(-w, -w, w, s + 2 * w), panel);
         DrawRect(new Rect2(s, -w, w, s + 2 * w), panel);
-        var edge = new Color(Kit.Rim, 0.35f);
+        var edge = new Color(Kit.Highlight, 0.6f);
         DrawLine(new Vector2(-1, 0), new Vector2(-1, s), edge, 2);
         DrawLine(new Vector2(s + 1, 0), new Vector2(s + 1, s), edge, 2);
     }

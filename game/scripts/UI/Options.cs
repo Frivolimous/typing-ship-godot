@@ -223,10 +223,10 @@ public partial class OptionRow : Control
         }
         float v = value!();
         var bar = new Rect2(BarLeft, H / 2 - 3, BarWidth, 6);
-        DrawRect(bar, new Color(Kit.Rim, 0.15f));
-        DrawRect(new Rect2(bar.Position, new Vector2(BarWidth * v, bar.Size.Y)), new Color(Kit.Rim, 0.9f));
+        DrawRect(bar, new Color(Kit.Accent, 0.15f));
+        DrawRect(new Rect2(bar.Position, new Vector2(BarWidth * v, bar.Size.Y)), new Color(Kit.Accent, 0.9f));
         var knob = new Vector2(BarLeft + BarWidth * v, H / 2);
-        DrawCircle(knob, 7, new Color(Kit.Rim, 0.25f));
+        DrawCircle(knob, 7, new Color(Kit.Accent, 0.25f));
         DrawCircle(knob, 4.5f, Colors.White);
     }
 }
