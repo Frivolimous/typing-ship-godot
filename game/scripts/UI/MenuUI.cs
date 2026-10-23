@@ -406,7 +406,8 @@ public partial class LevelButton : Control
     public bool Unlocked { get; private set; }
     readonly Action<LevelButton> click;
     readonly string name;
-    readonly Texture2D? boss;
+    readonly string? bossArt;
+    Texture2D? boss => bossArt == null ? null : Sprites.BossLook(bossArt); // the art set may change
     readonly Label healthT, targetT;
     int diff = -1, healthMedal, targetMedal;
     bool hover;
@@ -420,7 +421,7 @@ public partial class LevelButton : Control
         this.name = name;
         Word = name.ToLowerInvariant();
         click = onClick;
-        if ((index + 1) % 4 == 0) boss = Sprites.Named(Boss.Arts[(index + 1) / 4 - 1]);
+        if ((index + 1) % 4 == 0) bossArt = Boss.Arts[(index + 1) / 4 - 1];
         MouseFilter = MouseFilterEnum.Stop;
         Size = new Vector2(1, 1); // hits are tested against the ring (_HasPoint)
         healthT = Kit.Label(this, Strings.Health, Kit.Caption(7, Colors.White), -60, 0, 50, HorizontalAlignment.Right);

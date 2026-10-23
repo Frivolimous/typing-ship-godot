@@ -383,7 +383,7 @@ public partial class EnemyShipView : SpriteView
         }
         if (ship.Turret != null)
         {
-            turret = new TurretView(ship.Turret);
+            turret = new TurretView(ship.Turret, Sprites.Turrets[look.Art]);
             AddChild(turret);
         }
         SyncShield();
@@ -438,14 +438,14 @@ public partial class TurretView : Node2D
     readonly Turret turret;
     public readonly WordLabel Word = new();
 
-    public TurretView(Turret turret)
+    public TurretView(Turret turret, Texture2D art)
     {
         this.turret = turret;
         Name = "Turret";
         Position = G.V(turret.Position);
         AddChild(new Sprite2D
         {
-            Texture = Sprites.Turret,
+            Texture = art,
             Centered = false,
             Offset = -Sprites.TurretPivot,
             Scale = new Vector2(Sprites.AiScale, Sprites.AiScale),
@@ -454,7 +454,7 @@ public partial class TurretView : Node2D
         Sync();
     }
 
-    public TurretView() : this(null!) { }
+    public TurretView() : this(null!, null!) { }
 
     public void Sync()
     {
@@ -526,10 +526,12 @@ public partial class BossView : SpriteView
     readonly BossBeam? beam;
     float glow, open;
 
-    public BossView(Boss boss) : base(boss, new[] { Sprites.Named(boss.Art) }, boss.SpriteScale, artPointsUp: false)
+    public BossView(Boss boss) : base(boss, new[] { Sprites.BossLook(boss.Art) }, LookScale(boss), artPointsUp: false)
     {
         this.boss = boss;
         View.Material = glowMaterial;
+        // The shader's regions are in the original art's pixels, whatever size the drawn copy is.
+        glowMaterial.SetShaderParameter("art_size", Sprites.Named(boss.Art).GetSize());
         if (boss.Index == 0)
         {
             // The hangar doors sit in the game view, over the boss and the ships launched from inside.
@@ -553,6 +555,9 @@ public partial class BossView : SpriteView
     }
 
     public BossView() : this(null!) { }
+
+    /// <summary>The drawn art's scale: an art set's copy of the boss is drawn at the original's size.</summary>
+    static float LookScale(Boss boss) => boss.SpriteScale * Sprites.Named(boss.Art).GetWidth() / Sprites.BossLook(boss.Art).GetWidth();
 
     public override void Sync()
     {
@@ -695,11 +700,13 @@ static class BossShaders
             // A region (texture pixels: left, top, right, bottom) whose cyan dims to a fifth at power 0.
             uniform vec4 cannon = vec4(0.0);
             uniform float cannon_power = 1.0;
+            // The original art's size: pips and cannon are in its pixels, so a rescaled copy lights in the same places.
+            uniform vec2 art_size = vec2(1.0);
             void fragment() {
                 vec4 c = COLOR;
                 // Only the bright, saturated cyan lights: boss 2's teal hull stays put.
                 float cyan = smoothstep(0.35, 0.6, min(c.g, c.b) - c.r);
-                vec2 px = UV / TEXTURE_PIXEL_SIZE;
+                vec2 px = UV * art_size;
                 bool inCannon = px.x >= cannon.x && px.x <= cannon.z && px.y >= cannon.y && px.y <= cannon.w;
                 if (inCannon) c.rgb = mix(c.rgb, c.rgb * mix(0.2, 1.0, cannon_power), cyan);
                 c.rgb += glow * cyan * vec3(0.45, 0.85, 1.0);

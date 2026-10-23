@@ -16,7 +16,8 @@ public static class Sprites
     // The ships, missiles, turret and medals come from an art set: a folder under assets/sprites with a player.png
     // ("ai", "custom", ...), chosen in the options, with F2, or with --art=NAME. Art a set doesn't have is borrowed
     // from "ai", so a half-finished set still plays. Flames and charge points are per set (data/mounts.txt). The
-    // bosses always use "ai": their art shapes the rules (gun ports, hangars, where the scanner lands).
+    // rules always measure the "ai" bosses (gun ports, hangars, where the scanner lands); a set's boss art is only
+    // drawn in their place (BossLook).
 
     public const string DefaultSet = "ai";
     const string Root = "res://assets/sprites";
@@ -56,6 +57,9 @@ public static class Sprites
     /// <summary>A sprite from the current set, or from "ai" if the set hasn't got it.</summary>
     static Texture2D A(string name) => ResourceLoader.Exists($"{Root}/{ArtSet}/{name}.png") ? T($"{ArtSet}/{name}") : T($"{DefaultSet}/{name}");
 
+    /// <summary>A sprite only if the current set has it.</summary>
+    static Texture2D? Own(string name) => ResourceLoader.Exists($"{Root}/{ArtSet}/{name}.png") ? T($"{ArtSet}/{name}") : null;
+
     static Sprites() => LoadArt();
 
     static void LoadArt()
@@ -70,6 +74,13 @@ public static class Sprites
         PMissile = new[] { A("projectile_blue") };
         EMissile = new[] { A("projectile_red") };
         Turret = A("turret");
+        // A set may give the missile ships (turret_m) and laser ships (turret_l) turrets of their own.
+        Turrets = Enumerable.Range(0, Enemy.Length).Select(art => art switch
+        {
+            0 or 3 or 6 => Own("turret_m") ?? Turret,
+            1 or 4 or 7 => Own("turret_l") ?? Turret,
+            _ => Turret,
+        }).ToArray();
         Achieve = new[] { A("medal_locked"), A("medal_bronze"), A("medal_silver"), A("medal_gold") };
     }
 
@@ -79,6 +90,8 @@ public static class Sprites
     public static Texture2D[] EMissile { get; private set; } = null!;
     /// <summary>Points right, with the pivot at the centre of its round base (texture pixels from the top left).</summary>
     public static Texture2D Turret { get; private set; } = null!;
+    /// <summary>The turret for each enemy art (as <see cref="Enemy"/>): Turret, or the set's missile or laser turret.</summary>
+    public static Texture2D[] Turrets { get; private set; } = null!;
     /// <summary>Medals by tier (0 = not earned yet: a dark, locked medal). The art is twice its usual on-screen size.</summary>
     public static Texture2D[] Achieve { get; private set; } = null!;
 
@@ -90,6 +103,12 @@ public static class Sprites
 
     /// <summary>A sprite by its path under assets/sprites, as the rules name boss art ("ai/boss0").</summary>
     public static Texture2D Named(string name) => named.TryGetValue(name, out var t) ? t : named[name] = T(name);
+
+    /// <summary>
+    /// How a boss looks: the current set's own copy of its art ("custom/boss0" for "ai/boss0"), or the art itself. A
+    /// set's copy must be the same picture at any size; the rules keep using the original.
+    /// </summary>
+    public static Texture2D BossLook(string art) => Own(art[(art.IndexOf('/') + 1)..]) ?? Named(art);
 
     /// <summary>Which pixels of a sprite are visible, for the rules (the boss scanner lands on visible pixels).</summary>
     public static ArtMask Mask(string name)
