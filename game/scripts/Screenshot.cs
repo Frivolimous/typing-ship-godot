@@ -31,7 +31,16 @@ public static class Screenshot
             }
             await owner.ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
             var file = frames.Count == 1 ? path : path.Replace(".png", $"_{target}.png");
-            owner.GetViewport().GetTexture().GetImage().SavePng(file);
+            var viewport = owner.GetViewport();
+            var image = viewport.GetTexture().GetImage();
+            // With HDR 2D the viewport holds linear colour; convert it, or the file comes out darker and more saturated
+            // than the screen.
+            if (viewport.UseHdr2D)
+            {
+                image.Convert(Image.Format.Rgba8);
+                image.LinearToSrgb();
+            }
+            image.SavePng(file);
             GD.Print($"Screenshot saved: {file}");
         }
         tree.Quit();

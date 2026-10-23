@@ -11,7 +11,7 @@ public static class Kit
     public static readonly Color Rim = Cockpit.Rim, Trim = Cockpit.Trim, Fill = new(0.035f, 0.02f, 0.012f, 0.92f),
         Ink = new(0.88f, 0.94f, 1), Good = new(0.45f, 1, 0.65f), Bad = new(1, 0.35f, 0.3f);
 
-    /// <summary>The ship's bright gold, kept for the game's name and START GAME.</summary>
+    /// <summary>The ship's bright gold, kept for START GAME.</summary>
     public static readonly Color Gold = new(1, 0.8f, 0.3f);
 
     /// <summary>Locked or unavailable things (outlines, text), and the tint for art not earned yet.</summary>

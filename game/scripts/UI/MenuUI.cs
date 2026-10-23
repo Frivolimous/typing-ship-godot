@@ -24,13 +24,23 @@ public partial class MenuUI : Screen
     {
         AddChild(Map);
 
-        // The title: two lines, a rule and a tagline.
+        // The logo (assets/ui/logo.png, drawn by Jeremy in a vector editor; source in art/logo.png): the name and the
+        // tagline, trimmed to its edges.
         AddChild(title);
-        Kit.Label(title, "MILLENNIUM", Kit.Title(34), 0, 52, G.StageSize, HorizontalAlignment.Center);
-        // TYPER in the ship's bright gold, its red pushed past 1 so it blooms without turning lemon; the rest of the UI uses the muted brass.
-        Kit.Label(title, "TYPER", Kit.Title(58, new Color(1.3f, 0.89f, 0.3f)), 0, 90, G.StageSize, HorizontalAlignment.Center);
-        Kit.Label(title, "TYPE  ·  TARGET  ·  FIRE", Kit.Caption(9), 0, 172, G.StageSize, HorizontalAlignment.Center);
-        title.Draw += () => Kit.Rule(title, new Vector2(150, 166), new Vector2(400, 166), Kit.Gold);
+        var logo = GD.Load<Texture2D>("res://assets/ui/logo.png");
+        const float logoWidth = 440;
+        float logoHeight = logoWidth * logo.GetHeight() / logo.GetWidth();
+        title.AddChild(new TextureRect
+        {
+            Texture = logo,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            // Centred on the lettering: the R's tail runs out to the right, so the image's middle is 2% right of it.
+            Position = new Vector2((G.StageSize - logoWidth) / 2 + 0.022f * logoWidth, 40),
+            Size = new Vector2(logoWidth, logoHeight),
+            TextureFilter = TextureFilterEnum.Linear,
+            MouseFilter = MouseFilterEnum.Ignore,
+        });
 
         ship.Position = ShipHome;
         EngineFlames.Attach(ship);
