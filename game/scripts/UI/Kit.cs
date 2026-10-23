@@ -3,13 +3,22 @@ using Godot;
 namespace TypingShip;
 
 /// <summary>
-/// The look shared by every screen outside a level, matching the cockpit: dark chamfered panels with a lit cyan rim,
-/// Orbitron for titles and labels, and the difficulty colours.
+/// The look shared by every screen outside a level, matching the cockpit (and the player's ship): dark bronze chamfered
+/// panels with a lit gold rim and red trim, Orbitron for titles and labels, and the difficulty colours.
 /// </summary>
 public static class Kit
 {
-    public static readonly Color Rim = Cockpit.Rim, Fill = new(0.015f, 0.03f, 0.06f, 0.92f), Ink = new(0.85f, 0.93f, 1),
-        Good = new(0.45f, 1, 0.65f), Bad = new(1, 0.35f, 0.3f);
+    public static readonly Color Rim = Cockpit.Rim, Trim = Cockpit.Trim, Fill = new(0.035f, 0.02f, 0.012f, 0.92f),
+        Ink = new(0.88f, 0.94f, 1), Good = new(0.45f, 1, 0.65f), Bad = new(1, 0.35f, 0.3f);
+
+    /// <summary>The ship's bright gold, kept for the game's name and START GAME.</summary>
+    public static readonly Color Gold = new(1, 0.8f, 0.3f);
+
+    /// <summary>Locked or unavailable things (outlines, text), and the tint for art not earned yet.</summary>
+    public static readonly Color Locked = new(0.55f, 0.48f, 0.4f), Unearned = new(0.36f, 0.31f, 0.26f);
+
+    /// <summary>What dims the screen behind a box (add an alpha).</summary>
+    public static readonly Color Shade = new(0.03f, 0.015f, 0.005f);
 
     /// <summary>Easy, Normal, Hard, Extreme, Insane.</summary>
     public static readonly Color[] DiffColours =
@@ -28,9 +37,13 @@ public static class Kit
         return f;
     }
 
-    public static LabelSettings Title(int size, Color? colour = null) =>
+    /// <summary>A dark brass edge for title-style text that shouldn't look like a warning (scores, a win).</summary>
+    public static readonly Color BrassEdge = new(0.32f, 0.22f, 0.1f, 0.85f);
+
+    /// <summary>Title text: spaced Orbitron with a thick edge (faint red by default, or <paramref name="edge"/>).</summary>
+    public static LabelSettings Title(int size, Color? colour = null, Color? edge = null) =>
         Fonts.Settings(Spaced(Fonts.HudBold, Math.Max(2, size / 7)), size, colour ?? Colors.White, Math.Max(4, size / 5),
-            new Color(Rim, 0.3f));
+            edge ?? new Color(Trim, 0.3f));
 
     public static LabelSettings Caption(int size = 8, Color? colour = null) => Fonts.Settings(Fonts.Hud, size, colour ?? new Color(Rim, 0.85f));
 
@@ -98,20 +111,24 @@ public static class Kit
         ci.DrawLine(from, to, new Color(c, alpha), 1.2f);
     }
 
-    /// <summary>A slanted chip behind a button's text: normal, and lit under the mouse.</summary>
-    public static StyleBoxFlat ButtonBox(bool lit, Color? colour = null)
+    /// <summary>
+    /// A slanted chip behind a button's text: normal, and lit under the mouse. A bold one has a thick rim in the full colour
+    /// and no glow.
+    /// </summary>
+    public static StyleBoxFlat ButtonBox(bool lit, Color? colour = null, bool bold = false)
     {
         var c = colour ?? Rim;
+        int w = bold ? 2 : 1;
         return new StyleBoxFlat
         {
             BgColor = lit ? new Color(c.Lerp(Fill, 0.7f), 0.95f) : Fill,
-            BorderColor = new Color(c, lit ? 1 : 0.55f),
-            BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
+            BorderColor = bold ? c : new Color(c, lit ? 1 : 0.55f),
+            BorderWidthLeft = w, BorderWidthTop = w, BorderWidthRight = w, BorderWidthBottom = w,
             Skew = new Vector2(0.25f, 0),
             ContentMarginLeft = 16, ContentMarginRight = 16, ContentMarginTop = 6, ContentMarginBottom = 5,
             AntiAliasing = true,
-            ShadowColor = new Color(c, lit ? 0.35f : 0),
-            ShadowSize = lit ? 6 : 0,
+            ShadowColor = new Color(c, lit && !bold ? 0.35f : 0),
+            ShadowSize = lit && !bold ? 6 : 0,
         };
     }
 }

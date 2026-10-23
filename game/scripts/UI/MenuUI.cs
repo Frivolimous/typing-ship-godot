@@ -27,9 +27,10 @@ public partial class MenuUI : Screen
         // The title: two lines, a rule and a tagline.
         AddChild(title);
         Kit.Label(title, "MILLENNIUM", Kit.Title(34), 0, 52, G.StageSize, HorizontalAlignment.Center);
-        Kit.Label(title, "TYPER", Kit.Title(58, Kit.Rim.Lerp(Colors.White, 0.55f)), 0, 90, G.StageSize, HorizontalAlignment.Center);
+        // TYPER in the ship's bright gold, its red pushed past 1 so it blooms without turning lemon; the rest of the UI uses the muted brass.
+        Kit.Label(title, "TYPER", Kit.Title(58, new Color(1.3f, 0.89f, 0.3f)), 0, 90, G.StageSize, HorizontalAlignment.Center);
         Kit.Label(title, "TYPE  ·  TARGET  ·  FIRE", Kit.Caption(9), 0, 172, G.StageSize, HorizontalAlignment.Center);
-        title.Draw += () => Kit.Rule(title, new Vector2(150, 166), new Vector2(400, 166));
+        title.Draw += () => Kit.Rule(title, new Vector2(150, 166), new Vector2(400, 166), Kit.Gold);
 
         ship.Position = ShipHome;
         EngineFlames.Attach(ship);
@@ -46,7 +47,7 @@ public partial class MenuUI : Screen
         for (int i = 0; i < names.Length; i++)
         {
             var b = new TextButton(names[i], actions[i], i == 0 ? 15 : 12, boxed: true, width: 200,
-                colour: i == 0 ? Kit.Good : null) { Position = new Vector2(175, 382 + 36 * i) };
+                colour: i == 0 ? Kit.Gold : null, bold: i == 0) { Position = new Vector2(175, 382 + 36 * i) };
             menuButtons.AddChild(b);
             Nav.Add(b);
         }
@@ -350,7 +351,7 @@ public partial class EndlessButton : Control
     public override void _Draw()
     {
         float r = Radius;
-        var colour = Unlocked ? Kit.Rim : new Color(0.45f, 0.5f, 0.6f);
+        var colour = Unlocked ? Kit.Rim : Kit.Locked;
         if (Unlocked)
         {
             float pulse = 0.5f + 0.5f * Mathf.Sin(time * 2.5f);
@@ -361,7 +362,7 @@ public partial class EndlessButton : Control
                 DrawArc(Vector2.Zero, r + 8, a, a + 0.38f, 6, new Color(colour, 0.8f), 1.5f, true);
             }
         }
-        DrawCircle(Vector2.Zero, r, new Color(0.02f, 0.04f, 0.07f, 0.95f));
+        DrawCircle(Vector2.Zero, r, new Color(Kit.Fill, 0.95f));
         if (Unlocked) DrawCircle(Vector2.Zero, r, new Color(colour, 0.12f));
         DrawArc(Vector2.Zero, r, 0, Mathf.Tau, 48, new Color(colour, Unlocked ? 0.95f : 0.4f), Unlocked ? 2.5f : 1.2f, true);
         DrawArc(Vector2.Zero, r - 6, 0, Mathf.Tau, 48, new Color(colour, Unlocked ? 0.35f : 0.15f), 1, true);
@@ -439,7 +440,7 @@ public partial class LevelButton : Control
     public override void _Draw()
     {
         float r = Radius;
-        var colour = diff < 0 ? new Color(0.45f, 0.5f, 0.6f) : diff == 0 ? Kit.Rim : Kit.DiffColours[diff - 1];
+        var colour = diff < 0 ? Kit.Locked : diff == 0 ? Kit.Rim : Kit.DiffColours[diff - 1];
         float pulse = 0.5f + 0.5f * Mathf.Sin(time * 4);
 
         if (diff == 0)
@@ -452,7 +453,7 @@ public partial class LevelButton : Control
                 DrawArc(Vector2.Zero, r + 6, a, a + 0.6f, 6, new Color(colour, 0.8f), 1.5f, true);
             }
         }
-        DrawCircle(Vector2.Zero, r, new Color(0.02f, 0.04f, 0.07f, 0.95f));
+        DrawCircle(Vector2.Zero, r, new Color(Kit.Fill, 0.95f));
         if (diff > 0) DrawCircle(Vector2.Zero, r, new Color(colour, 0.15f));
         DrawArc(Vector2.Zero, r, 0, Mathf.Tau, 32, new Color(colour, diff < 0 ? 0.4f : 0.95f), diff < 0 ? 1.2f : 2, true);
 
@@ -462,7 +463,7 @@ public partial class LevelButton : Control
             var size = boss.GetSize();
             float s = (r * 1.7f) / Math.Max(size.X, size.Y);
             var drawn = size * s;
-            DrawTextureRect(boss, new Rect2(-drawn / 2, drawn), false, diff < 0 ? new Color(0.3f, 0.32f, 0.38f) : Colors.White);
+            DrawTextureRect(boss, new Rect2(-drawn / 2, drawn), false, diff < 0 ? Kit.Unearned : Colors.White);
             DrawString(Fonts.HudBold, new Vector2(-30, -r - 6), name, HorizontalAlignment.Center, 60, 10,
                 diff < 0 ? new Color(colour, 0.6f) : Colors.White);
         }
@@ -480,7 +481,7 @@ public partial class LevelButton : Control
         {
             var c = Kit.TierColours[healthMedal];
             var at = new Vector2(-9, y);
-            DrawCircle(at, 5, new Color(0.02f, 0.04f, 0.07f));
+            DrawCircle(at, 5, new Color(Kit.Fill, 1));
             DrawArc(at, 5, 0, Mathf.Tau, 16, c, 1.2f, true);
             DrawLine(at + new Vector2(-2.5f, 0), at + new Vector2(2.5f, 0), c, 1.6f);
             DrawLine(at + new Vector2(0, -2.5f), at + new Vector2(0, 2.5f), c, 1.6f);
@@ -489,7 +490,7 @@ public partial class LevelButton : Control
         {
             var c = Kit.TierColours[targetMedal];
             var at = new Vector2(9, y);
-            DrawCircle(at, 5, new Color(0.02f, 0.04f, 0.07f));
+            DrawCircle(at, 5, new Color(Kit.Fill, 1));
             DrawArc(at, 5, 0, Mathf.Tau, 16, c, 1.2f, true);
             DrawArc(at, 2.5f, 0, Mathf.Tau, 12, c, 1.2f, true);
             DrawCircle(at, 0.9f, c);

@@ -8,7 +8,8 @@ public static class Playfield
     /// <summary>Level scripts place things on a 12 x 12 grid over the game view.</summary>
     public const float GridX = ViewWidth / 12, GridY = ViewHeight / 12;
     public const int TickRate = 24;
-    public const float PlayerX = ViewWidth / 2, PlayerY = ViewHeight - 100;
+    /// <summary>Where the player's ship sits: 12 px higher than the original's (ViewHeight - 100), so its engine flames clear the cockpit.</summary>
+    public const float PlayerX = ViewWidth / 2, PlayerY = ViewHeight - 112;
     /// <summary>The part of the game view the player sees: the 550 px stage, which sits at 25,25 in it.</summary>
     public const float VisibleLeft = 25, VisibleTop = 25, VisibleRight = 575, VisibleBottom = 575;
 }

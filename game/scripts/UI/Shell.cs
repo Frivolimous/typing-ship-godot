@@ -7,7 +7,7 @@ namespace TypingShip;
 public partial class Shell : Control, IViewTicker
 {
     /// <summary>The fade between screens: a deep blue-black (white is kept for launching into a level).</summary>
-    public static readonly Color Dark = new(0.01f, 0.02f, 0.04f);
+    public static readonly Color Dark = new(0.035f, 0.018f, 0.01f);
 
     public MenuUI Menu = null!;
     public ScoreUI Score = null!;
@@ -31,7 +31,7 @@ public partial class Shell : Control, IViewTicker
         Position = new Vector2(0, 4),
         Size = new Vector2(G.StageSize, 20),
         HorizontalAlignment = HorizontalAlignment.Center,
-        LabelSettings = Fonts.Settings(Fonts.Word, 14, new Color(0.55f, 1, 0.85f), 4, new Color(0, 0, 0, 0.8f)),
+        LabelSettings = Fonts.Settings(Fonts.Word, 14, TypedDisplay.Ink, 4, new Color(0, 0, 0, 0.8f)),
         MouseFilter = MouseFilterEnum.Ignore,
     };
 

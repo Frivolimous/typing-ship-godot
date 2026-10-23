@@ -76,7 +76,7 @@ public partial class Banner : Control
         float mid = G.StageSize / 2;
         // A dark band behind the text, fading out at its ends.
         var band = new Rect2(mid - half, 8, half * 2, 64);
-        DrawRect(band, new Color(0, 0.02f, 0.05f, 0.55f));
+        DrawRect(band, new Color(Kit.Shade, 0.55f));
         foreach (float y in new[] { 8f, 72f })
         {
             DrawLine(new Vector2(mid - half, y), new Vector2(mid + half, y), new Color(tint, 0.25f), 4);

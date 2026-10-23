@@ -100,14 +100,16 @@ public partial class TextButton : Label
 
     /// <summary>
     /// A button in the cockpit's style: Orbitron, lit under the mouse. Boxed, it sits on a slanted chip (in
-    /// <paramref name="colour"/>, cyan by default), at least <paramref name="width"/> wide with its text centred.
+    /// <paramref name="colour"/>, brass by default), at least <paramref name="width"/> wide with its text centred. A <paramref name="bold"/> one (the screen's main button) has a thicker rim and text in
+    /// the full colour.
     /// </summary>
-    public TextButton(string text, Action f, int size, string? word = null, bool boxed = false, Color? colour = null, float width = 0)
+    public TextButton(string text, Action f, int size, string? word = null, bool boxed = false, Color? colour = null, float width = 0,
+        bool bold = false)
     {
         Text = text;
         Word = word ?? text.Split(' ')[0].ToLowerInvariant();
         output = f;
-        var ink = boxed ? Colors.White.Lerp(colour ?? Kit.Ink, 0.35f) : new Color(0.8f, 0.92f, 1);
+        var ink = !boxed ? Kit.Ink : bold ? (colour ?? Kit.Rim).Lerp(Colors.White, 0.15f) : Colors.White.Lerp(colour ?? Kit.Ink, 0.35f);
         normal = Fonts.Settings(Fonts.HudBold, size, ink, boxed ? 0 : 4, new Color(0, 0, 0, 0.7f));
         over = Fonts.Settings(Fonts.HudBold, size, Colors.White, boxed ? 0 : 6, new Color(colour ?? Cockpit.Rim, 0.7f));
         LabelSettings = normal;
@@ -118,8 +120,8 @@ public partial class TextButton : Label
             CustomMinimumSize = new Vector2(width, 0);
             HorizontalAlignment = HorizontalAlignment.Center;
         }
-        box = boxed ? Kit.ButtonBox(false, colour) : null;
-        lit = boxed ? Kit.ButtonBox(true, colour) : null;
+        box = boxed ? Kit.ButtonBox(false, colour, bold) : null;
+        lit = boxed ? Kit.ButtonBox(true, colour, bold) : null;
         Light(false);
         MouseEntered += () => Light(true);
         MouseExited += () => Light(focused);
@@ -235,7 +237,7 @@ public partial class MenuBox : Control
 
     public override void _Draw()
     {
-        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0.01f, 0.03f, 0.5f)); // dims what's behind
+        DrawRect(new Rect2(Vector2.Zero, Size), new Color(Kit.Shade, 0.5f)); // dims what's behind
         Kit.Panel(this, box);
     }
 
@@ -317,7 +319,7 @@ public partial class ConfirmBox : Control
 
     public override void _Draw()
     {
-        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0.01f, 0.03f, 0.6f));
+        DrawRect(new Rect2(Vector2.Zero, Size), new Color(Kit.Shade, 0.6f));
         Kit.Panel(this, Box, Kit.Bad);
     }
 }

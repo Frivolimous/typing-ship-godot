@@ -148,6 +148,8 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 
 ## Deviations from the original
 
+- **The player's ship sits 12 px higher** (438 in the game view, not 450), so its engine flames clear the cockpit
+  drawn along the bottom. Enemy missiles and lasers have that much less distance to cover.
 - **Copied ships don't drift.** Every point a ship flies to gets up to 10 px of random jitter. In the original, a
   copy (clone, mirror, offset, and so every repeat) re-rolled the jitter on top of the already-jittered point it
   copied, and rounded its halts down again, so a long chain of copies wandered in a random walk (about ±40 px by the

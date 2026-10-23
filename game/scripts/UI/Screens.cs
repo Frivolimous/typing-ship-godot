@@ -145,7 +145,7 @@ public partial class AchieveUI : Screen
             bool earned = tier > j, known = tier >= j;
             lines[j].Text = known ? Strings.AchieveText[i][j] : "???";
             lines[j].LabelSettings = Kit.Body(11, earned ? Kit.TierColours[j + 1] : new Color(Kit.Ink, known ? 0.8f : 0.4f));
-            lineMedals[j].Modulate = earned ? Colors.White : new Color(0.3f, 0.32f, 0.38f);
+            lineMedals[j].Modulate = earned ? Colors.White : Kit.Unearned;
         }
         QueueRedraw();
     }
@@ -359,7 +359,7 @@ public partial class ScoreUI : Screen
 
     public ScoreUI()
     {
-        title = Kit.Label(this, "MISSION COMPLETE", Kit.Title(26, Kit.Good), 0, 26, G.StageSize, HorizontalAlignment.Center);
+        title = Kit.Label(this, "MISSION COMPLETE", Kit.Title(26, Kit.Good, Kit.BrassEdge), 0, 26, G.StageSize, HorizontalAlignment.Center);
         subtitle = Kit.Label(this, "", Kit.Caption(9), 0, 64, G.StageSize, HorizontalAlignment.Center);
         float[] y = { 110, 160, 192, 224, 0, 290 };
         for (int i = 0; i < rows.Length; i++)
@@ -374,7 +374,7 @@ public partial class ScoreUI : Screen
         rows[5][0].Size = new Vector2(Report.Size.X, 0);
         rows[5][0].Position = new Vector2(Report.Position.X, 272);
         rows[5][0].HorizontalAlignment = HorizontalAlignment.Center;
-        rows[5][1].LabelSettings = Kit.Title(46);
+        rows[5][1].LabelSettings = Kit.Title(46, edge: Kit.BrassEdge);
         rows[5][1].Position = new Vector2(Report.Position.X, 288);
         rows[5][1].Size = new Vector2(Report.Size.X, 0);
         rows[5][1].HorizontalAlignment = HorizontalAlignment.Center;
@@ -604,7 +604,7 @@ public partial class GameOverUI : Screen
         title = Kit.Label(this, "", Kit.Title(30), 0, 70, G.StageSize, HorizontalAlignment.Center);
         subtitle = Kit.Label(this, "", Kit.Caption(9), 0, 116, G.StageSize, HorizontalAlignment.Center);
         caption = Kit.Label(this, "", Kit.Caption(9), ScoreBox.Position.X, ScoreBox.Position.Y + 22, ScoreBox.Size.X, HorizontalAlignment.Center);
-        score = Kit.Label(this, "", Kit.Title(40), ScoreBox.Position.X, ScoreBox.Position.Y + 42, ScoreBox.Size.X, HorizontalAlignment.Center);
+        score = Kit.Label(this, "", Kit.Title(40, edge: Kit.BrassEdge), ScoreBox.Position.X, ScoreBox.Position.Y + 42, ScoreBox.Size.X, HorizontalAlignment.Center);
         // Endless runs: the player's place on the Steam leaderboards, under the score.
         ranks = Kit.Label(this, "", Kit.Caption(8), 0, ScoreBox.End.Y + 14, G.StageSize, HorizontalAlignment.Center);
         retry = new TextButton("RETRY", Retry, 14, boxed: true, colour: Kit.Good, width: 170) { Position = new Vector2(190, 340) };
@@ -630,7 +630,7 @@ public partial class GameOverUI : Screen
     {
         won = true;
         title.Text = Strings.WonGame;
-        title.LabelSettings = Kit.Title(30, Kit.Good);
+        title.LabelSettings = Kit.Title(30, Kit.Good, Kit.BrassEdge);
         subtitle.Text = "THE EMPEROR IS DEFEATED";
         caption.Text = "TOTAL SCORE";
         score.Text = G.Model.Save.Highscore.ToString();
@@ -754,7 +754,7 @@ public partial class PauseUI : Control
             Position = new Vector2(Panel.Position.X, 188),
             Size = new Vector2(Panel.Size.X, 40),
             LabelSettings = Fonts.Settings(new FontVariation { BaseFont = Fonts.HudBold, SpacingGlyph = 5 }, 28, Colors.White, 5,
-                new Color(Cockpit.Rim, 0.35f)),
+                new Color(Cockpit.Trim, 0.45f)),
             MouseFilter = MouseFilterEnum.Ignore,
         });
         AddChild(new Label
@@ -790,9 +790,9 @@ public partial class PauseUI : Control
 
     public override void _Draw()
     {
-        DrawRect(new Rect2(0, 0, G.StageSize, G.StageSize), new Color(0, 0.01f, 0.03f, 0.55f));
+        DrawRect(new Rect2(0, 0, G.StageSize, G.StageSize), new Color(Kit.Shade, 0.55f));
         DrawRect(Panel.Grow(3), new Color(0, 0, 0, 0.5f));
-        DrawRect(Panel, new Color(0.015f, 0.03f, 0.06f, 0.92f));
+        DrawRect(Panel, Kit.Fill);
         DrawRect(Panel, new Color(Cockpit.Rim, 0.5f), false, 1.5f);
         DrawLine(Panel.Position + new Vector2(3, 3), new Vector2(Panel.End.X - 3, Panel.Position.Y + 3), new Color(Cockpit.Rim, 0.15f), 2);
     }

@@ -7,7 +7,7 @@ namespace TypingShip;
 public partial class PopAchieve : Control
 {
     const float W = 236, H = 46, Slide = 0.35f, Hold = 2.6f;
-    static readonly Color[] TierColours = { Colors.White, new(0.9f, 0.58f, 0.3f), new(0.82f, 0.88f, 0.98f), new(1, 0.82f, 0.3f) };
+    static readonly Color[] TierColours = Kit.TierColours;
     readonly Color tint;
     readonly Vector2 shown, hidden;
     float time;
@@ -69,7 +69,7 @@ public partial class PopAchieve : Control
     {
         // Slanted ends, like the hull pips.
         var pts = new[] { new Vector2(8, 0), new Vector2(W, 0), new Vector2(W - 8, H), new Vector2(0, H) };
-        DrawColoredPolygon(pts, new Color(0.015f, 0.03f, 0.06f, 0.92f));
+        DrawColoredPolygon(pts, Kit.Fill);
         DrawPolyline(pts.Append(pts[0]).ToArray(), new Color(Cockpit.Rim, 0.45f), 1.2f, true);
         DrawColoredPolygon(new[] { new Vector2(8, 0), new Vector2(13, 0), new Vector2(5, H), new Vector2(0, H) }, tint);
     }
@@ -97,7 +97,7 @@ public partial class PopBox : Node2D
             Text = Strings.Tutorial[tut],
             Position = new Vector2(Left + Pad, Top + Pad + 14),
             Size = new Vector2(Width - 2 * Pad, 0),
-            LabelSettings = Fonts.Settings(Fonts.Word, TextSize, new Color(0.9f, 0.96f, 1)),
+            LabelSettings = Fonts.Settings(Fonts.Word, TextSize, Kit.Ink),
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
         // The panel grows to the text as the label will wrap it (lines plus the label's line spacing), with room for the
@@ -160,7 +160,7 @@ public partial class PopBox : Node2D
             DrawCircle(pointer[^1], 2.5f, rim);
         }
         DrawRect(Box.Grow(3), new Color(0, 0, 0, 0.5f));
-        DrawRect(Box, new Color(0.015f, 0.03f, 0.06f, 0.92f));
+        DrawRect(Box, Kit.Fill);
         DrawRect(Box, new Color(rim, 0.5f), false, 1.5f);
         DrawLine(Box.Position + new Vector2(3, 3), new Vector2(Box.End.X - 3, Box.Position.Y + 3), new Color(rim, 0.15f), 2);
     }
