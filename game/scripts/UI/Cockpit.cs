@@ -14,8 +14,9 @@ public partial class Cockpit : Node2D
         new(0, 425), new(150, 447), new(230, 492), new(320, 492), new(400, 448), new(550, 424),
     };
 
-    /// <summary>The inset screens: typed text, hull, and the pause and mute buttons.</summary>
-    public static readonly Rect2 TypedScreen = new(6, 512, 150, 32), HullScreen = new(162, 502, 226, 44),
+    /// <summary>The inset screens: typed text, hull, and the pause button. They end above 545, the bottom of what the
+    /// window shows (G.ShownSize).</summary>
+    public static readonly Rect2 TypedScreen = new(6, 508, 150, 32), HullScreen = new(162, 500, 226, 42),
         ButtonScreen = new(408, 508, 136, 30);
 
     /// <summary>The score and progress screens on the wings: their tops run parallel to the rim.</summary>
@@ -87,10 +88,10 @@ public partial class Cockpit : Node2D
             Screen(screen);
 
         // Indicator lights, blinking out of step.
-        Light(new Vector2(146, 508), 0.0f, Rim);
-        Light(new Vector2(154, 508), 0.4f, Trim);
-        Light(new Vector2(396, 508), 0.7f, Trim);
-        Light(new Vector2(404, 508), 0.2f, critical ? Alarm : Rim);
+        Light(new Vector2(146, 504), 0.0f, Rim);
+        Light(new Vector2(154, 504), 0.4f, Trim);
+        Light(new Vector2(396, 504), 0.7f, Trim);
+        Light(new Vector2(404, 504), 0.2f, critical ? Alarm : Rim);
     }
 
     /// <summary>An inset screen: a dark recess, a thin lit border, and a faint sheen along its top edge.</summary>

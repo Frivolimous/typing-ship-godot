@@ -62,8 +62,9 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
   values are in the original's units (px/tick and so on). Godot's physics interpolation smooths the display. Call
   `ResetPhysicsInterpolation()` after placing a new node. Hand-drawn layers (stars, particles) interpolate
   themselves with `Engine.GetPhysicsInterpolationFraction()`.
-- **Coordinates:** the viewport is 550x550 with stretch aspect `expand`, and a Camera2D keeps the square playfield
-  centred. Wider windows show side panels. Ships live in `G.UI.GameView`, which is in game-view space (600x550,
+- **Coordinates:** the stage (the rules' and the layout's space) is the original's 550x550, but the viewport is
+  540x540 (stretch aspect `expand`) and a Camera2D keeps the stage centred, so the outer 5 px are off-screen and a stage
+  pixel is exactly 2 screen pixels at 1080p and 4 at 4K (even pixel art). Keep the HUD and buttons inside 5-545. Wider windows show side panels. Ships live in `G.UI.GameView`, which is in game-view space (600x550,
   offset -25,-25, the original `GameUI.VIEW_*`). HUD elements use stage space (0-550).
 - **Removed objects:** `Sprite.Remove()` takes a Core sprite out of play and sets `Removed`. Other objects may
   still hold a reference (a missile homing on a ship that escaped), so read positions through `P`, which keeps the

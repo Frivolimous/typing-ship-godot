@@ -20,8 +20,8 @@ config/custom_user_dir_name="Millennium Typer"
 
 [display]
 
-window/size/viewport_width=550
-window/size/viewport_height=550
+window/size/viewport_width=540
+window/size/viewport_height=540
 window/size/window_width_override=1920
 window/size/window_height_override=1080
 window/stretch/mode="canvas_items"

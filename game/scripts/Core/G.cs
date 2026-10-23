@@ -9,7 +9,13 @@ public static class G
 {
     public const float ViewWidth = Playfield.ViewWidth, ViewHeight = Playfield.ViewHeight; // game-view space
     public const float UiWidth = 550, UiHeight = 500;
+    /// <summary>
+    /// The stage: the original's 550 px square, which the rules and the layout use. The window shows the middle
+    /// <see cref="ShownSize"/> of it (project.godot's viewport), so a stage pixel is a whole number of screen pixels
+    /// at 1080p (2) and 4K (4); the 5 px lost at each edge are off-screen.
+    /// </summary>
     public const float StageSize = 550;
+    public const float ShownSize = 540;
     public const int TickRate = Playfield.TickRate;
 
     /// <summary>The rules: the level, ships, score, typing.</summary>
