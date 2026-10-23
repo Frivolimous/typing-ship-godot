@@ -32,6 +32,8 @@ public static class Strings
     public static readonly string[] Diffs = { "EASY", "NORMAL", "HARD", "EXTREME", "INSANE" };
 
     // Game over screen
+    /// <summary>Endless mode's name on screen.</summary>
+    public const string Endless = "TYPERSPACE";
     public const string Menu = "MENU", WonGame = "VICTORY", LoseGame = "SHIP DESTROYED";
 
     // Map and menus

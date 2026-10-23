@@ -650,7 +650,7 @@ public partial class GameOverUI : Screen
         if (m.Endless is { } run)
         {
             int s = (int)m.Time, best = m.Save.EndlessBest[m.Diff - 1];
-            subtitle.Text = $"ENDLESS  ·  {diff}  ·  WAVE {run.Wave}  ·  {s / 60}:{s % 60:00}";
+            subtitle.Text = $"{Strings.Endless}  ·  {diff}  ·  WAVE {run.Wave}  ·  {s / 60}:{s % 60:00}";
             caption.Text = (newBest ? "NEW BEST SCORE" : $"SCORE  ·  BEST {best}") + $"  ·  x{run.ScoreFactor:0.##} FOR {diff}";
         }
         else

@@ -248,7 +248,7 @@ public partial class MapUI : Control
             var b = l;
             nav.Add(b.Word, () => OpenDiff(b), () => IsVisibleInTree() && b.Unlocked);
         }
-        nav.Add("endless", OpenEndless, () => IsVisibleInTree() && endless.Unlocked);
+        nav.Add(Strings.Endless.ToLowerInvariant(), OpenEndless, () => IsVisibleInTree() && endless.Unlocked);
         for (int i = 0; i < Strings.Diffs.Length; i++)
         {
             double cps = Difficulty.Cps[i];
@@ -378,8 +378,10 @@ public partial class EndlessButton : Control
         DrawArc(Vector2.Zero, r - 6, 0, Mathf.Tau, 48, new Color(colour, Unlocked ? 0.35f : 0.15f), 1, true);
 
         var font = Fonts.HudBold;
-        float h = font.GetAscent(10) - font.GetDescent(10);
-        DrawString(font, new Vector2(-r, h / 2 - 1), "ENDLESS", HorizontalAlignment.Center, r * 2, 10,
+        int size = 10; // smaller if the name doesn't fit inside the ring
+        while (size > 6 && font.GetStringSize(Strings.Endless, HorizontalAlignment.Left, -1, size).X > r * 2 - 14) size--;
+        float h = font.GetAscent(size) - font.GetDescent(size);
+        DrawString(font, new Vector2(-r, h / 2 - 1), Strings.Endless, HorizontalAlignment.Center, r * 2, size,
             Unlocked ? Colors.White : new Color(colour, 0.6f));
         string under = Unlocked ? (best > 0 ? $"BEST {best}" : "") : "BEAT THE CAMPAIGN";
         if (under != "")
@@ -577,7 +579,7 @@ public partial class DiffSelect : Control
     {
         this.level = level;
         var save = G.Model.Save;
-        heading.Text = level < 0 ? "ENDLESS" : Banner.LevelName(level);
+        heading.Text = level < 0 ? Strings.Endless : Banner.LevelName(level);
         highscore.Text = (level < 0 ? save.EndlessBest.Max() : save.LevelScore[level][0]).ToString();
         // Beside the level, kept on the stage.
         Position = new Vector2(Math.Min(at.X + 30, G.StageSize - Size.X - 4), Math.Clamp(at.Y - 30, 4, G.StageSize - Size.Y - 50));
