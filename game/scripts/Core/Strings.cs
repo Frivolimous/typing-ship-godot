@@ -34,6 +34,8 @@ public static class Strings
     // Game over screen
     /// <summary>Endless mode's name on screen.</summary>
     public const string Endless = "TYPERSPACE";
+    /// <summary>The daily challenge's name on screen.</summary>
+    public const string Daily = "DAILY";
     public const string Menu = "MENU", WonGame = "VICTORY", LoseGame = "SHIP DESTROYED";
 
     // Map and menus

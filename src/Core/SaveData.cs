@@ -21,6 +21,14 @@ public sealed class SaveData
     /// <summary>Endless mode, per difficulty (0 easy to 4 insane): best score, and the longest run in seconds.</summary>
     public int[] EndlessBest { get; set; } = new int[5];
     public int[] EndlessSeconds { get; set; } = new int[5];
+    /// <summary>The daily challenge: the day these are for (yyyy-MM-dd, UTC; "" if never played), its best score (any
+    /// difficulty: scores already count for more on a harder one), that run's wave and seconds, and the tries that
+    /// day. A new day starts them again.</summary>
+    public string DailyDay { get; set; } = "";
+    public int DailyBest { get; set; }
+    public int DailyWave { get; set; }
+    public int DailySeconds { get; set; }
+    public int DailyTries { get; set; }
     /// <summary>The typing test's last result in WPM, 0 if never taken. (New: the original threw it away.)</summary>
     public int TestWpm { get; set; }
 
@@ -65,6 +73,20 @@ public sealed class SaveData
         Save();
         return best;
     }
+
+    /// <summary>Counts a daily challenge try and keeps it if it's the day's best. True for a new best.</summary>
+    public bool RecordDaily(string day, int score, int wave, int seconds)
+    {
+        if (DailyDay != day) (DailyDay, DailyBest, DailyWave, DailySeconds, DailyTries) = (day, 0, 0, 0, 0);
+        DailyTries++;
+        bool best = score > DailyBest;
+        if (best) (DailyBest, DailyWave, DailySeconds) = (score, wave, seconds);
+        Save();
+        return best;
+    }
+
+    /// <summary>The best daily score for a day, 0 if it hasn't been played.</summary>
+    public int DailyBestOn(string day) => DailyDay == day ? DailyBest : 0;
 
     /// <summary>Ctrl+Page Down in the original.</summary>
     public void Clear()

@@ -37,6 +37,7 @@ echo   16  Check the endless patterns  (against the guidelines for writing them)
 echo.
 echo   17  Release builds  (Windows and Linux in builds\, checked)
 echo   18  Upload a release build to Steam  (the beta branch)
+echo   19  Play today's daily challenge  (Hard)
 echo.
 echo    0  Quit
 echo.
@@ -66,6 +67,7 @@ if "%PICK%"=="15" dotnet build && "%GODOT%" --path game -- --endless --wpm=65
 if "%PICK%"=="16" dotnet run --project src\Sim -- endless --patterns
 if "%PICK%"=="17" powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Linux
 if "%PICK%"=="18" powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload main
+if "%PICK%"=="19" dotnet build && "%GODOT%" --path game -- --daily --wpm=65
 exit /b
 
 :watch

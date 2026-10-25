@@ -120,7 +120,9 @@ public partial class Main : Node2D
         playfield.AddChild(shell);
         shell.Init();
         bool edit = args.ContainsKey("edit");
-        if (args.ContainsKey("endless"))
+        if (args.ContainsKey("daily"))
+            shell.StartDailyDirect(args.TryGetValue("date", out var dd) ? DateOnly.Parse(dd, CultureInfo.InvariantCulture) : null);
+        else if (args.ContainsKey("endless"))
             shell.StartEndlessDirect(args.TryGetValue("seed", out var es) ? ulong.Parse(es) : null);
         else if (args.TryGetValue("level", out var level) || (bot && !args.ContainsKey("menu")) || edit)
             shell.StartDirect(level != null ? int.Parse(level) : 0);

@@ -24,6 +24,7 @@ whatever the `GODOT` environment variable is set to. Commands run from the repo 
 | Endless detail: each run's waves and the damage they did, short runs against long, damage by number of patterns, and the patterns in the waves that hurt most | | `dotnet run --project src/Sim -- endless --detail [--runs=12] [--bot=0.9] [--difficulty=Hard]` |
 | Play endless patterns on their own, many times, and print the hits each does (as in wave N of a run, or at --speed) | | `dotnet run --project src/Sim -- endless --solo=NAME [--wave=N] [--bot=0.9 | --botcps=N] [--runs=20]` |
 | Play endless mode straight away | 15 | `$GODOT --path game -- --endless --wpm=65 [--seed=N]` |
+| Play today's daily challenge straight away (or another day's; it's off the map until it's redesigned) | 19 | `$GODOT --path game -- --daily --wpm=65 [--date=2026-10-25]` |
 | Check the endless patterns against the guidelines for writing them (letters, words, spawn time, the level they work out to, divers coming from the side or bottom) | 16 | `dotnet run --project src/Sim -- endless --patterns` |
 
 | Release builds: exports Windows (and Linux with `-Linux`) with Godot's release template into `builds/`, then checks the exported game reads its embedded data. Warns if `game/assets/music` is empty | 17 | `powershell -ExecutionPolicy Bypass -File steam\build.ps1 [-Linux]` |
@@ -39,6 +40,7 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 |---|---|
 | `--level=N` | Skip the menus and start at level N (0–11; bosses on 3, 7 and 11) |
 | `--endless` | Skip the menus and start an endless run (numbered waves of patterns from data/levels/endless.txt, until the ship is destroyed). `--seed=N` picks the patterns; otherwise each run is different |
+| `--daily` | Skip the menus and start the daily challenge: an endless run on the day's waves (UTC), the same for everyone on that difficulty. `--date=yyyy-mm-dd` plays another day's. Scores count for that day's best (and its leaderboard, with Steam) |
 | `--wpm=N` | Difficulty as target words per minute: 25 Easy, 40 Normal (default), 65 Hard, 90 Extreme, 120 Insane. Any number works (the rules use it as characters per second, N x 5 / 60). On the menus the difficulty box sets it instead |
 | `--cps=N` | The same in characters per second, as the rules and tuning.txt count it (Normal is 3.33) |
 | `--seed=N` | Fix the random seed, for repeatable runs |
@@ -112,3 +114,11 @@ $GODOT --path game -- --profile=test --menu --autotype --speed=10 --keys=40:star
 The save files live in `%APPDATA%\Godot\app_userdata\Millennium Typer\`. Delete `test.json` there to start the
 profile fresh. On the title or map, Ctrl+Page Up unlocks every level and Ctrl+Page Down wipes the save (the
 original's dev keys).
+
+## Playtest logs
+
+Every finished level or run adds a line to `runs.csv` next to the save (on Windows `%APPDATA%\Millennium Typer\`):
+when, the build (version and commit, as on the title screen), the mode (level, endless or daily), the level or day,
+the difficulty, cleared or lost, the score (before the score screen's bonuses), seconds, wave, health left, ships,
+ships missed and accuracy. Ask playtesters to send it in with their feedback. Bot runs without `--profile` don't
+write it.

@@ -44,12 +44,36 @@ public static class Boards
     /// (EndlessRun.ScoreFactor), so they compare fairly.</summary>
     public const string EndlessAll = "endless_all";
 
-    // The daily challenge (not built yet) gets a board per day, "daily_2026-10-22", sent the same way.
+    /// <summary>The daily challenge: a board per day (UTC), e.g. "daily_2026-10-25", of every difficulty together
+    /// (scores count for more on a harder one).</summary>
+    public static string Daily(DateOnly day) => "daily_" + TypingShip.Core.Daily.Name(day);
 }
 
-/// <summary>Sends an ended endless run to its difficulty's board and the global one.</summary>
+/// <summary>Sends an ended endless run to its difficulty's board and the global one, and a daily challenge run to
+/// the day's board.</summary>
 public static class Leaderboards
 {
+    /// <summary>An ended endless or daily run; done gets the line to show for the ranks, or null for none.</summary>
+    public static void Submit(Game m, Action<string?> done)
+    {
+        if (m.Endless?.Day is { } day) SubmitDaily(m, day, done);
+        else SubmitEndless(m, done);
+    }
+
+    static void SubmitDaily(Game m, DateOnly day, Action<string?> done)
+    {
+        int diff = m.Diff - 1;
+        if (G.Platform.Name is not { } store || diff is < 0 or > 4)
+        {
+            done(null);
+            return;
+        }
+        int[] details = { m.Endless!.Wave, (int)m.Time, diff };
+        G.Platform.Submit(Boards.Daily(day), m.Score, details, r => done(r == null
+            ? $"{store.ToUpperInvariant()}: LEADERBOARD UNAVAILABLE"
+            : $"{store.ToUpperInvariant()} RANK TODAY {Show(r)}"));
+    }
+
     /// <summary>The run's score on both boards; done gets the line to show for the ranks, or null for none.</summary>
     public static void SubmitEndless(Game m, Action<string?> done)
     {

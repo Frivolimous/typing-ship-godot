@@ -622,7 +622,8 @@ public partial class GameOverUI : Screen
     static void Retry()
     {
         if (G.Shell.Transitioning) return;
-        if (G.Model.Endless != null) G.Shell.StartEndless(G.Model.Cps);
+        if (G.Model.Endless?.Day != null) G.Shell.StartDaily(G.Model.Cps);
+        else if (G.Model.Endless != null) G.Shell.StartEndless(G.Model.Cps);
         else G.Shell.StartGame(G.Model.Level, G.Model.Cps);
     }
 
@@ -647,7 +648,14 @@ public partial class GameOverUI : Screen
         title.Text = Strings.LoseGame;
         title.LabelSettings = Kit.Title(30, Kit.Bad);
         string diff = Difficulty.Names[Difficulty.Of(m.Cps) - 1].ToUpperInvariant();
-        if (m.Endless is { } run)
+        if (m.Endless is { Day: { } day } daily)
+        {
+            int s = (int)m.Time, best = m.Save.DailyBestOn(Daily.Name(day));
+            subtitle.Text = $"{Strings.Daily} {Daily.Name(day)}  ·  {diff}  ·  WAVE {daily.Wave}  ·  {s / 60}:{s % 60:00}";
+            caption.Text = (newBest ? "NEW BEST TODAY" : $"SCORE  ·  TODAY'S BEST {best}") +
+                $"  ·  TRY {m.Save.DailyTries}  ·  x{daily.ScoreFactor:0.##} FOR {diff}";
+        }
+        else if (m.Endless is { } run)
         {
             int s = (int)m.Time, best = m.Save.EndlessBest[m.Diff - 1];
             subtitle.Text = $"{Strings.Endless}  ·  {diff}  ·  WAVE {run.Wave}  ·  {s / 60}:{s % 60:00}";
@@ -662,7 +670,7 @@ public partial class GameOverUI : Screen
         retry.Visible = true;
         ranks.Text = m.Endless != null && G.Platform.Name is { } store ? $"SENDING THE SCORE TO {store.ToUpperInvariant()}..." : "";
         int token = ++shown;
-        if (m.Endless != null) Leaderboards.SubmitEndless(m, line =>
+        if (m.Endless != null) Leaderboards.Submit(m, line =>
         {
             if (token == shown) ranks.Text = line ?? "";
         });

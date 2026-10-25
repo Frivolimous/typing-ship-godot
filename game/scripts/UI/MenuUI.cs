@@ -42,6 +42,9 @@ public partial class MenuUI : Screen
             MouseFilter = MouseFilterEnum.Ignore,
         });
 
+        // Which build this is, for playtesters to quote.
+        Kit.Label(title, BuildInfo.Short, Kit.Caption(7), 16, 12);
+
         ship.Position = ShipHome;
         EngineFlames.Attach(ship);
         Sprites.ArtChanged += () =>
@@ -194,7 +197,10 @@ public partial class MapUI : Control
     };
 
     readonly LevelButton[] levels = new LevelButton[12];
-    readonly EndlessButton endless;
+    readonly EndlessButton endless, daily;
+    /// <summary>The daily challenge is built but off the map until it's redesigned (Jeremy, 2026-10-25); `--daily`
+    /// still plays it.</summary>
+    public const bool DailyOnMap = false;
     public readonly DiffSelect Diff = new();
     Vector2[] route = Array.Empty<Vector2>();
     int[] routeLevel = Array.Empty<int>(); // which level each route point leads to
@@ -215,8 +221,10 @@ public partial class MapUI : Control
             levels[i] = new LevelButton(name, i, OpenDiff) { Position = Spots[i] };
             AddChild(levels[i]);
         }
-        endless = new EndlessButton(OpenEndless) { Position = EndlessButton.Spot };
+        endless = new EndlessButton(Strings.Endless, 40, OpenEndless) { Position = new Vector2(400, 432) };
         AddChild(endless);
+        daily = new EndlessButton(Strings.Daily, 28, OpenDaily) { Position = new Vector2(268, 452), Visible = DailyOnMap };
+        AddChild(daily);
         AddChild(Diff);
     }
 
@@ -249,6 +257,7 @@ public partial class MapUI : Control
             nav.Add(b.Word, () => OpenDiff(b), () => IsVisibleInTree() && b.Unlocked);
         }
         nav.Add(Strings.Endless.ToLowerInvariant(), OpenEndless, () => IsVisibleInTree() && endless.Unlocked);
+        nav.Add(Strings.Daily.ToLowerInvariant(), OpenDaily, () => DailyOnMap && IsVisibleInTree() && daily.Unlocked);
         for (int i = 0; i < Strings.Diffs.Length; i++)
         {
             double cps = Difficulty.Cps[i];
@@ -268,8 +277,11 @@ public partial class MapUI : Control
             else levels[i].SetState(d[1], d[2], d[3]);
             if (levels[i].Unlocked) reached = i;
         }
-        // Endless opens once the campaign is beaten (boss 3 cleared on any difficulty).
-        endless.SetState(save.LevelScore[TypingShip.Core.Data.GameData.LevelCount - 1][1] > 0, save.EndlessBest.Max());
+        // Endless and the daily challenge open once the campaign is beaten (boss 3 cleared on any difficulty).
+        bool beaten = save.LevelScore[TypingShip.Core.Data.GameData.LevelCount - 1][1] > 0;
+        int endlessBest = save.EndlessBest.Max(), today = save.DailyBestOn(Daily.Name(Daily.Today(DateTime.UtcNow)));
+        endless.SetState(beaten, endlessBest > 0 ? $"BEST {endlessBest}" : "");
+        daily.SetState(beaten, today > 0 ? $"TODAY {today}" : "NEW WAVES EVERY DAY");
         QueueRedraw();
     }
 
@@ -317,26 +329,38 @@ public partial class MapUI : Control
     {
         if (!endless.Unlocked) return;
         G.Sound.Sound(SoundControl.Click);
-        Diff.Open(-1, EndlessButton.Spot - new Vector2(EndlessButton.Size + 145, 0));
+        Diff.Open(DiffSelect.Endless, endless.Position - new Vector2(endless.Ring + 145, 0));
+    }
+
+    /// <summary>The difficulty box for the daily challenge, to the left of its circle.</summary>
+    public void OpenDaily()
+    {
+        if (!DailyOnMap || !daily.Unlocked) return;
+        G.Sound.Sound(SoundControl.Click);
+        Diff.Open(DiffSelect.Daily, daily.Position - new Vector2(daily.Ring + 145, 0));
     }
 }
 
-// Endless mode on the map: a big circle apart from the route, with ENDLESS in the middle. Locked (dim) until the
-// campaign is beaten; then it turns like the next level's ring, with the best endless score beneath.
+// Endless mode (and the smaller daily challenge) on the map: a circle apart from the route, with the mode's name in
+// the middle. Locked (dim) until the campaign is beaten; then it turns like the next level's ring, with a line
+// beneath (the best score).
 public partial class EndlessButton : Control
 {
-    public static readonly Vector2 Spot = new(400, 432);
-    public new const float Size = 40;
+    /// <summary>The ring's radius.</summary>
+    public readonly float Ring;
     public bool Unlocked { get; private set; }
+    readonly string name;
     readonly Action click;
-    int best;
+    string under = "";
     bool hover;
     float time;
 
-    float Radius => Size * (hover && Unlocked ? 1.08f : 1);
+    float Radius => Ring * (hover && Unlocked ? 1.08f : 1);
 
-    public EndlessButton(Action onClick)
+    public EndlessButton(string name, float ring, Action onClick)
     {
+        this.name = name;
+        Ring = ring;
         click = onClick;
         MouseFilter = MouseFilterEnum.Stop;
         base.Size = new Vector2(1, 1); // hits are tested against the ring (_HasPoint)
@@ -344,10 +368,11 @@ public partial class EndlessButton : Control
         MouseExited += () => hover = false;
     }
 
-    public void SetState(bool unlocked, int best)
+    /// <summary>Locked or open, and the line under an open ring.</summary>
+    public void SetState(bool unlocked, string under)
     {
         Unlocked = unlocked;
-        this.best = best;
+        this.under = under;
         MouseDefaultCursorShape = unlocked ? CursorShape.PointingHand : CursorShape.Arrow;
         QueueRedraw();
     }
@@ -379,13 +404,13 @@ public partial class EndlessButton : Control
 
         var font = Fonts.HudBold;
         int size = 10; // smaller if the name doesn't fit inside the ring
-        while (size > 6 && font.GetStringSize(Strings.Endless, HorizontalAlignment.Left, -1, size).X > r * 2 - 14) size--;
+        while (size > 6 && font.GetStringSize(name, HorizontalAlignment.Left, -1, size).X > r * 2 - 14) size--;
         float h = font.GetAscent(size) - font.GetDescent(size);
-        DrawString(font, new Vector2(-r, h / 2 - 1), Strings.Endless, HorizontalAlignment.Center, r * 2, size,
+        DrawString(font, new Vector2(-r, h / 2 - 1), name, HorizontalAlignment.Center, r * 2, size,
             Unlocked ? Colors.White : new Color(colour, 0.6f));
-        string under = Unlocked ? (best > 0 ? $"BEST {best}" : "") : "BEAT THE CAMPAIGN";
-        if (under != "")
-            DrawString(Fonts.Hud, new Vector2(-70, Size + 22), under, HorizontalAlignment.Center, 140, 8, new Color(colour, Unlocked ? 0.9f : 0.6f));
+        string line = Unlocked ? under : "BEAT THE CAMPAIGN";
+        if (line != "")
+            DrawString(Fonts.Hud, new Vector2(-70, Ring + 22), line, HorizontalAlignment.Center, 140, 8, new Color(colour, Unlocked ? 0.9f : 0.6f));
     }
 
     public override bool _HasPoint(Vector2 point) => point.Length() <= Radius + 6;
@@ -553,6 +578,8 @@ public partial class LevelButton : Control
 // typing test suggests marked.
 public partial class DiffSelect : Control
 {
+    /// <summary>What <see cref="Open"/> takes instead of a level for endless mode and the daily challenge.</summary>
+    public const int Endless = -1, Daily = -2;
     const float RowTop = 48, RowGap = 25;
     readonly Label heading, highscore;
     int level, recommended = -1;
@@ -579,8 +606,13 @@ public partial class DiffSelect : Control
     {
         this.level = level;
         var save = G.Model.Save;
-        heading.Text = level < 0 ? Strings.Endless : Banner.LevelName(level);
-        highscore.Text = (level < 0 ? save.EndlessBest.Max() : save.LevelScore[level][0]).ToString();
+        heading.Text = level switch { Endless => Strings.Endless, Daily => Strings.Daily + " CHALLENGE", _ => Banner.LevelName(level) };
+        highscore.Text = (level switch
+        {
+            Endless => save.EndlessBest.Max(),
+            Daily => save.DailyBestOn(TypingShip.Core.Daily.Name(TypingShip.Core.Daily.Today(DateTime.UtcNow))),
+            _ => save.LevelScore[level][0],
+        }).ToString();
         // Beside the level, kept on the stage.
         Position = new Vector2(Math.Min(at.X + 30, G.StageSize - Size.X - 4), Math.Clamp(at.Y - 30, 4, G.StageSize - Size.Y - 50));
         // Point out the hardest difficulty the typing test says you can keep up with.
@@ -602,7 +634,8 @@ public partial class DiffSelect : Control
     {
         Visible = false;
         G.Sound.Sound(SoundControl.Click);
-        if (level < 0) G.Shell.StartEndless(cps);
+        if (level == Daily) G.Shell.StartDaily(cps);
+        else if (level == Endless) G.Shell.StartEndless(cps);
         else G.Shell.StartGame(level, cps);
     }
 }

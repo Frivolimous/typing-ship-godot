@@ -141,6 +141,8 @@ public sealed class EndlessRun
     double nextWaveAt;
 
     public readonly ulong Seed;
+    /// <summary>The day of a daily challenge run (its seed is the day's), or null for an ordinary endless run.</summary>
+    public DateOnly? Day { get; init; }
     /// <summary>The wave being played (0 before the first).</summary>
     public int Wave { get; private set; }
     /// <summary>The patterns of the current wave, by name (for tests and the simulator).</summary>
@@ -255,4 +257,27 @@ public sealed class EndlessRun
         game.LevelData.AddRange(events);
         return pattern;
     }
+}
+
+/// <summary>
+/// The daily challenge: an endless run whose waves come from the day's seed (UTC), so everyone plays the same waves
+/// that day (on the same difficulty; the words can differ). Unlimited tries; the best score of the day counts, kept in
+/// the save and sent to the day's leaderboard.
+/// </summary>
+public static class Daily
+{
+    /// <summary>Today, in UTC: the day changes at the same moment for everyone.</summary>
+    public static DateOnly Today(DateTime utcNow) => DateOnly.FromDateTime(utcNow.ToUniversalTime());
+
+    /// <summary>The day's seed: its day number, scrambled (SplitMix64) so neighbouring days aren't alike.</summary>
+    public static ulong SeedFor(DateOnly day)
+    {
+        ulong z = (ulong)day.DayNumber + 0x9E3779B97F4A7C15UL;
+        z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;
+        z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
+        return z ^ (z >> 31);
+    }
+
+    /// <summary>The day as the save and the leaderboards name it, e.g. 2026-10-25.</summary>
+    public static string Name(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 }

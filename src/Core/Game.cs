@@ -115,6 +115,13 @@ public sealed partial class Game
         Start(0);
     }
 
+    /// <summary>The daily challenge: an endless run on the day's waves (Daily).</summary>
+    public void NewDaily(DateOnly day)
+    {
+        Endless = new EndlessRun(this, Daily.SeedFor(day)) { Day = day };
+        Start(0);
+    }
+
     void Start(int level)
     {
         while (Objects.Count > 0) Objects[0].Remove();
@@ -385,11 +392,11 @@ public sealed partial class Game
         if (tier < 3 && kills >= new[] { 10, 1000, 20000 }[tier]) Award(Achievement.Soldier, tier + 1);
     }
 
-    /// <summary>GameControl.finalDeath: a lost level still keeps its best score.</summary>
-    /// <summary>A lost level keeps its best score; an ended endless run its best score and time. True for a new best
-    /// endless score.</summary>
+    /// <summary>GameControl.finalDeath: a lost level keeps its best score; an ended endless run its best score and
+    /// time, and a daily challenge run the day's best. True for a new best endless or daily score.</summary>
     public bool RecordLoss()
     {
+        if (Endless?.Day is { } day) return Save.RecordDaily(Daily.Name(day), Score, Endless.Wave, (int)Time);
         if (Endless != null) return Save.RecordEndless(Diff - 1, Score, (int)Time);
         var best = Save.LevelScore[Level];
         best[0] = Math.Max(best[0], Score);

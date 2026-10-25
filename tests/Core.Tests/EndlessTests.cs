@@ -187,6 +187,62 @@ public class EndlessTests
     }
 
     [Fact]
+    public void A_daily_challenge_plays_the_day_s_waves_and_keeps_the_day_s_best()
+    {
+        var day = new DateOnly(2026, 10, 25);
+        Assert.Equal(day, Daily.Today(new DateTime(2026, 10, 25, 23, 59, 0, DateTimeKind.Utc)));
+        Assert.Equal("2026-10-25", Daily.Name(day));
+        Assert.Equal(Daily.SeedFor(day), Daily.SeedFor(new DateOnly(2026, 10, 25)));
+        Assert.NotEqual(Daily.SeedFor(day), Daily.SeedFor(day.AddDays(1)));
+
+        // Everyone gets the same waves that day.
+        List<string> Waves()
+        {
+            var g = TestData.NewGame(wpm: 65);
+            g.Invincible = true;
+            g.NewDaily(day);
+            var waves = new List<string>();
+            for (int i = 0; i < 3 * 60 * Playfield.TickRate && g.Endless!.Wave < 6; i++)
+            {
+                int before = g.Endless.Wave;
+                g.Step();
+                if (g.Endless.Wave != before) waves.Add(string.Join(", ", g.Endless.Patterns));
+            }
+            return waves;
+        }
+        Assert.Equal(Waves(), Waves());
+
+        // A daily run keeps the day's best, not endless mode's.
+        var run = TestData.NewGame(wpm: 65);
+        run.NewDaily(day);
+        Assert.Equal(day, run.Endless!.Day);
+        run.AddScore(100, default);
+        Assert.True(run.RecordLoss());
+        Assert.Equal((260, 1), (run.Save.DailyBestOn("2026-10-25"), run.Save.DailyTries));
+        Assert.Equal(0, run.Save.EndlessBest.Max());
+        Assert.False(run.Save.RecordDaily("2026-10-25", 200, 5, 60)); // a worse try still counts as a try
+        Assert.Equal((260, 2), (run.Save.DailyBest, run.Save.DailyTries));
+        Assert.True(run.Save.RecordDaily("2026-10-26", 50, 2, 30)); // a new day starts again
+        Assert.Equal((50, 1, 0), (run.Save.DailyBest, run.Save.DailyTries, run.Save.DailyBestOn("2026-10-25")));
+    }
+
+    [Fact]
+    public void The_run_log_has_a_line_per_level_or_run()
+    {
+        var g = TestData.NewGame(wpm: 65);
+        g.NewGame(3);
+        g.AddScore(42, default);
+        var line = RunLog.Line(g, true, new DateTime(2026, 10, 25, 12, 0, 0, DateTimeKind.Utc), "0.1.0+abc").Split(',');
+        Assert.Equal(RunLog.Header.Split(',').Length, line.Length);
+        Assert.Equal(new[] { "2026-10-25 12:00:00", "0.1.0+abc", "level", "B1", "Hard", "65", "cleared", "42" }, line[..8]);
+
+        g.NewDaily(new DateOnly(2026, 10, 25));
+        line = RunLog.Line(g, false, DateTime.UtcNow, "x").Split(',');
+        Assert.Equal(("daily", "2026-10-25", "lost"), (line[2], line[3], line[6]));
+        Assert.Equal(new[] { "1", "2", "3", "B1", "4", "9", "B3" }, new[] { 0, 1, 2, 3, 4, 10, 11 }.Select(RunLog.MapName));
+    }
+
+    [Fact]
     public void Best_scores_and_times_are_kept_per_difficulty_and_survive_old_saves()
     {
         var save = new SaveData();

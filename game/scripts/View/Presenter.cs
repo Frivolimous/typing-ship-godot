@@ -187,7 +187,8 @@ public sealed class Presenter : IGameEvents
     public void LevelStarted()
     {
         G.UI.SnapScore();
-        new Banner(G.Model.Endless != null ? Strings.Endless : Banner.LevelName(G.Model.Level), Difficulty.Names[Difficulty.Of(G.Model.Cps) - 1].ToUpperInvariant(),
+        new Banner(G.Model.Endless?.Day is { } day ? $"{Strings.Daily} {day.ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)}".ToUpperInvariant()
+                : G.Model.Endless != null ? Strings.Endless : Banner.LevelName(G.Model.Level), Difficulty.Names[Difficulty.Of(G.Model.Cps) - 1].ToUpperInvariant(),
             Cockpit.Rim);
         G.Starfield.SetBack(G.Model.Level);
         var gameView = G.UI.GameView;

@@ -71,7 +71,14 @@ The original AS3 source is no longer in the repo (Jeremy keeps a copy). This fil
      Steam.
    - **Daily challenge:** one seed per UTC day, so everyone gets the same wave pattern (words can differ,
      because typed words return to the pool). Unlimited attempts, best score counts, one leaderboard per day.
-     Daily modifiers ("lasers only", "double shields") come later.
+     **Built, then taken off the map to be redesigned** (Jeremy, 2026-10-25: it needs more to it, and to be
+     consistent across difficulties, or one set difficulty; `MapUI.DailyOnMap` puts it back, `--daily` plays it):
+     a DAILY ring beside TYPERSPACE on the map (same unlock), any difficulty; the day's seed
+     (Core `Daily`), the day's best, its run and the tries that day in the save; one board per day
+     (`daily_2026-10-25`) of scaled scores, so difficulties compare. Daily modifiers ("lasers only", "double
+     shields") come later.
+   - **Playtest aids (2026-10-25):** the build (version and commit) on the title screen, and a line per finished
+     level or run in `runs.csv` next to the save (Core `RunLog`; docs/commands.md, "Playtest logs").
    - **Custom word lists and language packs:**
      - Validate lists: every word length the ships use (3–10) needs enough words, at least about 6 and
        ideally 20 or more.

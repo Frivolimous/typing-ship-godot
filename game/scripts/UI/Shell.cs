@@ -100,6 +100,24 @@ public partial class Shell : Control, IViewTicker
         G.Ctrl.NewEndless(seed);
     }
 
+    /// <summary>Dev flag (--daily): straight into the daily challenge, no menus.</summary>
+    public void StartDailyDirect(DateOnly? day)
+    {
+        current = null;
+        G.UI.Visible = true;
+        PauseB.Visible = true;
+        G.Ctrl.NewDaily(day);
+    }
+
+    /// <summary>DAILY on the map, or RETRY after a daily run: today's challenge starts under the fade.</summary>
+    public void StartDaily(double cps)
+    {
+        G.Model.Cps = cps;
+        G.Starfield.ClearParticles();
+        G.Ctrl.NewDaily();
+        GoGame();
+    }
+
     /// <summary>ENDLESS on the menu, or RETRY after a run: a fresh run starts under the fade.</summary>
     public void StartEndless(double cps)
     {
@@ -185,12 +203,13 @@ public partial class Shell : Control, IViewTicker
 
     void OnLevelOver(bool cleared)
     {
+        RunLogFile.Append(cleared);
         if (cleared)
         {
             Go(Score, Dark);
             return;
         }
-        bool best = G.Model.RecordLoss(); // a lost level still keeps its best score; an endless run its best
+        bool best = G.Model.RecordLoss(); // a lost level still keeps its best score; an endless or daily run its best
         GameOver.AddLose(best);
         Go(GameOver, Dark, 3);
     }

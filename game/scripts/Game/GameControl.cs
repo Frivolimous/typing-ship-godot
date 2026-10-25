@@ -30,6 +30,13 @@ public partial class GameControl : Node
         if (!Settings.Tutorials) G.Model.TutOff();
     }
 
+    /// <summary>The daily challenge: today's (UTC) unless given a day.</summary>
+    public void NewDaily(DateOnly? day = null)
+    {
+        G.Model.NewDaily(day ?? Daily.Today(DateTime.UtcNow));
+        if (!Settings.Tutorials) G.Model.TutOff();
+    }
+
     public override void _PhysicsProcess(double delta)
     {
         G.Model.Step();
