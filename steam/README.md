@@ -92,15 +92,15 @@ the game brings old saves over once.)
 The release build is made on Jeremy's machine (the music is git-ignored and only there).
 
 1. One time: SteamPipe > Builds > create a branch, e.g. `beta` (with a password if it should be private).
-2. `ts 18` (or `powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload main`): builds with the release
+2. `ts 20` (or `powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload main`): builds with the release
    template, checks the exported game reads its data, writes the SteamPipe scripts into `builds\steam\`, and uploads
    with steamcmd, live on the `beta` branch. steamcmd is downloaded from Valve into `steam\steamcmd\` the first
    time. It asks for the Steam login (or set `STEAM_USER`), password and Steam Guard code, which stay in steamcmd.
    `-Branch NAME` uploads to another branch; `-Description "..."` adds a note to the build.
 3. Testers own the game (Steamworks keys for the main app) and pick the branch in the game's Properties > Betas.
 
-**Steam Playtest instead** (testers request access on the store page, no keys): `-Upload playtest` uploads to the
-Playtest app. Steam won't set a build live on a default branch from steamcmd, so set it live on the Playtest app's
+**Steam Playtest instead** (testers request access on the store page, no keys): `ts 18` (`-Upload playtest`) uploads
+to the Playtest app. Steam won't set a build live on a default branch from steamcmd, so set it live on the Playtest app's
 SteamPipe > Builds page. The Playtest app has its own achievements and leaderboards: create the achievements there
 too (the leaderboards make themselves).
 

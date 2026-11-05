@@ -36,8 +36,9 @@ echo   15  Play endless mode  (Hard)
 echo   16  Check the endless patterns  (against the guidelines for writing them)
 echo.
 echo   17  Release builds  (Windows and Linux in builds\, checked)
-echo   18  Upload a release build to Steam  (the beta branch)
+echo   18  Upload a release build to the Steam Playtest app  (then set it live on the partner site)
 echo   19  Play today's daily challenge  (Hard)
+echo   20  Upload a release build to the main Steam app  (its beta branch)
 echo.
 echo    0  Quit
 echo.
@@ -66,8 +67,9 @@ if "%PICK%"=="14" dotnet run --project src\Sim -- endless
 if "%PICK%"=="15" dotnet build && "%GODOT%" --path game -- --endless --wpm=65
 if "%PICK%"=="16" dotnet run --project src\Sim -- endless --patterns
 if "%PICK%"=="17" powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Linux
-if "%PICK%"=="18" powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload main
+if "%PICK%"=="18" powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload playtest
 if "%PICK%"=="19" dotnet build && "%GODOT%" --path game -- --daily --wpm=65
+if "%PICK%"=="20" powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload main
 exit /b
 
 :watch

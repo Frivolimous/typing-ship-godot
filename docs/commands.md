@@ -28,7 +28,8 @@ whatever the `GODOT` environment variable is set to. Commands run from the repo 
 | Check the endless patterns against the guidelines for writing them (letters, words, spawn time, the level they work out to, divers coming from the side or bottom) | 16 | `dotnet run --project src/Sim -- endless --patterns` |
 
 | Release builds: exports Windows (and Linux with `-Linux`) with Godot's release template into `builds/`, then checks the exported game reads its embedded data. Warns if `game/assets/music` is empty | 17 | `powershell -ExecutionPolicy Bypass -File steam\build.ps1 [-Linux]` |
-| Upload to Steam: the release build, uploaded with steamcmd to the main app's `beta` branch (or `-Branch NAME`; `-Upload playtest` for the Playtest app). Refuses without music. Asks for the Steam login. See [steam/README.md](../steam/README.md) | 18 | `powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload main [-Branch beta] [-Description "..."] [-Linux]` |
+| Upload to Steam Playtest: the release build, uploaded with steamcmd to the Playtest app; then set it live on its SteamPipe > Builds page. Refuses without music. Asks for the Steam login. See [steam/README.md](../steam/README.md) | 18 | `powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload playtest [-Description "..."] [-Linux]` |
+| Upload to the main app instead, live on its `beta` branch (or `-Branch NAME`, a branch made on the partner site first) | 20 | `powershell -ExecutionPolicy Bypass -File steam\build.ps1 -Upload main [-Branch beta] [-Description "..."]` |
 
 How to write levels, the editing keys, and what the checks report: [level-format.md](level-format.md).
 

@@ -7,7 +7,7 @@
 #   ... -Upload main -Branch testers -Description "endless tweaks"               another branch, a note for the build
 #   ... -Upload playtest                                                         upload to the Steam Playtest app
 #
-# ts 17 and ts 18 run the first and third. steam\README.md explains the Steam side (branches, depots, steamcmd).
+# ts 17 runs the first, ts 18 the last (Playtest) and ts 20 the third (main app). steam\README.md explains the Steam side (branches, depots, steamcmd).
 param(
     [ValidateSet("none", "main", "playtest")] [string]$Upload = "none",
     [string]$Branch = "beta",
