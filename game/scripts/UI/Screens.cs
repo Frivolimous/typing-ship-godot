@@ -2,7 +2,8 @@ using Godot;
 
 namespace TypingShip;
 
-// The credits, as text over the stars. Any key or a click goes back to the menu. Visiting them earns the bronze
+// The credits, as text over the stars. L or the LICENSES button shows the licences (LicensesUI); any other key or a
+// click goes back to the menu. Visiting them earns the bronze
 // Explorer medal (the original's "visit our sponsors", whose link is gone).
 public partial class CreditsUI : Screen
 {
@@ -18,7 +19,10 @@ public partial class CreditsUI : Screen
             Kit.Label(this, names, settings, 60, y + 12, 430, HorizontalAlignment.Center, wrap: true);
             y += 12 + Kit.TextHeight(names, settings, 430) + 12;
         }
-        Kit.Label(this, "PRESS ANY KEY TO RETURN", Kit.Caption(8), 0, 512, G.StageSize, HorizontalAlignment.Center);
+        // The licences of the engine and the libraries the game is built on (LicensesUI).
+        var licenses = new TextButton("LICENSES", GoLicenses, 11, boxed: true, width: 110) { Position = new Vector2(18, 506) };
+        AddChild(licenses);
+        Kit.Label(this, "L FOR LICENSES  ·  ANY OTHER KEY TO RETURN", Kit.Caption(8), 140, 514, 392, HorizontalAlignment.Right);
     }
 
     public override void NavIn()
@@ -35,11 +39,18 @@ public partial class CreditsUI : Screen
 
     public override bool OnKey(InputEventKey key)
     {
+        if (key.Keycode == Key.L)
+        {
+            GoLicenses();
+            return true;
+        }
         Back();
         return true;
     }
 
     static void Back() => G.Shell.Go(G.Shell.Menu, Shell.Dark);
+
+    static void GoLicenses() => G.Shell.Go(G.Shell.Licenses, Shell.Dark);
 }
 
 // Six medals; pointing at one (or typing its name) shows what each of its tiers takes, the earned ones in their

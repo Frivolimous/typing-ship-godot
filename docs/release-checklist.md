@@ -16,11 +16,20 @@ Things that must be settled before a commercial Steam release.
 - [ ] **Nebula and space images.** Some backgrounds look like they come from astronomy photos (e.g. Hubble).
       Confirm the source and licence of each, or replace them.
 - [ ] Credits screen updated for the new release.
+- [x] Third-party licences in the game: the credits' LICENSES screen (L) shows Godot's MIT licence and its
+      third-party notices (from the engine), the .NET runtime's licence and notices, Steamworks.NET's and the fonts'
+      (game/assets/licenses/, assets/fonts/*.txt; the presets' include filter exports them). The title shows "MADE WITH
+      GODOT" beside CREDITS. When a library or font is added, add its licence there (LicensesUI.Files). Valve's
+      steam_api is covered by the Steamworks agreement, not a notice.
 
 ## Build and export
 
 - [x] Export presets (Windows; Linux for Steam Deck): game/export_presets.cfg; `steam/build.ps1` (ts 17) exports
       both with the release template. The Linux build hasn't been run yet (no Linux machine here).
+- [x] No Godot boot splash (project.godot `boot_splash/show_image=false`, black background).
+- [x] Exports carry the `custom` art set only: the presets' exclude filter leaves out `flash/` and every `ai/` sprite but
+      the boss pictures the rules measure (never drawn: `custom` has its own). ExportArtTests checks the filter and that
+      `custom` has all the art. Add new `ai` sprites to the filter, or the test fails.
 - [x] The data files (words, tuning, levels) are embedded in the game assembly (game/TypingShip.csproj). Check an
       exported build reads them: run it with `-- --check`. The build script does this every time.
 - [ ] Music is git-ignored. Make sure the release build machine has it (see game/assets/music/README.md).

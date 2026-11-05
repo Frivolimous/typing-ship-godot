@@ -179,7 +179,8 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   "pause" still works.
 - **Letter keys don't auto-repeat** when held. Backspace still does.
 - **Letters come from the typed character**, not the physical key code, so non-QWERTY layouts work.
-- **Widescreen:** the 550x550 playfield is centred, with side panels filling the rest of the window.
+- **Widescreen:** the 550x550 playfield is centred, with side panels filling the rest of the window. In
+  windowed mode the window shrinks (keeping its shape) to fit above the taskbar, and is centred (Settings.FitWindow).
 - **Smooth motion:** logic still runs at 24 Hz, but the display is interpolated at the monitor's refresh rate.
 - **Type to navigate the menus** (the original's TODO). Typing a button's first word works like clicking it:
   `start`, `high`, `achievements`, `more`, `credits`, `test`, `menu`, `submit`, `yes`, `no`, `done`, `skip`, a
@@ -203,6 +204,9 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 - **The difficulty box stays on the stage.** Next to level 5 it hung off the right edge.
 - **No Flash-portal stubs:** submit and display high score, the sponsor link and More games are gone. The bronze
   Explorer medal, which the sponsor link gave, is now for viewing the credits.
+- **Licences:** the credits have a LICENSES screen (L, or its button) with the engine's, .NET's, Steamworks.NET's
+  and the fonts' licences, scrolled with the arrows, Page Up/Down, Home, End or the wheel; the title says "MADE WITH
+  GODOT" beside CREDITS.
 - **The screens outside a level are new** (phase 7), in the cockpit's style over the moving starfield: the title
   (the player's ship, which launches off the top when you START), a level map drawn in code (a star chart with the
   route lit as far as you've reached, the bosses' own ships as their nodes, health and accuracy medal icons), the

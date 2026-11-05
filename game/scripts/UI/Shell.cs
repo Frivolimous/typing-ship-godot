@@ -15,6 +15,7 @@ public partial class Shell : Control, IViewTicker
     public VictoryUI Victory = null!;
     public AchieveUI Achievements = null!;
     public CreditsUI Credits = null!;
+    public LicensesUI Licenses = null!;
     public TypingTest Test = null!;
     public OptionsUI Options = null!;
     public readonly PauseUI Pause = new();
@@ -59,9 +60,10 @@ public partial class Shell : Control, IViewTicker
         Victory = new VictoryUI();
         Achievements = new AchieveUI();
         Credits = new CreditsUI();
+        Licenses = new LicensesUI();
         Test = new TypingTest();
         Options = new OptionsUI();
-        foreach (var s in new Screen[] { Menu, Score, GameOver, Victory, Achievements, Credits, Test, Options }) screens.AddChild(s);
+        foreach (var s in new Screen[] { Menu, Score, GameOver, Victory, Achievements, Credits, Licenses, Test, Options }) screens.AddChild(s);
         AddChild(screens);
         AddChild(Pause);
         AddChild(PauseB);

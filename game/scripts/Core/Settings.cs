@@ -58,9 +58,37 @@ public static class Settings
         {
             var mode = Fullscreen ? DisplayServer.WindowMode.Fullscreen : DisplayServer.WindowMode.Windowed;
             if (DisplayServer.WindowGetMode() != mode) DisplayServer.WindowSetMode(mode);
+            if (!Fullscreen) FitWindow();
         }
         G.Sound.MusicVolume = MusicVolume;
         G.Sound.SoundVolume = SoundVolume;
         Sprites.UseArtSet(ArtSet);
+    }
+
+    /// <summary>
+    /// Shrinks the window, keeping its shape, until it and its title bar fit the screen's usable area (the screen
+    /// less the taskbar), and centres it there. The project asks for a 1920x1080 window, which on a 1080p screen
+    /// runs under the taskbar.
+    /// </summary>
+    static void FitWindow()
+    {
+        var usable = DisplayServer.ScreenGetUsableRect(DisplayServer.WindowGetCurrentScreen());
+        var size = DisplayServer.WindowGetSize();
+        var frame = DisplayServer.WindowGetSizeWithDecorations() - size;
+        var room = usable.Size - frame;
+        if (room.X <= 0 || room.Y <= 0) return;
+        if (size.X > room.X || size.Y > room.Y)
+        {
+            float k = Mathf.Min((float)room.X / size.X, (float)room.Y / size.Y);
+            size = new Vector2I((int)(size.X * k), (int)(size.Y * k));
+            DisplayServer.WindowSetSize(size);
+        }
+        // Window positions are the client area's; the frame's top left sits this far up and left of it.
+        var offset = DisplayServer.WindowGetPosition() - DisplayServer.WindowGetPositionWithDecorations();
+        var outer = DisplayServer.WindowGetSizeWithDecorations();
+        var at = DisplayServer.WindowGetPositionWithDecorations();
+        bool inside = at.X >= usable.Position.X && at.Y >= usable.Position.Y
+            && at.X + outer.X <= usable.End.X && at.Y + outer.Y <= usable.End.Y;
+        if (!inside) DisplayServer.WindowSetPosition(usable.Position + (usable.Size - outer) / 2 + offset);
     }
 }

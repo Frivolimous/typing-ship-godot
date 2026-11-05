@@ -17,6 +17,8 @@ config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 config/icon="res://assets/icon.png"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="Millennium Typer"
+boot_splash/show_image=false
+boot_splash/bg_color=Color(0, 0, 0, 1)
 
 [display]
 

@@ -14,18 +14,22 @@ public static class Sprites
 
     // ---- Art sets ----
     // The ships, missiles, turret and medals come from an art set: a folder under assets/sprites with a player.png
-    // ("ai", "custom", ...), chosen in the options, with F2, or with --art=NAME. Art a set doesn't have is borrowed
-    // from "ai", so a half-finished set still plays. Flames and charge points are per set (data/mounts.txt). The
-    // rules always measure the "ai" bosses (gun ports, hangars, where the scanner lands); a set's boss art is only
-    // drawn in their place (BossLook).
+    // ("custom", "ai", ...), chosen in the options, with F2, or with --art=NAME; "custom" is the default. Art a set
+    // doesn't have is borrowed from "ai", so a half-finished set still plays. Exports leave out every "ai" sprite but the
+    // bosses the rules measure (export_presets.cfg), so they have "custom" only, and a test checks it has all the art.
+    // Flames and charge points are per set (data/mounts.txt). The rules always
+    // measure the "ai" bosses (gun ports, hangars, where the scanner lands); a set's boss art is only drawn in their
+    // place (BossLook).
 
-    public const string DefaultSet = "ai";
+    public const string DefaultSet = "custom";
+    /// <summary>The set that lends a set the art it hasn't got.</summary>
+    const string Fallback = "ai";
     const string Root = "res://assets/sprites";
 
     /// <summary>The art set in use.</summary>
-    public static string ArtSet { get; private set; } = DefaultSet;
+    public static string ArtSet { get; private set; } = "";
 
-    /// <summary>The art sets there are: "ai" first, then the rest by name.</summary>
+    /// <summary>The art sets there are: the default first, then the rest by name.</summary>
     public static IReadOnlyList<string> ArtSets { get; } = FindSets();
 
     static List<string> FindSets()
@@ -34,17 +38,16 @@ public static class Sprites
             .Where(d => ResourceLoader.Exists($"{Root}/{d}/player.png"))
             .OrderBy(d => d == DefaultSet ? "" : d, StringComparer.Ordinal)
             .ToList();
-        if (!sets.Contains(DefaultSet)) sets.Insert(0, DefaultSet);
         return sets;
     }
 
     /// <summary>Raised when the art set changes, so what's on screen can swap its art.</summary>
     public static event Action? ArtChanged;
 
-    /// <summary>Switches to an art set (an unknown name means "ai").</summary>
+    /// <summary>Switches to an art set (an unknown name means the default).</summary>
     public static void UseArtSet(string set)
     {
-        set = ArtSets.Contains(set) ? set : DefaultSet;
+        set = ArtSets.Contains(set) ? set : ArtSets.Contains(DefaultSet) ? DefaultSet : ArtSets[0];
         if (set == ArtSet) return;
         ArtSet = set;
         LoadArt();
@@ -54,13 +57,13 @@ public static class Sprites
     /// <summary>The set after the current one, round and round.</summary>
     public static string NextArtSet() => ArtSets[(ArtSets.ToList().IndexOf(ArtSet) + 1) % ArtSets.Count];
 
-    /// <summary>A sprite from the current set, or from "ai" if the set hasn't got it.</summary>
-    static Texture2D A(string name) => ResourceLoader.Exists($"{Root}/{ArtSet}/{name}.png") ? T($"{ArtSet}/{name}") : T($"{DefaultSet}/{name}");
+    /// <summary>A sprite from the current set, or from the fallback set if it hasn't got it.</summary>
+    static Texture2D A(string name) => ResourceLoader.Exists($"{Root}/{ArtSet}/{name}.png") ? T($"{ArtSet}/{name}") : T($"{Fallback}/{name}");
 
     /// <summary>A sprite only if the current set has it.</summary>
     static Texture2D? Own(string name) => ResourceLoader.Exists($"{Root}/{ArtSet}/{name}.png") ? T($"{ArtSet}/{name}") : null;
 
-    static Sprites() => LoadArt();
+    static Sprites() => UseArtSet(DefaultSet);
 
     static void LoadArt()
     {

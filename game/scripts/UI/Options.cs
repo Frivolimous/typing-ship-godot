@@ -14,7 +14,9 @@ public partial class OptionsUI : Screen
     public OptionsUI()
     {
         Kit.Label(this, "OPTIONS", Kit.Title(18), 18, 14);
-        Add(new OptionRow("ART SET", "art", () => Sprites.ArtSet.ToUpperInvariant(), () => Settings.ArtSet = Sprites.NextArtSet()));
+        // Exports have one art set only (export_presets.cfg), so there's nothing to choose.
+        if (Sprites.ArtSets.Count > 1)
+            Add(new OptionRow("ART SET", "art", () => Sprites.ArtSet.ToUpperInvariant(), () => Settings.ArtSet = Sprites.NextArtSet()));
         Add(new OptionRow("DISPLAY", "display", () => Settings.Fullscreen ? "FULLSCREEN" : "WINDOWED",
             () => Settings.Fullscreen = !Settings.Fullscreen));
         Add(new OptionRow("MUSIC VOLUME", "music", () => Settings.MusicVolume, v => Settings.MusicVolume = v));

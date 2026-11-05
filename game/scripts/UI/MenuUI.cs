@@ -44,6 +44,8 @@ public partial class MenuUI : Screen
 
         // Which build this is, for playtesters to quote.
         Kit.Label(title, BuildInfo.Short, Kit.Caption(7), 16, 12);
+        // Beside the credits button: the engine (its licence is on the credits' LICENSES screen).
+        Kit.Label(title, "MADE WITH GODOT", Kit.Caption(7), 16, 500, 150, HorizontalAlignment.Right);
 
         ship.Position = ShipHome;
         EngineFlames.Attach(ship);
