@@ -180,10 +180,12 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 - **Letter keys don't auto-repeat** when held. Backspace still does.
 - **Letters come from the typed character**, not the physical key code, so non-QWERTY layouts work.
 - **Widescreen:** the 550x550 playfield is centred, with side panels filling the rest of the window. In
-  windowed mode the window shrinks (keeping its shape) to fit above the taskbar, and is centred (Settings.FitWindow). Everything snaps to whole screen pixels
-  (`snap_2d_transforms_to_pixel`): at a scale that isn't a whole number (a shrunken window, 1440p) text went soft
-  without it.
+  windowed mode the window shrinks (keeping its shape) to fit above the taskbar, and is centred (Settings.FitWindow).
+  Text is rasterised at twice the window's scale and drawn shrunk (Main.SuperSampleText), which keeps it sharp at
+  any scale, whole or not. (Snapping to pixels sharpened text too, but made moving ships judder.)
 - **Smooth motion:** logic still runs at 24 Hz, but the display is interpolated at the monitor's refresh rate.
+  Godot turns interpolation off on Controls and their children, so the game world's Node2D layers (GameUI's
+  GameView, BossView and back effects, the nebulae) turn it back on; without that, ships moved in 24 Hz steps.
 - **Type to navigate the menus** (the original's TODO). Typing a button's first word works like clicking it:
   `start`, `high`, `achievements`, `more`, `credits`, `test`, `menu`, `submit`, `yes`, `no`, `done`, `skip`, a
   difficulty name in the difficulty box, an achievement's name to show its goals. On the map a level's label

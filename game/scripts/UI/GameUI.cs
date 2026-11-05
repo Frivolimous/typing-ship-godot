@@ -6,9 +6,11 @@ namespace TypingShip;
 // typed text, hull, progress).
 public partial class GameUI : Control
 {
-    public readonly Node2D GameView = new() { Position = new Vector2(-25, -25) };
-    public readonly Node2D BossView = new() { Position = new Vector2(-25, -25) };
-    readonly Node2D effectsBack = new();
+    // Godot turns physics interpolation off on Controls (this, the playfield), and their children inherit it; the game
+    // world turns it back on, so ships move smoothly at the screen's rate, not in 24 Hz steps.
+    public readonly Node2D GameView = new() { Position = new Vector2(-25, -25), PhysicsInterpolationMode = PhysicsInterpolationModeEnum.On };
+    public readonly Node2D BossView = new() { Position = new Vector2(-25, -25), PhysicsInterpolationMode = PhysicsInterpolationModeEnum.On };
+    readonly Node2D effectsBack = new() { PhysicsInterpolationMode = PhysicsInterpolationModeEnum.On };
     readonly Cockpit cockpit = new() { Name = "Cockpit" };
     readonly ScoreReadout score = new() { Name = "Score" };
     readonly ProgressReadout progress = new() { Name = "Progress" };

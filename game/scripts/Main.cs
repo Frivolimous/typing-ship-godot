@@ -59,6 +59,8 @@ public partial class Main : Node2D
         Settings.Load();
         if (args.TryGetValue("art", out var artSet)) Settings.ArtSet = artSet; // for this run only (not saved)
         Settings.Apply();
+        SuperSampleText();
+        GetTree().Root.SizeChanged += SuperSampleText;
         G.World = new Presenter();
         G.Ctrl = new GameControl { Name = "GameControl" };
         AddChild(G.Ctrl);
@@ -132,6 +134,16 @@ public partial class Main : Node2D
         if (!G.Dev) return;
         DevKeys.AddIfRequested(this);
         Screenshot.CaptureIfRequested(this);
+    }
+
+    /// <summary>
+    /// Text is rasterised at twice the window's scale and drawn shrunk, which smooths its edges: at the plain scale
+    /// (what Godot does by itself) the bold fonts look blocky at the stage's small sizes.
+    /// </summary>
+    void SuperSampleText()
+    {
+        var root = GetTree().Root;
+        root.OversamplingOverride = 2 * Math.Max(1, root.GetStretchTransform().Scale.Y);
     }
 
     /// <summary>A data file has a mistake: say where, on screen and in the console, instead of starting.</summary>

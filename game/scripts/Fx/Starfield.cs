@@ -36,7 +36,8 @@ public partial class Starfield : Node2D
     int nebTick = 9000;
 
     public readonly TextureRect Back = new() { MouseFilter = Control.MouseFilterEnum.Ignore };
-    public readonly Node2D NebulaLayer = new();
+    // Interpolated, though the playfield (a Control) turns interpolation off for what's under it.
+    public readonly Node2D NebulaLayer = new() { PhysicsInterpolationMode = PhysicsInterpolationModeEnum.On };
     public Starfield()
     {
         // Fill the sky to start with: as many stars as each layer has once it's been scrolling a while.
