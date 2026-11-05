@@ -180,7 +180,9 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 - **Letter keys don't auto-repeat** when held. Backspace still does.
 - **Letters come from the typed character**, not the physical key code, so non-QWERTY layouts work.
 - **Widescreen:** the 550x550 playfield is centred, with side panels filling the rest of the window. In
-  windowed mode the window shrinks (keeping its shape) to fit above the taskbar, and is centred (Settings.FitWindow).
+  windowed mode the window shrinks (keeping its shape) to fit above the taskbar, and is centred (Settings.FitWindow). Everything snaps to whole screen pixels
+  (`snap_2d_transforms_to_pixel`): at a scale that isn't a whole number (a shrunken window, 1440p) text went soft
+  without it.
 - **Smooth motion:** logic still runs at 24 Hz, but the display is interpolated at the monitor's refresh rate.
 - **Type to navigate the menus** (the original's TODO). Typing a button's first word works like clicking it:
   `start`, `high`, `achievements`, `more`, `credits`, `test`, `menu`, `submit`, `yes`, `no`, `done`, `skip`, a
