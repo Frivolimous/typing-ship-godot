@@ -333,6 +333,8 @@ public partial class EnemyShipView : SpriteView
 {
     /// <summary>The word on the ship's turret, if it has one.</summary>
     public WordLabel? TurretWord => turret?.Word;
+    /// <summary>The turret's node, while the ship has one (its shots leave from it).</summary>
+    public Node2D? TurretNode => turret;
 
     public override void _Process(double delta)
     {
@@ -383,7 +385,10 @@ public partial class EnemyShipView : SpriteView
         }
         if (ship.Turret != null)
         {
-            turret = new TurretView(ship.Turret, Sprites.Turrets[look.Art]);
+            // Where the art's turret ring is (data/mounts.txt), or the rules' spot, 20 px behind the centre.
+            var mount = Mounts.Turret(View.Texture);
+            turret = new TurretView(ship.Turret, Sprites.Turrets[look.Art],
+                mount is { } m ? new Vector2(-m.Y, m.X) * look.Scale : null); // art up is heading +x
             AddChild(turret);
         }
         SyncShield();
@@ -437,12 +442,17 @@ public partial class TurretView : Node2D
 {
     readonly Turret turret;
     public readonly WordLabel Word = new();
+    // Where the word sits: the rules' spot, 20 px behind the ship's centre, wherever the gun is drawn (on the big ships
+    // the gun sits on a ring near the centre, where its word would cover the ship's).
+    readonly Vector2 wordAt;
 
-    public TurretView(Turret turret, Texture2D art)
+    /// <param name="at">Where it sits on the ship (heading space, the ship's centre at 0,0), if not the rules' spot.</param>
+    public TurretView(Turret turret, Texture2D art, Vector2? at = null)
     {
         this.turret = turret;
         Name = "Turret";
-        Position = G.V(turret.Position);
+        Position = at ?? G.V(turret.Position);
+        wordAt = G.V(turret.Position);
         AddChild(new Sprite2D
         {
             Texture = art,
@@ -454,12 +464,13 @@ public partial class TurretView : Node2D
         Sync();
     }
 
-    public TurretView() : this(null!, null!) { }
+    public TurretView() : this(null!, null!, null) { }
 
     public void Sync()
     {
         Rotation = turret.Rotation;
         Word.Set(turret.Word, turret.Priority);
+        Word.Position = (wordAt - Position).Rotated(-Rotation);
         Word.Rotation = -Rotation - turret.Ship.Rotation;
     }
 }

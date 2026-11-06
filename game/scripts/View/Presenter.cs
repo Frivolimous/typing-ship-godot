@@ -119,7 +119,17 @@ public sealed class Presenter : IGameEvents
 
     public void Explosion(Vec2 at, int size) => G.Starfield.Explosion(at.X, at.Y, size);
 
-    public void Beam(Vec2 from, Vec2 to, BeamKind kind) => BeamFx.Make(Muzzle(from), to, kind);
+    public void Beam(Vec2 from, Vec2 to, BeamKind kind) => BeamFx.Make(TurretMuzzle(from, to, kind) ?? Muzzle(from), to, kind);
+
+    /// <summary>
+    /// An enemy shot at anything but the player is a turret shooting down a missile: it leaves from the turret.
+    /// </summary>
+    Vector2? TurretMuzzle(Vec2 from, Vec2 to, BeamKind kind)
+    {
+        if (kind != BeamKind.EnemyLaser || to == G.Model.Player.P) return null;
+        var turret = views.Values.OfType<EnemyShipView>().FirstOrDefault(v => v.Model.P == from)?.TurretNode;
+        return turret != null && turret.IsInsideTree() ? G.UI.GameView.ToLocal(turret.GlobalPosition) : null;
+    }
 
     /// <summary>
     /// Where a shot from a ship at <paramref name="at"/> leaves it: the gun on its nose (its charge point in

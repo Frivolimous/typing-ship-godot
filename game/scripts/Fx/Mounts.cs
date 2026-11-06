@@ -7,7 +7,7 @@ namespace TypingShip;
 /// <summary>A nozzle on a piece of art: where it is (texture pixels from the art's centre), how big its flame is.</summary>
 public readonly record struct EngineMount(Vector2 At, float Width, float Length, Color Colour);
 
-/// <summary>Where effects sit on each piece of art (data/mounts.txt): engine flames, the weapon's charge point, the shield.</summary>
+/// <summary>Where effects sit on each piece of art (data/mounts.txt): engine flames, the weapon's charge point, the shield, the turret.</summary>
 public static class Mounts
 {
     const string File = "mounts.txt";
@@ -25,6 +25,7 @@ public static class Mounts
     static Dictionary<string, EngineMount[]> flames = new();
     static Dictionary<string, Vector2> charges = new();
     static Dictionary<string, Rect2> shields = new();
+    static Dictionary<string, Vector2> turrets = new();
 
     /// <summary>Reads mounts.txt; a mistake throws a DataError naming the line. A missing file means no mounts.</summary>
     public static void Load(DataSource source)
@@ -33,6 +34,7 @@ public static class Mounts
         var foundFlames = new Dictionary<string, List<EngineMount>>();
         var foundCharges = new Dictionary<string, Vector2>();
         var foundShields = new Dictionary<string, Rect2>();
+        var foundTurrets = new Dictionary<string, Vector2>();
         var lines = text?.Split('\n') ?? [];
         for (int n = 0; n < lines.Length; n++)
         {
@@ -42,7 +44,7 @@ public static class Mounts
             var f = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
             if (f.Length == 0) continue;
             DataError Error(string problem) => new(File, n + 1, problem);
-            if (f.Length < 3) throw Error("expected: sprite  x,y  flame width length colour,  sprite  x,y  charge,  or  sprite  x,y  shield width height");
+            if (f.Length < 3) throw Error("expected: sprite  x,y  flame width length colour,  sprite  x,y  charge,  or  sprite  x,y  shield width height,  or  sprite  x,y  turret");
             var xy = f[1].Split(',');
             if (xy.Length != 2 || !Num(xy[0], out float x) || !Num(xy[1], out float y))
                 throw Error($"\"{f[1]}\" isn't a position like -28,94");
@@ -70,13 +72,19 @@ public static class Mounts
                     if (foundShields.ContainsKey(f[0])) throw Error($"{f[0]} already has a shield");
                     foundShields[f[0]] = new Rect2(at, new Vector2(sw, sh)); // centre and size
                     break;
+                case "turret":
+                    if (f.Length != 3) throw Error("expected: sprite  x,y  turret");
+                    if (foundTurrets.ContainsKey(f[0])) throw Error($"{f[0]} already has a turret");
+                    foundTurrets[f[0]] = at;
+                    break;
                 default:
-                    throw Error($"\"{f[2]}\" should be flame, charge or shield");
+                    throw Error($"\"{f[2]}\" should be flame, charge, shield or turret");
             }
         }
         flames = foundFlames.ToDictionary(kv => kv.Key, kv => kv.Value.ToArray());
         charges = foundCharges;
         shields = foundShields;
+        turrets = foundTurrets;
     }
 
     static bool Num(string s, out float v) => float.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out v);
@@ -101,4 +109,8 @@ public static class Mounts
     /// <summary>Where the art's weapon charges up, in texture pixels from its centre, or null if it isn't listed.</summary>
     public static Vector2? Charge(Texture2D? tex) =>
         Name(tex) is { } n && charges.TryGetValue(n, out var at) ? at : null;
+
+    /// <summary>Where a turret sits on the art (its pivot), in texture pixels from its centre, or null if it isn't listed.</summary>
+    public static Vector2? Turret(Texture2D? tex) =>
+        Name(tex) is { } n && turrets.TryGetValue(n, out var at) ? at : null;
 }

@@ -35,7 +35,7 @@ direction. The art and fonts will be replaced, so don't polish placeholder visua
 | `src/Core/` | **The rules**, plain C# with no Godot reference (a test checks): `Game` (state, the 24 Hz tick, weapons, typing), entities, bosses, the bot (`AutoTyper`), `Simulator`, the RNG, save data and scoring. `Levels/` parses and builds level files; `Data/` loads and checks the data files |
 | `tests/Core.Tests/` | xUnit tests of the rules and data files |
 | `game/` | The Godot project: presentation and input only |
-| `data/` | words.txt, tuning.txt, typing-test.txt (the typing test's passages), mounts.txt (where engine flames and weapon charge-ups sit on each sprite), levels/ (read from disk in a checkout, embedded in the game assembly for exports) |
+| `data/` | words.txt, tuning.txt, typing-test.txt (the typing test's passages), mounts.txt (where engine flames and weapon charge-ups, shields and turrets sit on each sprite), levels/ (read from disk in a checkout, embedded in the game assembly for exports) |
 | `docs/` | Docs |
 | `steam/` | Steam: Valve's steam_api libraries (`redist/`), the release build and SteamPipe upload script (`build.ps1`), and what's set up on the partner site ([steam/README.md](steam/README.md)). The game's Steam code is `game/scripts/Platform/` behind `IPlatform` (`G.Platform`); Core never sees it |
 
@@ -101,7 +101,7 @@ original art. `game/assets/sprites/ai/` holds AI-generated placeholder
 art (ships point up; the bosses are animated in code), cut out from sources in `C:\JS Projects\Typing Ship PUB\art\ai-sprites\`.
 **Art sets:** the ships, missiles, turret and medals come from a set, a folder under `game/assets/sprites/` with a
 `player.png` (`custom`, the default and the only set in exports; `ai`, ...), picked in the options, with F2 or `--art=NAME` (Core/Sprites.cs); art a set lacks is
-borrowed from `ai` (a set may add `turret_m` and `turret_l` for the missile and laser ships; otherwise they use `turret`). The rules always measure the `ai` bosses (their art shapes the rules); a set's `boss0`-`boss2` are only how they look, so they must be the same pictures at any size (drawn at the `ai` size). Each set has its own flames, charge points and shields in
+borrowed from `ai` (a set may add `turret_m` and `turret_l` for the missile and laser ships; otherwise they use `turret`). The rules always measure the `ai` bosses (their art shapes the rules); a set's `boss0`-`boss2` are only how they look, so they must be the same pictures at any size (drawn at the `ai` size). Each set has its own flames, charge points, shields and turret spots in
 data/mounts.txt (`custom/player ...`); when ship art changes, move them there. **Music is git-ignored** (Jeremy keeps it backed up
 elsewhere). Code must keep working when `game/assets/music/` is empty, and nothing should start tracking those files. The `.fla` and the raw art sources live outside the repo:
 `C:\JS Projects\Typing Ship PUB\` and `C:\JS Projects\Typing Ship\` (Audio/, Bitmaps/, Vector/).
