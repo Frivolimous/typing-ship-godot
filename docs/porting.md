@@ -190,7 +190,8 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   `start`, `high`, `achievements`, `more`, `credits`, `test`, `menu`, `submit`, `yes`, `no`, `done`, `skip`, a
   difficulty name in the difficulty box, an achievement's name to show its goals. On the map a level's label
   selects it: `1`–`9`, and `b1`–`b3` for the bosses, which are labelled B1–B3 instead of all "B". The letters typed
-  so far show at the top of the screen. The mouse works as before.
+  so far show at the top of the screen. The mouse works as before. No screen says so (2026-11-06: the prompts were
+  noise); players can find it for themselves.
 - **More keys and clicks:** Escape closes the difficulty box and leaves the achievements screen; any key leaves the
   credits; Space or Enter continues from the game over screen (as MENU); Enter or a click also continues from the
   score screen; Space, Enter or Escape skip the victory credits. Any key also closes a stub message box.
@@ -211,6 +212,13 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 - **Licences:** the credits have a LICENSES screen (L, or its button) with the engine's, .NET's, Steamworks.NET's
   and the fonts' licences, scrolled with the arrows, Page Up/Down, Home, End or the wheel; the title says "MADE WITH
   GODOT" beside CREDITS.
+- **The last boss is finished with "millennium":** the long scanner word for its final hit is always the game's own
+  word (Boss.FinalWord, not in words.txt, so nothing else carries it). The other hits keep random words.
+- **A new player is asked how fast they type** (SpeedQuestionUI): the first START, with nothing played and no typing
+  test taken, offers the five difficulties as WPM bands (the typing test's cut-offs: under 40, 40 to 64, 65 to 89, 90
+  to 119, 120+) or TAKE THE TYPING TEST. A band shows the difficulty it fits, saved as SaveData.StatedSpeed, and the
+  difficulty box points at it (a test result takes over). Either way the star map follows; a cancelled test asks again
+  next START.
 - **The screens outside a level are new** (phase 7), in the cockpit's style over the moving starfield: the title
   (the player's ship, which launches off the top when you START), a level map drawn in code (a star chart with the
   route lit as far as you've reached, the bosses' own ships as their nodes, health and accuracy medal icons), the

@@ -49,6 +49,8 @@ public sealed class Boss : Sprite
     public static readonly string[] Arts = { "ai/boss0", "ai/boss1", "ai/boss2" };
     /// <summary>Boss 1's hangar openings (behind the doors), on its art.</summary>
     public const string HangarArt = "ai/boss0_hangar";
+    /// <summary>The word that finishes the last boss (it isn't in the word list, so nothing else ever carries it).</summary>
+    public const string FinalWord = "millennium";
     /// <summary>Boss 2's six gun muzzles, in art pixels: the turrets it drops start there.</summary>
     static readonly Vec2[] GunPorts =
         { new(143, 354), new(265, 375), new(390, 481), new(578, 481), new(703, 375), new(825, 353) };
@@ -372,7 +374,13 @@ public sealed class Scanner : Entity
         else if (WordSize < t.ScannerFinalWord)
         {
             WordSize = t.ScannerFinalWord;
-            AddWord();
+            // The blow that finishes the last boss, and the game: always the game's own word.
+            if (Game.Boss is { } last && last.Index == Boss.Arts.Length - 1 && last.Health == 1)
+            {
+                RecycleWord();
+                Word = Boss.FinalWord;
+            }
+            else AddWord();
         }
         else
         {

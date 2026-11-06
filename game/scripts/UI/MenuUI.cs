@@ -146,6 +146,13 @@ public partial class MenuUI : Screen
     void StartGame()
     {
         if (MapShown || leaving) return;
+        // A new player is asked how fast they type first (SpeedQuestionUI), which goes on to the map.
+        if (G.Model.Save.NeedsSpeedQuestion)
+        {
+            G.Sound.Sound(SoundControl.Click);
+            G.Shell.Go(G.Shell.Speed, Shell.Dark);
+            return;
+        }
         leaving = true;
         G.Sound.Sound(SoundControl.Click);
         var t = CreateTween().SetParallel();
@@ -214,7 +221,6 @@ public partial class MapUI : Control
         Size = new Vector2(G.StageSize, G.StageSize);
         MouseFilter = MouseFilterEnum.Ignore;
         Kit.Label(this, "SECTOR MAP", Kit.Title(16), 16, 10);
-        Kit.Label(this, "TYPE A LEVEL'S NAME TO PLAY IT", Kit.Caption(7), 16, 34);
         BuildRoute();
         for (int i = 0; i < 12; i++)
         {
@@ -577,7 +583,7 @@ public partial class LevelButton : Control
 }
 
 // The difficulty picker beside a level: the level's best score, then a button per difficulty, with the one the
-// typing test suggests marked.
+// player's speed suggests (the typing test's, or what they said when asked) marked.
 public partial class DiffSelect : Control
 {
     /// <summary>What <see cref="Open"/> takes instead of a level for endless mode and the daily challenge.</summary>
@@ -618,7 +624,7 @@ public partial class DiffSelect : Control
         // Beside the level, kept on the stage.
         Position = new Vector2(Math.Min(at.X + 30, G.StageSize - Size.X - 4), Math.Clamp(at.Y - 30, 4, G.StageSize - Size.Y - 50));
         // Point out the hardest difficulty the typing test says you can keep up with.
-        recommended = TypingTestRun.Suggest(G.Model.Save.TestWpm);
+        recommended = G.Model.Save.RecommendedDifficulty;
         Visible = true;
         QueueRedraw();
     }

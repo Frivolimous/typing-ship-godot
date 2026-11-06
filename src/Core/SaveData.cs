@@ -31,6 +31,9 @@ public sealed class SaveData
     public int DailyTries { get; set; }
     /// <summary>The typing test's last result in WPM, 0 if never taken. (New: the original threw it away.)</summary>
     public int TestWpm { get; set; }
+    /// <summary>The speed the player said they type at when first asked, as a difficulty (0 easy to 4 insane); -1 if they
+    /// haven't been asked, or went to the typing test instead.</summary>
+    public int StatedSpeed { get; set; } = -1;
 
     /// <summary>Writes the save somewhere (the game sets this); null keeps it in memory.</summary>
     [JsonIgnore] public Action<string>? Store;
@@ -38,6 +41,13 @@ public sealed class SaveData
     static int[][] NewLevelScores() => Enumerable.Range(0, 12).Select(_ => new int[4]).ToArray();
 
     [JsonIgnore] public int Highscore => LevelScore.Sum(l => l[0]);
+
+    /// <summary>The difficulty to point out: the typing test's suggestion if it's been taken, else the speed the player
+    /// stated, else -1.</summary>
+    [JsonIgnore] public int RecommendedDifficulty => TestWpm > 0 ? TypingTestRun.Suggest(TestWpm) : StatedSpeed;
+
+    /// <summary>A new player, asked how fast they type before the star map: no stated speed, no test, nothing played.</summary>
+    [JsonIgnore] public bool NeedsSpeedQuestion => StatedSpeed < 0 && TestWpm == 0 && Highscore == 0 && EndlessBest.All(b => b == 0);
 
     public bool Unlocked(int level) => level == 0 || LevelScore[level - 1][1] > 0;
 
@@ -95,6 +105,7 @@ public sealed class SaveData
         AchieveC = new int[6];
         LevelScore = NewLevelScores();
         TestWpm = 0;
+        StatedSpeed = -1;
         Save();
     }
 

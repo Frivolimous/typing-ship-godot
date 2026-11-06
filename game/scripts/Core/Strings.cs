@@ -36,10 +36,25 @@ public static class Strings
     public const string Endless = "TYPERSPACE";
     /// <summary>The daily challenge's name on screen.</summary>
     public const string Daily = "DAILY";
-    public const string Menu = "MENU", WonGame = "VICTORY", LoseGame = "SHIP DESTROYED";
+    public const string Menu = "MENU", Resume = "RESUME", WonGame = "VICTORY", LoseGame = "SHIP DESTROYED";
 
     // Map and menus
     public const string Health = "HEALTH", Accuracy = "ACCURACY", Skip = "SKIP", TypingTest = "TYPING TEST";
+
+    // The speed question (onboarding: SpeedQuestionUI)
+    public const string SpeedWelcome = "WELCOME, PILOT", SpeedQuestion = "HOW FAST DO YOU TYPE?",
+        SpeedOr = "NOT SURE?", SpeedTest = "TAKE THE TYPING TEST",
+        SpeedRecommended = "RECOMMENDED DIFFICULTY", SpeedContinue = "CONTINUE", SpeedBack = "BACK";
+
+    /// <summary>A difficulty as the band of typing speeds it suits: the typing test's cut-offs ("40 TO 64 WPM").</summary>
+    public static string SpeedBand(int i)
+    {
+        var w = Difficulty.Wpm;
+        return i == 0 ? $"UNDER {w[1]} WPM" : i == w.Length - 1 ? $"{w[i]}+ WPM" : $"{w[i]} TO {w[i + 1] - 1} WPM";
+    }
+
+    /// <summary>What to type for a band's button: its first number, or "under" for the slowest.</summary>
+    public static string SpeedBandWord(int i) => i == 0 ? "under" : Difficulty.Wpm[i].ToString();
 
     // Typing test (the passages are in data/typing-test.txt)
     public const string TestHint = "Type the text. The clock starts with your first key.";

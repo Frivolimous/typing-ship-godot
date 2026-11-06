@@ -43,8 +43,6 @@ public partial class LicensesUI : Screen
         AddChild(text);
         var back = new TextButton("BACK", Back, 12, boxed: true, width: 90) { Position = new Vector2(18, 506) };
         AddChild(back);
-        Kit.Label(this, "ARROWS, PAGE UP AND PAGE DOWN SCROLL  ·  ESCAPE RETURNS", Kit.Caption(7), 120, 514, 412,
-            HorizontalAlignment.Right);
     }
 
     public override void _Draw() => Kit.Panel(this, Box);

@@ -22,7 +22,6 @@ public partial class CreditsUI : Screen
         // The licences of the engine and the libraries the game is built on (LicensesUI).
         var licenses = new TextButton("LICENSES", GoLicenses, 11, boxed: true, width: 110) { Position = new Vector2(18, 506) };
         AddChild(licenses);
-        Kit.Label(this, "L FOR LICENSES  ·  ANY OTHER KEY TO RETURN", Kit.Caption(8), 140, 514, 392, HorizontalAlignment.Right);
     }
 
     public override void NavIn()
@@ -98,7 +97,7 @@ public partial class AchieveUI : Screen
             AddChild(card);
             Nav.Add(Strings.AchieveNames[i], () => Show(index));
         }
-        hint = Kit.Label(this, "POINT AT AN ACHIEVEMENT, OR TYPE ITS NAME", Kit.Caption(8), Detail.Position.X, Detail.Position.Y + 48,
+        hint = Kit.Label(this, "POINT AT AN ACHIEVEMENT", Kit.Caption(8), Detail.Position.X, Detail.Position.Y + 48,
             Detail.Size.X, HorizontalAlignment.Center);
         for (int j = 0; j < 3; j++)
         {
@@ -307,7 +306,7 @@ public partial class TypingTest : Screen
     void Finish(string message)
     {
         reported = true;
-        finishB.Message = message + "\n\nPRESS SPACE TO CONTINUE";
+        finishB.Message = message;
         finishB.Visible = true;
     }
 
@@ -627,7 +626,6 @@ public partial class GameOverUI : Screen
         };
         AddChild(menu);
         Nav.Add(menu);
-        Kit.Label(this, "TYPE A BUTTON'S WORD, OR SPACE FOR THE MENU", Kit.Caption(7), 0, 440, G.StageSize, HorizontalAlignment.Center);
     }
 
     static void Retry()
@@ -753,13 +751,14 @@ public partial class VictoryUI : Screen
     }
 }
 
-// The pause screen over the game: the playfield dims under a cockpit-style panel. MENU asks to confirm; YES ends the
+// The pause screen over the game: the playfield dims under a cockpit-style panel. RESUME goes back to the game; MENU
+// asks to confirm, and YES ends the
 // level as a loss, NO resumes.
 public partial class PauseUI : Control
 {
-    static readonly Rect2 Panel = new(135, 170, 280, 170);
+    static readonly Rect2 Panel = new(135, 170, 280, 196);
     public readonly TypeNav Nav = new();
-    readonly Control confirm = new() { Position = new Vector2(0, 288), MouseFilter = MouseFilterEnum.Ignore, Visible = false };
+    readonly Control confirm = new() { Position = new Vector2(0, 334), MouseFilter = MouseFilterEnum.Ignore, Visible = false };
 
     public PauseUI()
     {
@@ -776,16 +775,9 @@ public partial class PauseUI : Control
                 new Color(Cockpit.Accent, 0.35f)),
             MouseFilter = MouseFilterEnum.Ignore,
         });
-        AddChild(new Label
-        {
-            Text = "ESC OR TYPE \"PAUSE\" TO RESUME",
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Position = new Vector2(Panel.Position.X, 228),
-            Size = new Vector2(Panel.Size.X, 14),
-            LabelSettings = Fonts.Settings(Fonts.Hud, 8, new Color(Cockpit.Rim, 0.8f)),
-            MouseFilter = MouseFilterEnum.Ignore,
-        });
-        var menu = new TextButton(Strings.Menu, GoMenu, 15) { Position = new Vector2(244, 252) };
+        var resume = new TextButton(Strings.Resume, MenuNo, 15, width: 140) { Position = new Vector2(Panel.Position.X + 70, 244) };
+        AddChild(resume);
+        var menu = new TextButton(Strings.Menu, GoMenu, 15, width: 140) { Position = new Vector2(Panel.Position.X + 70, 278) };
         AddChild(menu);
         AddChild(confirm);
         confirm.AddChild(new Label
@@ -801,6 +793,7 @@ public partial class PauseUI : Control
         var no = new TextButton(Strings.No, MenuNo, 13) { Position = new Vector2(300, 0) };
         confirm.AddChild(yes);
         confirm.AddChild(no);
+        Nav.Add(resume);
         Nav.Add(menu);
         Nav.Add(yes);
         Nav.Add(no);

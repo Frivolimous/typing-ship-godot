@@ -26,7 +26,7 @@ public class Entity
     public void RecycleWord()
     {
         if (Word == null) return;
-        Game.Words.Push(Word);
+        if (Word != Boss.FinalWord) Game.Words.Push(Word); // the last boss's word isn't the word list's to keep
         Word = null;
     }
 

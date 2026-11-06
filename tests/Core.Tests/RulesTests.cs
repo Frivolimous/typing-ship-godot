@@ -291,6 +291,29 @@ public class BossTests
     }
 
     [Fact]
+    public void The_last_boss_is_finished_with_millennium()
+    {
+        var g = TestData.WithLevel0("@0:00.55 boss 3");
+        g.NewGame(0);
+        g.Until(() => g.Boss?.Scanner != null);
+        var boss = g.Boss!;
+        var finals = new List<string>();
+        for (int guard = 0; guard < 10000 && boss.Health > 0; guard++)
+        {
+            if (boss.Scanner?.Word is { Length: > 0 } word)
+            {
+                if (word.Length == 10) finals.Add(word);
+                g.Type(word);
+            }
+            else g.Step();
+        }
+        Assert.Equal(0, boss.Health);
+        Assert.Equal(Boss.FinalWord, finals[^1]);
+        Assert.DoesNotContain(Boss.FinalWord, finals[..^1]); // only the last blow
+        Assert.DoesNotContain(Boss.FinalWord, g.Words.Words(10)); // and it never joins the word list
+    }
+
+    [Fact]
     public void Boss_3s_counter_words_take_the_same_share_of_the_typing_speed_on_every_difficulty()
     {
         int Window(double cps)
@@ -374,6 +397,36 @@ public class ScoringTests
         Assert.Equal(2, back.Achieve[0]);
         Assert.Equal(0, SaveData.FromJson(s.ToJson().Replace("\"Version\":10", "\"Version\":9")).Achieve[0]);
         Assert.Equal(0, SaveData.FromJson("not json").Achieve[0]);
+    }
+
+    [Fact]
+    public void A_new_player_is_asked_their_speed_once()
+    {
+        var s = new SaveData();
+        Assert.True(s.NeedsSpeedQuestion);
+        Assert.Equal(-1, s.RecommendedDifficulty);
+        s.StatedSpeed = 2; // 65-89 WPM
+        Assert.False(s.NeedsSpeedQuestion);
+        Assert.Equal(2, s.RecommendedDifficulty);
+        // A typing test result takes over from what they said.
+        s.TestWpm = 42;
+        Assert.Equal(1, s.RecommendedDifficulty);
+        Assert.Equal(2, SaveData.FromJson(s.ToJson()).StatedSpeed);
+
+        // Players who already took the test or played aren't asked.
+        Assert.False(new SaveData { TestWpm = 30 }.NeedsSpeedQuestion);
+        var played = new SaveData();
+        played.LevelScore[0][0] = 50;
+        Assert.False(played.NeedsSpeedQuestion);
+        var endless = new SaveData();
+        endless.EndlessBest[2] = 900;
+        Assert.False(endless.NeedsSpeedQuestion);
+
+        // A save from before the question reads as never asked.
+        var json = new SaveData { StatedSpeed = 3 }.ToJson();
+        var withoutIt = json.Replace(",\"StatedSpeed\":3", "");
+        Assert.NotEqual(json, withoutIt);
+        Assert.Equal(-1, SaveData.FromJson(withoutIt).StatedSpeed);
     }
 }
 

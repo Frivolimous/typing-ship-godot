@@ -30,8 +30,6 @@ public partial class OptionsUI : Screen
             // Turned back on: the ones already seen this session can show again.
             if (Settings.Tutorials) Array.Fill(G.Model.TutFlags, false);
         }));
-        Kit.Label(this, "UP AND DOWN CHOOSE  ·  LEFT AND RIGHT CHANGE  ·  OR TYPE A SETTING'S NAME", Kit.Caption(7),
-            0, RowTop + RowGap * rows.Count + 6, G.StageSize, HorizontalAlignment.Center);
         var quit = new TextButton("QUIT GAME", () => G.Shell.AskQuit(), 13, word: "quit", boxed: true, colour: Kit.Bad, width: 140)
         {
             Position = new Vector2(262, 506),

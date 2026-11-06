@@ -18,6 +18,7 @@ public partial class Shell : Control, IViewTicker
     public LicensesUI Licenses = null!;
     public TypingTest Test = null!;
     public OptionsUI Options = null!;
+    public SpeedQuestionUI Speed = null!;
     public readonly PauseUI Pause = new();
     // In a level: a big PAUSE button in the cockpit's button screen.
     public readonly PauseButton PauseB = new() { Visible = false };
@@ -62,8 +63,9 @@ public partial class Shell : Control, IViewTicker
         Credits = new CreditsUI();
         Licenses = new LicensesUI();
         Test = new TypingTest();
+        Speed = new SpeedQuestionUI();
         Options = new OptionsUI();
-        foreach (var s in new Screen[] { Menu, Score, GameOver, Victory, Achievements, Credits, Licenses, Test, Options }) screens.AddChild(s);
+        foreach (var s in new Screen[] { Menu, Score, GameOver, Victory, Achievements, Credits, Licenses, Test, Options, Speed }) screens.AddChild(s);
         AddChild(screens);
         AddChild(Pause);
         AddChild(PauseB);
