@@ -96,7 +96,7 @@ The original AS3 source is no longer in the repo (Jeremy keeps a copy). This fil
    the old Flash ship, missile and menu art is deleted): new art and fonts, side-panel HUD and decoration, effects (shaders, particles, screen
    shake), and UI polish. Make it look as good as possible. **Started:** AI-generated placeholder art for the
    player, the enemies, the missiles and the three bosses (game/assets/sprites/ai/; the bosses are animated in code:
-   hangar doors, gun glow, cannon charge, beam); engine flames, laser charge points, shields and turrets placed by data/mounts.txt (a turret's word stays at the rules' spot; its shots leave from the gun); new explosions (flash,
+   hangar doors, gun glow, cannon charge, beam); engine flames, laser charge points, shields and turrets placed by data/mounts.txt (a turret's word sits just above the ship's word on screen, whichever way the ship faces; its shots leave from the gun); new explosions (flash,
    shockwave, fireballs, sparks, smoke) and a three-layer starfield. The cockpit frame is now drawn in code in the
    original's shape, with screens for the score (counting up), typed text, hull pips and progress, in bundled OFL fonts.
    Also restyled to match: the pause screen, tutorial briefings, the achievement pop-up (a toast above the cockpit)

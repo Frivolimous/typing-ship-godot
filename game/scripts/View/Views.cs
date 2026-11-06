@@ -442,9 +442,10 @@ public partial class TurretView : Node2D
 {
     readonly Turret turret;
     public readonly WordLabel Word = new();
-    // Where the word sits: the rules' spot, 20 px behind the ship's centre, wherever the gun is drawn (on the big ships
-    // the gun sits on a ring near the centre, where its word would cover the ship's).
-    readonly Vector2 wordAt;
+    // The word sits on screen just above the ship's word (which hangs below the ship's centre), whichever way the ship
+    // faces and wherever the gun is drawn: anywhere tied to the ship's heading lands on the ship's word when it flies
+    // sideways.
+    static readonly Vector2 WordAbove = new(0, -20);
 
     /// <param name="at">Where it sits on the ship (heading space, the ship's centre at 0,0), if not the rules' spot.</param>
     public TurretView(Turret turret, Texture2D art, Vector2? at = null)
@@ -452,7 +453,6 @@ public partial class TurretView : Node2D
         this.turret = turret;
         Name = "Turret";
         Position = at ?? G.V(turret.Position);
-        wordAt = G.V(turret.Position);
         AddChild(new Sprite2D
         {
             Texture = art,
@@ -470,7 +470,7 @@ public partial class TurretView : Node2D
     {
         Rotation = turret.Rotation;
         Word.Set(turret.Word, turret.Priority);
-        Word.Position = (wordAt - Position).Rotated(-Rotation);
+        Word.Position = (WordAbove.Rotated(-turret.Ship.Rotation) - Position).Rotated(-Rotation);
         Word.Rotation = -Rotation - turret.Ship.Rotation;
     }
 }
