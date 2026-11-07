@@ -40,7 +40,7 @@ before Steam, or with Steam closed).
 | CONQUEROR_SILVER | Conqueror (Silver) | Defeat the second boss |
 | CONQUEROR_GOLD | Conqueror (Gold) | Finish the game |
 | RIDDLER_BRONZE | Riddler (Bronze) | It's a bird, it's a plane, it's... |
-| RIDDLER_SILVER | Riddler (Silver) | Japanese death pilot's scream |
+| RIDDLER_SILVER | Riddler (Silver) | Divine wind, in Japanese |
 | RIDDLER_GOLD | Riddler (Gold) | Nature's master of disguise |
 | DEFENDER_BRONZE | Defender (Bronze) | Complete any level with perfect health |
 | DEFENDER_SILVER | Defender (Silver) | Achieve 5 gold health medals |
@@ -53,7 +53,10 @@ before Steam, or with Steam closed).
 | EXPLORER_GOLD | Explorer (Gold) | Kill Superman |
 
 The descriptions are the in-game ones (`Strings.AchieveText`); the Riddler ones are riddles, so consider marking
-those hidden. Until they're published the console warns `Steam: no achievements (k_EResultFail)` and nothing unlocks.
+those hidden. In the game the Riddler's details also say "type the answer during a mission"; Steam's list doesn't
+show that, so consider ending each Riddler description with it there (e.g. "Divine wind, in Japanese. Type the
+answer during a mission."). RIDDLER_SILVER was "Japanese death pilot's scream" until 2026-11-06: if it's on the
+partner site, change it there. Until they're published the console warns `Steam: no achievements (k_EResultFail)` and nothing unlocks.
 
 ### Leaderboards (Stats & Achievements > Leaderboards)
 

@@ -63,6 +63,7 @@ public partial class AchieveUI : Screen
     readonly Label[] lines = new Label[3];
     readonly TextureRect[] lineMedals = new TextureRect[3];
     readonly Label hint;
+    readonly Label riddleHint;
     int showing = -1;
 
     static Rect2 Card(int i) => new(18 + i % 3 * 177, 52 + i / 3 * 163, CardW, CardH);
@@ -99,16 +100,20 @@ public partial class AchieveUI : Screen
         }
         hint = Kit.Label(this, "POINT AT AN ACHIEVEMENT", Kit.Caption(8), Detail.Position.X, Detail.Position.Y + 48,
             Detail.Size.X, HorizontalAlignment.Center);
+        // The Riddler's riddles are answered by typing the answer in a mission; nothing else says so.
+        riddleHint = Kit.Label(this, Strings.RiddleHint, Kit.Caption(7), Detail.Position.X + 16, Detail.Position.Y + 6,
+            Detail.Size.X - 32, HorizontalAlignment.Right);
         for (int j = 0; j < 3; j++)
         {
             float y = Detail.Position.Y + 12 + 31 * j;
-            var art = Sprites.Achieve[j + 1];
-            float s = 26 / art.GetHeight();
+            // Fitted into a 26 px box (scaling from the art's size left them at Godot's minimum scale, invisible).
             lineMedals[j] = new TextureRect
             {
-                Texture = art,
-                Scale = new Vector2(s, s),
+                Texture = Sprites.Achieve[j + 1],
+                ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+                StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
                 Position = new Vector2(Detail.Position.X + 16, y - 3),
+                Size = new Vector2(26, 26),
                 MouseFilter = MouseFilterEnum.Ignore,
             };
             AddChild(lineMedals[j]);
@@ -147,6 +152,7 @@ public partial class AchieveUI : Screen
     {
         showing = i;
         hint.Visible = i < 0;
+        riddleHint.Visible = i == Achievement.Riddler;
         for (int j = 0; j < 3; j++)
         {
             lines[j].Visible = lineMedals[j].Visible = i >= 0;

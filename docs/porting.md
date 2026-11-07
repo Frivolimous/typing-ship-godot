@@ -293,7 +293,9 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
   (9) and the first hit on a boss (10). The triggers for 0–6 were commented out in the original; their texts are in
   Strings.Tutorial.
 - **Achievements** advance one tier at a time and in order: Conqueror needs boss 1, then 2, then 3; Riddler needs
-  superman, then kamikaze, then chameleon; Explorer needs the sponsor link, then pausing by keyboard, then killing
+  superman, then kamikaze, then chameleon (the riddles: "it's a bird, it's a plane, it's...", "divine wind, in
+  Japanese" in place of the original's "Japanese death pilot's scream", and "nature's master of disguise"; the
+  details add "type the answer during a mission"); Explorer needs the sponsor link, then pausing by keyboard, then killing
   superman. Defender and Perfection count gold medals across levels (1, then 5, then all 12).
 - **Losing a level still records its score** as the level's best if it's higher, but not as cleared.
 - The level map is reached by START on the title and stays up for the rest of the session: there's no way back to

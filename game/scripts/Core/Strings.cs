@@ -11,11 +11,14 @@ public static class Strings
     {
         new[] { "DESTROY 10 ENEMY SHIPS", "DESTROY 1,000 ENEMY SHIPS", "DESTROY 20,000 ENEMY SHIPS" },
         new[] { "DEFEAT THE FIRST BOSS", "DEFEAT THE SECOND BOSS", "FINISH THE GAME" },
-        new[] { "IT'S A BIRD, IT'S A PLANE, IT'S...", "JAPANESE DEATH PILOT'S SCREAM", "NATURE'S MASTER OF DISGUISE" },
+        new[] { "IT'S A BIRD, IT'S A PLANE, IT'S...", "DIVINE WIND, IN JAPANESE", "NATURE'S MASTER OF DISGUISE" },
         new[] { "COMPLETE ANY LEVEL WITH PERFECT HEALTH", "ACHIEVE 5 GOLD HEALTH MEDALS", "FINISH EVERY LEVEL WITH PERFECT HEALTH" },
         new[] { "COMPLETE ANY LEVEL KILLING EVERY SHIP", "ACHIEVE 5 GOLD ACCURACY MEDALS", "FINISH EVERY LEVEL WITH PERFECT ACCURACY" },
         new[] { "VIEW THE CREDITS", "PAUSE THE GAME WITHOUT CLICKING", "KILL SUPERMAN" },
     };
+
+    /// <summary>Under the Riddler's riddles on the achievements screen.</summary>
+    public const string RiddleHint = "TYPE THE ANSWER DURING A MISSION";
 
     public static readonly string[] Tiers = { "", "BRONZE", "SILVER", "GOLD" };
     public const string Done = "DONE", NewAchieve = "New Achievement!";
