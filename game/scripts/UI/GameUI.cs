@@ -188,7 +188,7 @@ public partial class HullBar : Node2D
     static readonly Color Hurt = new(1, 0.35f, 0.35f);
 
     // The repair word, shown above the pips while the hull is damaged.
-    readonly WordLabel word = new() { Position = new Vector2(Width / 2, 6) };
+    readonly WordLabel word = new() { Position = new Vector2(Width / 2, 6), GrowUp = true };
     readonly Label caption = new()
     {
         Text = "HULL",

@@ -58,6 +58,8 @@ public partial class Main : Node2D
         if (bot) Settings.Path = null;
         Settings.Load();
         if (args.TryGetValue("art", out var artSet)) Settings.ArtSet = artSet; // for this run only (not saved)
+        if (args.TryGetValue("textsize", out var ts) && int.TryParse(ts, out int size)) // likewise
+            Settings.TextSize = Math.Clamp(size, 0, Settings.TextSizes.Length - 1);
         Settings.Apply();
         SuperSampleText();
         GetTree().Root.SizeChanged += SuperSampleText;

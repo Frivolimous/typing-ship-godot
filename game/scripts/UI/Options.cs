@@ -19,6 +19,8 @@ public partial class OptionsUI : Screen
             Add(new OptionRow("ART SET", "art", () => Sprites.ArtSet.ToUpperInvariant(), () => Settings.ArtSet = Sprites.NextArtSet()));
         Add(new OptionRow("DISPLAY", "display", () => Settings.Fullscreen ? "FULLSCREEN" : "WINDOWED",
             () => Settings.Fullscreen = !Settings.Fullscreen));
+        Add(new OptionRow("TEXT SIZE", "text", () => Settings.TextSizes[Settings.TextSize].Name,
+            () => Settings.TextSize = (Settings.TextSize + 1) % Settings.TextSizes.Length));
         Add(new OptionRow("MUSIC VOLUME", "music", () => Settings.MusicVolume, v => Settings.MusicVolume = v));
         Add(new OptionRow("SOUND VOLUME", "sound", () => Settings.SoundVolume, v => Settings.SoundVolume = v));
         Add(Switch("GLOW", "glow", () => Settings.Glow, () => Settings.Glow = !Settings.Glow));
@@ -216,8 +218,8 @@ public partial class OptionRow : Control
         Kit.Panel(this, new Rect2(Vector2.Zero, Size), highlight ? Kit.Rim : null, cut: 8, glow: highlight || hover ? 0.95f : 0.4f);
         if (!IsSlider)
         {
-            // A switch's value in a lit chip: green when on, dim when off.
-            bool on = valueLabel.Text is "ON" or "FULLSCREEN";
+            // A switch's value in a lit chip: dim when off, green otherwise.
+            bool on = valueLabel.Text is not ("OFF" or "WINDOWED");
             valueLabel.LabelSettings = Kit.Body(12, on ? Kit.Good : new Color(Kit.Ink, 0.55f));
             return;
         }

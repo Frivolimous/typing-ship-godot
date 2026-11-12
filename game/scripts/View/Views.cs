@@ -12,7 +12,11 @@ namespace TypingShip;
 /// </summary>
 public partial class WordLabel : Node2D
 {
-    const int FontSize = 14;
+    const int BaseSize = 14;
+    const float Half = 150; // half the label's width: room for the longest word at the largest text size
+    /// <summary>The text size option's scale (Settings.TextSizes); the word's font size is BaseSize times it.</summary>
+    public static float TextScale { get; private set; } = 1;
+    static int FontSize = BaseSize;
     static readonly Color[] PriorityColors =
     {
         new(0xffffffff), new(0xffff99ff), new(0xffbb99ff), new(0xff8877ff),
@@ -33,17 +37,41 @@ public partial class WordLabel : Node2D
     static readonly HashSet<WordLabel> live = new();
     static string checkedBar = "";
 
+    /// <summary>
+    /// Sets the words' size (1 = normal) and lays out the ones on screen again. Words that hang from a point
+    /// (<see cref="GrowUp"/> false) grow downward; the others grow upward, keeping their bottom edge.
+    /// </summary>
+    public static void UseScale(float k)
+    {
+        TextScale = k;
+        FontSize = Mathf.RoundToInt(BaseSize * k);
+        foreach (var s in Settings.Append(MatchSettings).Append(MissSettings)) s.FontSize = FontSize;
+        foreach (var l in live) l.Relayout();
+    }
+
+    /// <summary>Grow upward with the text size instead of down (the hull's word, which sits just above its pips).</summary>
+    public bool GrowUp
+    {
+        init
+        {
+            growUp = value;
+            Relayout();
+        }
+    }
+    bool growUp;
+    Vector2 home = new(-Half, 0); // the label's place, less any shake
+
     readonly Label label = new()
     {
         HorizontalAlignment = HorizontalAlignment.Center,
-        Position = new Vector2(-100, 0),
-        Size = new Vector2(200, 18),
+        Position = new Vector2(-Half, 0),
+        Size = new Vector2(2 * Half, 18),
         MouseFilter = Control.MouseFilterEnum.Ignore,
     };
     // The typed letters, drawn over the start of the word.
     readonly Label typed = new()
     {
-        Size = new Vector2(200, 18),
+        Size = new Vector2(2 * Half, 18),
         MouseFilter = Control.MouseFilterEnum.Ignore,
         LabelSettings = MatchSettings,
         Visible = false,
@@ -60,7 +88,11 @@ public partial class WordLabel : Node2D
         Visible = false;
     }
 
-    public override void _EnterTree() => live.Add(this);
+    public override void _EnterTree()
+    {
+        live.Add(this);
+        Relayout(); // the size may have changed while it was out of the tree
+    }
     public override void _ExitTree() => live.Remove(this);
 
     // How many of the word's letters the typing bar ends with (0 when none, and never all of them).
@@ -84,7 +116,7 @@ public partial class WordLabel : Node2D
         }
         float t = miss / MissTime;
         var shake = new Vector2(Mathf.Sin(miss * 70) * 3 * t, 0);
-        label.Position = new Vector2(-100, 0) + shake;
+        label.Position = home + shake;
         typed.Position = typedHome + shake;
         typed.Modulate = new Color(1, 1, 1, Mathf.Min(1, t * 1.5f));
     }
@@ -115,7 +147,7 @@ public partial class WordLabel : Node2D
     void EndMiss()
     {
         miss = 0;
-        label.Position = new Vector2(-100, 0);
+        label.Position = home;
         typed.Position = typedHome;
         typed.Modulate = Colors.White;
         typed.LabelSettings = MatchSettings;
@@ -142,7 +174,22 @@ public partial class WordLabel : Node2D
         typed.Visible = true;
         typed.Text = word![..k];
         float width = Fonts.Word.GetStringSize(word, HorizontalAlignment.Left, -1, FontSize).X;
-        typed.Position = typedHome = new Vector2(-width / 2, 0);
+        typed.Position = typedHome = new Vector2(-width / 2, home.Y);
+    }
+
+    /// <summary>Places the label for the text size (growing up or down) and redoes the typed letters' overlay.</summary>
+    void Relayout()
+    {
+        // A label is as tall as its font needs: grow up by however much taller it is than at the normal size.
+        float extra = growUp ? Fonts.Word.GetHeight(FontSize) - Fonts.Word.GetHeight(BaseSize) : 0;
+        home = new Vector2(-Half, -extra);
+        label.Size = typed.Size = new Vector2(2 * Half, 0); // shrink to the new font's height
+        if (miss > 0) EndMiss();
+        label.Position = home;
+        int k = matched;
+        matched = 0;
+        typed.Visible = false;
+        if (word != null) SetMatched(k);
     }
 
     /// <summary>The word was typed: a copy of it swells and fades where it was.</summary>
@@ -470,7 +517,7 @@ public partial class TurretView : Node2D
     {
         Rotation = turret.Rotation;
         Word.Set(turret.Word, turret.Priority);
-        Word.Position = (WordAbove.Rotated(-turret.Ship.Rotation) - Position).Rotated(-Rotation);
+        Word.Position = (WordAbove.Rotated(-turret.Ship.Rotation) * WordLabel.TextScale - Position).Rotated(-Rotation);
         Word.Rotation = -Rotation - turret.Ship.Rotation;
     }
 }

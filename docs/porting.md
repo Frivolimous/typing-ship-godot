@@ -232,7 +232,9 @@ Rules (`src/Core/`, namespace `TypingShip.Core`, no Godot) are split from presen
 - **Lasers and EMPs leave from the ship's nose gun** (its charge point) rather than its centre.
 - **Quitting:** Escape on the title or map, or QUIT GAME on the options, asks "EXIT THE GAME?".
 - **Options screen** (new; OPTIONS on the title and map, where the mute buttons were; they're gone, and a level has
-  just a big PAUSE button, while typing "mute" or "unmute" still works): fullscreen, music and sound volumes, glow,
+  just a big PAUSE button, while typing "mute" or "unmute" still works): fullscreen, text size (the words to type
+  in a level at 100%, 125% or 150%: ships', turrets', the boss scanner's and the hull's, which grows upward to clear
+  its pips; menus and the typing bar stay as they are), music and sound volumes, glow,
   screen shake, screen flashes (off skips full-screen flashes and dims a hit's), tutorials. Saved in
   user://settings.json (UI/Options.cs, Core/Settings.cs). Escape on a tutorial now turns the tutorials off for good,
   as the TUTORIALS switch.

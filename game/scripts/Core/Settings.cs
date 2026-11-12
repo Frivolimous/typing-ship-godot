@@ -16,6 +16,9 @@ public static class Settings
     public static bool Glow = true, Shake = true, Flashes = true, Tutorials = true;
     /// <summary>The art set (a folder under assets/sprites; see Sprites.ArtSets).</summary>
     public static string ArtSet = Sprites.DefaultSet;
+    /// <summary>How big the words to type are in a level: an index into <see cref="TextSizes"/>.</summary>
+    public static int TextSize;
+    public static readonly (string Name, float Scale)[] TextSizes = { ("NORMAL", 1), ("LARGE", 1.25f), ("LARGEST", 1.5f) };
 
     public static void Load()
     {
@@ -31,6 +34,8 @@ public static class Settings
         Shake = B("shake", Shake);
         Flashes = B("flashes", Flashes);
         Tutorials = B("tutorials", Tutorials);
+        if (d.TryGetValue("textsize", out var ts) && ts.VariantType is Variant.Type.Int or Variant.Type.Float)
+            TextSize = Math.Clamp((int)ts.AsDouble(), 0, TextSizes.Length - 1);
         if (d.TryGetValue("art", out var art) && art.VariantType == Variant.Type.String) ArtSet = art.AsString();
     }
 
@@ -40,7 +45,7 @@ public static class Settings
         var d = new Godot.Collections.Dictionary
         {
             ["fullscreen"] = Fullscreen, ["music"] = MusicVolume, ["sound"] = SoundVolume, ["glow"] = Glow, ["shake"] = Shake,
-            ["flashes"] = Flashes, ["tutorials"] = Tutorials, ["art"] = ArtSet,
+            ["flashes"] = Flashes, ["tutorials"] = Tutorials, ["art"] = ArtSet, ["textsize"] = TextSize,
         };
         using var f = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
         if (f == null)
@@ -63,6 +68,7 @@ public static class Settings
         G.Sound.MusicVolume = MusicVolume;
         G.Sound.SoundVolume = SoundVolume;
         Sprites.UseArtSet(ArtSet);
+        WordLabel.UseScale(TextSizes[TextSize].Scale);
     }
 
     /// <summary>

@@ -52,6 +52,7 @@ Pass these after `--` on the Godot command line, e.g. `$GODOT --path game -- --l
 | `--art=NAME` | Use an art set (a folder under game/assets/sprites with a player.png: `ai`, `custom`, ...) for this run, without saving it. In the game, F2 cycles the sets and the options have an ART SET row |
 | `--menu` | With `--autotype`: start on the title menu anyway (the bot plays once you start a level) |
 | `--map` | Start on the level map instead of the title |
+| `--textsize=N` | The size of the words to type for this run, without saving it: 0 normal, 1 large (125%), 2 largest (150%). The options have a TEXT SIZE row |
 | `--profile=NAME` | Use the save file `user://NAME.json` instead of `user://save.json` (keeps test runs out of your save) |
 | `--keys=t:text,...` | Scripted input at given ticks: letters, digits and punctuation (except commas) are typed, `{space}`, `{comma}`, `{enter}`, `{esc}`, `{backspace}`, `{f1}`–`{f12}` press keys, `{click:XxY}` clicks at a stage position. E.g. `--keys=40:start,75:1,85:normal` |
 | `--screenshot=path.png` | Save a screenshot after 10 ticks and quit (`--frames=N` for a different tick) |
